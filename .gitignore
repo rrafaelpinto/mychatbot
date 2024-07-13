@@ -1,5 +1,7 @@
 # Ignore compiled Python files
 *.pyc
-
+.env
+.idea/
+db.sqlite3
 # Ignore __pycache__ directories
 __pycache__/

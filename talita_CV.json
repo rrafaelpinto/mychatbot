@@ -1,0 +1,96 @@
+{
+  "contact": {
+    "phone": "+5584994337542",
+    "email": "talita.katianne@gmail.com",
+    "linkedin": "www.linkedin.com/in/talita-brito"
+  },
+  "top_skills": [
+    "Teaching",
+    "Microsoft Office",
+    "Manuscript Editing"
+  ],
+  "publications": [
+    "Development of a Cyclic Voltammetry-Based Method for the Detection of Antigens and Antibodies as a Novel Strategy for Syphilis Diagnosis",
+    "Clinical Protocols and Treatment Guidelines for the Management of Maternal and Congenital Syphilis in Brazil and Portugal: Analysis and Comparisons: A Narrative Review",
+    "Quantum Biochemistry Screening and In Vitro Evaluation of Leishmania Metalloproteinase Inhibitors",
+    "Effectiveness of COVID-19 Vaccination on Reduction of Hospitalizations and Deaths in Elderly Patients in Rio Grande do Norte, Brazil",
+    "Synthesis of Silver Nanoparticle Employing Corn Cob Xylan as a Reducing Agent with Anti-Trypanosoma cruzi Activity"
+  ],
+  "profile": {
+    "name": "Talita Brito, PhD",
+    "title": "Researcher / Pharmacist / Biochemistry",
+    "location": "Rio Grande do Norte, Brazil",
+    "summary": "I completed my Bachelor's degree (BSc) in Pharmacy and Biochemistry in 2007 and my Master's in Biological Sciences in 2011 at the Federal University of São Paulo (UNIFESP), Brazil. I earned my Ph.D. in Health Sciences from the Federal University of Rio Grande do Norte (UFRN), Brazil, in 2019, and I completed a postdoctoral study (2022) from the Health Sciences Research Unit (UICISA-E) in Portugal. During my postdoctoral studies, I conducted comparative analyses of clinical protocols and therapeutic guidelines used in both countries (Brazil and Portugal) in managing syphilis in pregnant women and congenital cases. I also aimed to comparatively examine health systems with a platform developed by the Laboratory of Technological Innovation in Health (LAIS), used to control and manage syphilis cases in Brazil. One of the significant results of my postdoctoral studies is identifying differences and similarities in clinical protocols and therapeutic guidelines used in Brazil and Portugal. This finding could help improve the management of syphilis in pregnant women and congenital cases in both countries. My doctoral research involved the characterization and extraction of a molecule (carbohydrate) from the ear of corn. With this carbohydrate, we synthesized a nanoparticle containing silver, and from this nanoformulation, we conducted tests for assessing the trypanocidal activity of silver nanoparticles with xylan polysaccharide against different evolutionary forms of Trypanosoma cruzi. I also had the opportunity to teach Pharmacology classes at the Faculty of Science and Technology, a Nursing course, and in a Biomedicine course at the Federal University of Rio Grande do Norte. In addition, I was approved in a vetting process for a substitute professor position at the UFRN. During my Master's degree, I evaluated the inhibitory effects of glycosphingolipid synthesis on the growth and lipid expression in epimastigotes of Trypanosoma cruzi."
+  },
+  "experience": [
+    {
+      "organization": "Ministério da Saúde",
+      "title": "Evaluator",
+      "period": "October 2022 - Present",
+      "duration": "1 year 10 months",
+      "responsibilities": "Analyze clinical records of basic health units, inspect hospital environments, maternity wards, pharmacies, laboratories, and inputs, and analyze epidemiological surveillance data in the municipality."
+    },
+    {
+      "organization": "LAIS - Laboratório de Inovação Tecnológica em Saúde",
+      "title": "Researcher",
+      "period": "April 2021 - Present",
+      "duration": "3 years 4 months",
+      "location": "Natal, Rio Grande do Norte, Brazil",
+      "responsibilities": "As a researcher, I work on the development of projects that address new techniques for the development of devices for the diagnosis of syphilis and a health technological platform for case management, both included in the project 'Syphilis No' in partnership with the Brazilian Ministry of Health and Pan American Health Organization (OPAS)."
+    },
+    {
+      "organization": "Drugstore Saúde Fácil LTDA ME",
+      "title": "Senior Pharmacist",
+      "period": "March 2018 - August 2019",
+      "duration": "1 year 6 months",
+      "location": "Rio Grande do Norte",
+      "responsibilities": "As a responsible technician, I performed daily activities such as checking blood pressure, testing blood glucose levels, and taking body temperature. I also ensured that the National Controlled Products Management System was updated weekly. I provided pharmaceutical assistance with the objective of promoting health protection and recovery, and aimed at the rational use of medicines. Additionally, I conducted monthly conferences on prescription drugs, and delivered monthly and annual reports for health surveillance."
+    },
+    {
+      "organization": "Emergency Care Unit",
+      "title": "Biochemist",
+      "period": "June 2018 - March 2019",
+      "duration": "10 months",
+      "location": "Natal, Rio Grande do Norte",
+      "responsibilities": "I worked as a biochemist in the analysis, preparation, and release of examination reports from the biochemistry, hematology, and uro-analysis sectors. I also performed activities such as purchasing inputs for the sector, providing technical assistance, and performing daily verification of the laboratory's temperature and humidity."
+    },
+    {
+      "organization": "Faculty of Science and Technology of Natal",
+      "title": "Pharmacology Professor",
+      "period": "August 2014 - November 2015",
+      "duration": "1 year 4 months",
+      "location": "Natal, Rio Grande do Norte, Brazil",
+      "responsibilities": "As a Pharmacology Professor at a Brazilian University, I taught the principles of pharmacology, medicine mechanisms of action, and the clinical applications of different medicine classes. Additionally, I developed and administered assessments, provided student feedback, and engaged in student mentoring and advising."
+    },
+    {
+      "organization": "Drugstore Irmã Dulce",
+      "title": "Senior Pharmacist",
+      "period": "January 2007 - April 2008",
+      "duration": "1 year 4 months",
+      "location": "Natal, Rio Grande do Norte, Brazil",
+      "responsibilities": "I led the day-to-day operations of the pharmacy, overseeing the dispensing and distribution of medications, ensuring compliance with regulatory requirements, and managing inventory and supply chain processes. Directed and supervised a team of pharmacy technicians and other support staff, providing training and mentorship to promote a high-performance and customer-focused culture. Additionally, I offered pharmaceutical consultation and counseling to patients and contributed to developing and implementing policies and procedures related to pharmacy management."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Escola Superior de Enfermagem de Coimbra",
+      "degree": "Postdoctoral",
+      "period": "February 2022 - December 2022"
+    },
+    {
+      "institution": "Federal University of Rio Grande do Norte",
+      "degree": "Doctor of Health Sciences, Biochemistry",
+      "period": "2015 - 2019"
+    },
+    {
+      "institution": "Federal University of São Paulo",
+      "degree": "Master's degree in Biological Sciences (Molecular Biology), Biochemistry",
+      "period": "2008 - 2011"
+    },
+    {
+      "institution": "Universidade Potiguar",
+      "degree": "Bachelor Degree in Pharmacy and Biochemistry, Health Sciences",
+      "period": "2002 - 2007"
+    }
+  ]
+}

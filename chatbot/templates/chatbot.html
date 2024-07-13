@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot - {{ candidate.name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-box {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+        }
+        .chat-message {
+            margin-bottom: 10px;
+        }
+        .chat-message.user {
+            text-align: right;
+        }
+        .chat-message.bot {
+            text-align: left;
+        }
+        .chat-message p {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .chat-message.user p {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .chat-message.bot p {
+            background-color: #f1f1f1;
+        }
+        .candidate-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .candidate-info img {
+            max-width: 100px;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="candidate-info">
+            {% if candidate.image %}
+                <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}">
+            {% endif %}
+            <div>
+                <h1 class="my-4">{{ candidate.name }}</h1>
+                <p>Email: {{ candidate.email }}</p>
+                {% if candidate.phone %}
+                <p>Phone: {{ candidate.phone }}</p>
+                {% endif %}
+                {% if candidate.linkedin %}
+                <p>LinkedIn: <a href="{{ candidate.linkedin }}">{{ candidate.linkedin }}</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <div id="chat-box" class="chat-box">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <form id="chat-form" class="mb-4">
+            <div class="form-group">
+                <label for="question">Question:</label>
+                <input type="text" id="question" name="question" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+    </div>
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $('#chat-form').on('submit', function(event) {
+            event.preventDefault();
+            let question = $('#question').val();
+            if (question.trim() === "") {
+                return;
+            }
+
+            // Append user question to chat box
+            $('#chat-box').append('<div class="chat-message user"><p><strong>You:</strong> ' + question + '</p></div>').show();
+
+            $.ajax({
+                url: "{% url 'chatbot' candidate.slug %}",
+                method: 'POST',
+                data: {
+                    question: question,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    // Append bot response to chat box
+                    $('#chat-box').append('<div class="chat-message bot"><p><strong>{{ candidate.name }}:</strong> ' + response.response + '</p>');
+                    $('#question').val('');
+                    // Scroll to the bottom of the chat box
+                    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
