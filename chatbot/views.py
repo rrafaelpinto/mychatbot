@@ -35,11 +35,15 @@ def initialize_chatbot():
 
     llm = OpenAI()
     chain = LLMChain(llm=llm, prompt=prompt)
+    print('######### Inicializou')
     return chain
 
 # Global variable to hold the initialized chatbot
 chatbot = initialize_chatbot()
 
+
+def about(request):
+    return render(request, 'about.html')
 
 def get_or_create_external_user(request):
     user_id = request.session.get('user_id')
@@ -55,17 +59,15 @@ def get_or_create_external_user(request):
     return user
 
 
-def candidate_list_view(request):
+def candidates(request):
     candidates = Candidate.objects.all()
-    return render(request, 'candidate_list.html', {'candidates': candidates})
+    return render(request, 'candidates.html', {'candidates': candidates})
 
-def chatbot_view(request, slug):
+def chat(request, slug):
     candidate = get_object_or_404(Candidate, slug=slug)
     curriculum_text = candidate.resume
-    user_name = request.session.get('user_name')
     if request.method == 'POST':
         user = get_or_create_external_user(request)
-        user_name = user.name
         question = request.POST.get('question')
         if question:
             text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
@@ -83,5 +85,5 @@ def chatbot_view(request, slug):
                 'candidate': candidate.name,
                 'timestamp': timestamp
             })
-
-    return render(request, 'chatbot.html', {'candidate': candidate, 'user_name': user_name})
+    user_name = request.session.get('user_name')
+    return render(request, 'chat.html', {'candidate': candidate, 'user_name': user_name})

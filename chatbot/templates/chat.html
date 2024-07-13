@@ -1,63 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot - {{ candidate.name }}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .chat-box {
-            max-height: 500px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            display: none; /* Initially hidden */
-        }
-        .chat-message {
-            margin-bottom: 10px;
-        }
-        .chat-message.user {
-            text-align: right;
-        }
-        .chat-message.bot {
-            text-align: left;
-        }
-        .chat-message p {
-            display: inline-block;
-            padding: 10px;
-            border-radius: 10px;
-        }
-        .chat-message.user p {
-            background-color: #007bff;
-            color: #fff;
-        }
-        .chat-message.bot p {
-            background-color: #f1f1f1;
-        }
-        .candidate-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .candidate-info img {
-            max-width: 100px;
-            border-radius: 50%;
-            margin-right: 20px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
+{% extends "base.html" %}
+
+{% block title %}- {{ candidate.name }}{% endblock %}
+
+{% block content %}
     <div class="candidate-info">
         {% if candidate.image %}
             <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}">
         {% endif %}
         <div>
             <h1 class="my-4">{{ candidate.name }}</h1>
-            <p>Email: {{ candidate.email }}</p>
             {% if candidate.phone %}
                 <p>Phone: {{ candidate.phone }}</p>
             {% endif %}
@@ -70,7 +21,7 @@
     {% if not request.session.user_id %}
         <form id="user-form" class="mb-4">
             <div class="form-group">
-                <p>Welcome to MyChatbot! I am designed to answer questions about the candidate's resume. To better assist you, I kindly ask that you identify yourself by providing your name and email below. This information is important for recording your interactions and providing a more personalized service. Thank you for your understanding!</p>
+                <p>Welcome to ResumeBot! I am designed to answer questions about the candidate's resume. To better assist you, I kindly ask that you identify yourself by providing your name and email below. This information is important for recording your interactions and providing a more personalized service. Thank you for your understanding!</p>
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" class="form-control" required>
             </div>
@@ -94,10 +45,10 @@
             <button type="submit" class="btn btn-primary">Send</button>
         </form>
     {% endif %}
-</div>
-<!-- jQuery and Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
     function scrollToBottom() {
         let chatBox = document.getElementById('chat-box');
@@ -110,7 +61,7 @@
             let name = $('#name').val();
             let email = $('#email').val();
             $.ajax({
-                url: "{% url 'chatbot' candidate.slug %}",
+                url: "{% url 'chat' candidate.slug %}",
                 method: 'POST',
                 data: {
                     name: name,
@@ -132,9 +83,10 @@
 
             // Append user question to chat box
             $('#chat-box').append('<div class="chat-message user"><p><strong>You:</strong> ' + question + '</p></div>').show();
+            scrollToBottom();
 
             $.ajax({
-                url: "{% url 'chatbot' candidate.slug %}",
+                url: "{% url 'chat' candidate.slug %}",
                 method: 'POST',
                 data: {
                     question: question,
@@ -146,11 +98,9 @@
                     $('#question').val('');
                     // Scroll to the bottom of the chat box
                     scrollToBottom();
-                    //$('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
                 }
             });
         });
     });
 </script>
-</body>
-</html>
+{% endblock %}

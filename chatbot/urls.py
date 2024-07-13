@@ -1,9 +1,10 @@
 # chatbot/urls.py
 from django.urls import path
-from chatbot.views import candidate_list_view, chatbot_view
+from chatbot.views import about, candidates, chat
 
 urlpatterns = [
-    path('chat/<slug:slug>/', chatbot_view, name='chatbot'),
-    path('candidates/', candidate_list_view, name='candidate_list'),
+    path('candidates/', candidates, name='candidates'),
+    path('about/', about, name='about'),
+    path('<slug:slug>/', chat, name='chat'),
 ]
 
