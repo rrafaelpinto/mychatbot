@@ -44,7 +44,7 @@ def create_chatbot(curriculum_text):
 
 def main():
     # Carregar o currículo
-    curriculum_text = load_curriculum('rafael_CV.json')
+    curriculum_text = load_curriculum('chatbot/fixtures/rafael_CV.json')
 
     # Criar o chatbot
     chatbot = create_chatbot(curriculum_text)

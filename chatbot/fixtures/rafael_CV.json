@@ -1,0 +1,227 @@
+{
+    "personal_info":{
+        "name":"Rafael Pinto",
+        "title":"Senior Software Developer",
+        "phone":"+55 84 994337518",
+        "email":"rrafaelpinto@gmail.com",
+        "linkedin":"https://www.linkedin.com/in/rafaelmpinto/"
+    },
+    "about":{
+        "education":[
+            "PhD in Computer Science (2022)",
+            "Master's degree in Computer Science (2016)",
+            "Specialist in Technology and Software Development for Web (2007)",
+            "Bachelor in Systems Information (2004)"
+        ],
+        "experience":"20 years of experience in design and development of web applications, mainly working with Python, MS SQL Server, and PostgreSQL",
+        "current_position":"Since 2014 working at Federal Institute of Science and Technology as Python Developer",
+        "phd_research":"Developed a software ecosystem for collecting, cleaning, and processing data using Natural Language Processing and Machine Learning algorithms to analyze the effects of a public health intervention over time. Findings were plotted in graphs using Matplotlib and Plotly for stakeholder discussions."
+    },
+    "skills":{
+        "programming_languages":[
+            "Python",
+            "Django",
+            "HTML",
+            "Json",
+            "CSS",
+            "MS SQL Server",
+            "PostgreSQL"
+        ],
+        "frameworks":[
+            "Django REST",
+            "Scrapy",
+            "Machine Learning",
+            "Natural Language Processing (NLP)",
+            "Pandas"
+        ],
+        "tools":[
+            "GitLab (CI/CD)",
+            "Agile Methodologies (Scrum)",
+            "Full Software Development Lifecycle (SDLC)"
+        ],
+        "project_management":[
+            "Project Planning and Coordination"
+        ]
+    },
+    "experience":[
+        {
+            "company":"Federal Institute of Education, Science and Technology of Rio Grande do Norte",
+            "location":"Natal Area, Brazil",
+            "title":"Senior Software Developer",
+            "period":"Apr 2014 - Present",
+            "duration":"10 yrs 4 mos",
+            "responsibilities":[
+                "Developing and maintaining an ERP called Unified Public Administration System (SUAP)",
+                "Utilizing unit testing and behave tests to enhance quality",
+                "Defining database design specifications",
+                "Delivering code to meet functional or technical specifications",
+                "Conducting full lifecycle software development",
+                "Working with server-side (Django) and Resftull APIs"
+            ]
+        },
+        {
+            "company":"Thalocan Research Innovations",
+            "location":"Remote",
+            "title":"Project Manager",
+            "period":"Jan 2024 - Present",
+            "duration":"7 mos (Contract)",
+            "responsibilities":[
+                "Collaborating with stakeholders to define project scope, goals, and deliverables",
+                "Creating detailed project plans and establishing timelines",
+                "Overseeing project progress and adjusting strategies as needed",
+                "Mediating conflicts and eliminating barriers to team progress",
+                "Coordinating sprint cycles and maintaining project documentation"
+            ]
+        },
+        {
+            "company":"LAIS - Technological Innovation in Health Laboratory",
+            "location":"Natal Area, Brazil",
+            "title":"Project Manager @ Telehealth Project",
+            "period":"Feb 2023 - Present",
+            "duration":"1 yr 6 mos (Contract)",
+            "responsibilities":[
+                "Defining project scope, goals, and deliverables",
+                "Developing detailed project plans and timelines",
+                "Monitoring project progress and making adjustments",
+                "Resolving conflicts and removing obstacles",
+                "Planning and organizing sprint cycles",
+                "Ensuring stakeholder expectations are met"
+            ]
+        },
+        {
+            "company":"LAIS - Technological Innovation in Health Laboratory",
+            "location":"Natal Area, Brazil",
+            "title":"Senior Software Developer @ Hermes Project",
+            "period":"Feb 2018 - Feb 2023",
+            "duration":"5 yr 1 mo",
+            "responsibilities":[
+                "Developed a software ecosystem for collecting, cleaning, and processing data using NLP and Machine Learning algorithms",
+                "Identified, researched, and evaluated innovative machine learning technologies",
+                "Used statistical software to analyze large data sets",
+                "Collected unstructured online news data",
+                "Cleaned and manipulated raw data",
+                "Created graphs and charts detailing data analysis results",
+                "Used Scrapy Python Library for data extraction",
+                "Configured deployment process via GitLab"
+            ]
+        },
+        {
+            "company":"LAIS - Technological Innovation in Health Laboratory",
+            "location":"Natal Area, Brazil",
+            "title":"Software Developer @ Simaies Project",
+            "period":"Feb 2015 - Feb 2018",
+            "duration":"3 yr 1 mo",
+            "responsibilities":[
+                "Developed scalable web applications using the Django framework",
+                "Implemented RESTful APIs",
+                "Designed and maintained PostgreSQL databases",
+                "Developed and implemented software architecture and design patterns",
+                "Wrote unit tests and performed integration testing",
+                "Prepared technical documentation",
+                "Participated in agile development processes",
+                "Communicated with non-technical stakeholders",
+                "Stayed updated with industry trends",
+                "Mentored junior developers"
+            ]
+        },
+        {
+            "company":"Doctoral Student, Athabasca University",
+            "location":"Canada",
+            "title":"Researcher",
+            "period":"Sep 2019 - Dec 2020",
+            "duration":"1 yr 4 mos",
+            "responsibilities":[
+                "Participated in meetings and presentations",
+                "Built software in Python for data analysis",
+                "Identified and evaluated machine learning technologies",
+                "Conducted qualitative and quantitative analysis",
+                "Created graphs, spreadsheets, and presentation slides"
+            ]
+        },
+        {
+            "company":"Court of Justice of Rio Grande do Norte (TJRN)",
+            "location":"Natal Area, Brazil",
+            "title":"Software Developer / Software Architect",
+            "period":"Sep 2010 - Apr 2014",
+            "duration":"3 yr 8 mos",
+            "responsibilities":[
+                "Built software architecture using Java components",
+                "Developed object-oriented web applications",
+                "Mentored interns and junior developers",
+                "Participated in code review meetings",
+                "Documented technical specifications and project testing methods"
+            ]
+        },
+        {
+            "company":"Memes Educational Technology",
+            "location":"São Paulo Area, Brazil",
+            "title":"Software Developer / Software Architect",
+            "period":"Jan 2008 - Aug 2010",
+            "duration":"2 yr 8 mos",
+            "responsibilities":[
+                "Developed and maintained a communication portal for distance learning",
+                "Developed object-oriented web applications",
+                "Researched alternative solutions",
+                "Modified existing software systems",
+                "Conducted full lifecycle software development",
+                "Consumed and implemented REST APIs for payment integration"
+            ]
+        }
+    ],
+    "education":[
+        {
+            "degree":"Doctor’s Degree, Computer Science",
+            "institution":"Federal University of Rio Grande do Norte",
+            "location":"Natal Area, Brazil",
+            "period":"2019 - 2022"
+        },
+        {
+            "degree":"Master’s Degree, Computer Software Engineering",
+            "institution":"Federal University of Rio Grande do Norte",
+            "location":"Natal Area, Brazil",
+            "period":"2014 - 2016"
+        },
+        {
+            "degree":"Specialization, Computer Systems Analysis",
+            "institution":"Potiguar University",
+            "location":"Natal Area, Brazil",
+            "period":"2006 - 2007"
+        },
+        {
+            "degree":"Bachelor’s Degree, Computer Systems Analysis",
+            "institution":"Potiguar University",
+            "location":"Natal Area, Brazil",
+            "period":"2001 - 2004"
+        }
+    ],
+    "languages":[
+        {
+            "English":"Professional working proficiency"
+        },
+        {
+            "Spanish":"Limited working proficiency"
+        },
+        {
+            "Portuguese":"Native or bilingual proficiency"
+        }
+    ],
+    "soft_skills":[
+        {
+            "skill":"Collaboration",
+            "description":"As a Senior Software Developer and Project Manager, I have consistently worked within diverse teams, fostering a collaborative environment to achieve project goals. My ability to collaborate effectively has been instrumental in delivering complex projects, such as the Unified Public Administration System (SUAP) and the Telehealth Project, where teamwork and mutual support were crucial to success."
+        },
+        {
+            "skill":"Communication (Transparency)",
+            "description":"Throughout my career, I have prioritized clear and transparent communication with both technical and non-technical stakeholders. This skill has been essential in roles such as managing the Telehealth Project, where ensuring that all parties are well-informed and aligned has led to more efficient project execution and stakeholder satisfaction."
+        },
+        {
+            "skill":"Emotional Intelligence (Empathy)",
+            "description":"My roles have required a high degree of emotional intelligence, particularly empathy, to understand and address the needs and concerns of team members and stakeholders. This has been evident in my work at LAIS, where empathetic leadership has fostered a positive work environment and enhanced team productivity."
+        },
+        {
+            "skill":"Organization",
+            "description":"My organizational skills have been a cornerstone of my professional success, enabling me to manage multiple projects and responsibilities effectively. From developing detailed project plans to overseeing the full software development lifecycle, my ability to stay organized has ensured the timely and successful delivery of projects."
+        }
+    ],
+    "cover_letter":"With over a decade of experience in software development, particularly in Python, Django, and relational databases, I am excited about the opportunity to contribute to your team and help drive innovative solutions. Throughout my career, I have developed a strong proficiency in building scalable and robust web applications. At the Federal Institute of Education, Science and Technology of Rio Grande do Norte, I have been leading the development and maintenance of the Unified Public Administration System (SUAP) for the past ten years. This ERP system, which is crucial for managing the administrative processes of Federal Institutes in Brazil, has given me extensive experience in Python programming and Django framework. My role involves the full lifecycle of software development, from planning and coding to deployment and maintenance. In addition to my work on SUAP, I have successfully managed and developed several other significant projects. As a Project Manager at LAIS, I have been coordinating the Telehealth Project, ensuring that stakeholder expectations are met through meticulous project planning and execution. My previous role as a Software Developer at the Technological Innovation in Health Laboratory allowed me to develop a software ecosystem for data processing using Natural Language Processing and Machine Learning, highlighting my ability to handle complex data and derive actionable insights. My experience also extends to backend development and database management. I have designed and maintained PostgreSQL databases, ensuring data integrity and performance optimization. My role at the Court of Justice of Rio Grande do Norte and Memes Educational Technology required me to develop object-oriented web applications and implement RESTful APIs, demonstrating my ability to create seamless integrations between various system components. Moreover, I am committed to continuous learning and staying updated with the latest industry trends. My involvement in agile development processes and mentorship of junior developers further underscores my dedication to fostering a collaborative and innovative work environment. I am confident that my technical skills, coupled with my proven track record of managing and developing successful software projects, make me a strong candidate for the [Job Title] position. I am excited about the possibility of bringing my expertise to [Company's Name] and contributing to the advancement of your technological solutions."
+}

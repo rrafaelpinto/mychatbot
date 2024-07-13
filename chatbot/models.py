@@ -21,3 +21,22 @@ class Candidate(models.Model):
     class Meta:
         verbose_name = 'Candidate'
         verbose_name_plural = 'Candidates'
+
+
+class ExternalUser(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Name')
+    email = models.EmailField(verbose_name='Email')
+
+    def __str__(self):
+        return self.name
+
+
+class Interaction(models.Model):
+    external_user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE, related_name='interactions', verbose_name='User')
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='interactions', verbose_name='Candidate')
+    question = models.TextField(verbose_name='Question')
+    response = models.TextField(verbose_name='Response')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Timestamp')
+
+    def __str__(self):
+        return f'Interaction by {self.external_user.name} with {self.candidate.name} on {self.timestamp.strftime("%d/%m/%Y %H:%M:%S")}'

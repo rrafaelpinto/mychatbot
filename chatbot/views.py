@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from .models import Candidate
+from .models import Candidate, ExternalUser, Interaction
 from langchain_openai import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -17,7 +17,7 @@ def initialize_chatbot():
     Use the information available in the resume to provide detailed and relevant answers.
     
     First, identify the language of the user's question.
-    Then, answer all subsequent questions in the same language.
+    Then, answer the question in the same language.
 
     Resume:
     {curriculum}
@@ -41,6 +41,20 @@ def initialize_chatbot():
 chatbot = initialize_chatbot()
 
 
+def get_or_create_external_user(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        user = ExternalUser.objects.create(name=name, email=email)
+    else:
+        user = ExternalUser.objects.get(id=user_id)
+
+    request.session['user_id'] = user.id
+    request.session['user_name'] = user.name
+    return user
+
+
 def candidate_list_view(request):
     candidates = Candidate.objects.all()
     return render(request, 'candidate_list.html', {'candidates': candidates})
@@ -48,8 +62,10 @@ def candidate_list_view(request):
 def chatbot_view(request, slug):
     candidate = get_object_or_404(Candidate, slug=slug)
     curriculum_text = candidate.resume
-
+    user_name = request.session.get('user_name')
     if request.method == 'POST':
+        user = get_or_create_external_user(request)
+        user_name = user.name
         question = request.POST.get('question')
         if question:
             text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
@@ -57,6 +73,15 @@ def chatbot_view(request, slug):
             response = ''
             for chunk in chunks:
                 response += chatbot.run({'curriculum': chunk, 'question': question})
-            return JsonResponse({'response': response})
 
-    return render(request, 'chatbot.html', {'candidate': candidate})
+            # Salvar a interação no banco de dados
+            interaction = Interaction.objects.create(external_user=user, candidate=candidate, question=question, response=response)
+            timestamp = interaction.timestamp.strftime('%d/%m/%Y %H:%M:%S')
+            return JsonResponse({
+                'response': response,
+                'user': user.name,
+                'candidate': candidate.name,
+                'timestamp': timestamp
+            })
+
+    return render(request, 'chatbot.html', {'candidate': candidate, 'user_name': user_name})
