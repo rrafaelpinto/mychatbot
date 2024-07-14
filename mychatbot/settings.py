@@ -29,21 +29,40 @@ DEBUG = True
 
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['192.168.1.110', 'localhost', '127.0.0.1']
-ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '161.35.114.168',
+    'agilize.info',
+    'www.agilize.info',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
+
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django_registration',
+    'crispy_forms',
+    'crispy_bootstrap4',
+
     'chatbot',
+
+    'django.contrib.admin',
+    'django.contrib.auth',
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+ACCOUNT_ACTIVATION_DAYS = 3 # 3 days activation window -> django_registration
+LOGIN_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -127,3 +146,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SITE_ID = 1
+SITE_NAME = 'ResumeBot'
+PROTOCOL = 'http'
+DOMAIN = 'resumebot.info'
+BASE_URL = f"{PROTOCOL}://{DOMAIN}"
+DEFAULT_CHARSET = 'utf-8'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtpout.secureserver.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Agilize <contato@agilize.info>'
+#SERVER_EMAIL = 'contato@agilize.info'
+EMAIL_HOST_USER = 'contato@agilize.info'
+EMAIL_HOST_PASSWORD = 'V5Ag&QE,ux.zi&h'
+
+try:
+    from .local_settings import *
+except ImportError as e:
+    pass

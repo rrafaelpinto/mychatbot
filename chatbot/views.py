@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import Candidate, ExternalUser, Interaction
@@ -15,9 +16,6 @@ def initialize_chatbot():
     If you do not know how to answer a question, ask the interviewer to contact the interviewee directly.
     You have access to the interviewee's resume and the interviewer's question.
     Use the information available in the resume to provide detailed and relevant answers.
-    
-    First, identify the language of the user's question.
-    Then, answer the question in the same language.
 
     Resume:
     {curriculum}
@@ -25,7 +23,7 @@ def initialize_chatbot():
     Question:
     {question}
 
-    Answer in the detected language:
+    Answer:
     """
 
     prompt = PromptTemplate(
@@ -58,11 +56,13 @@ def get_or_create_external_user(request):
     request.session['user_name'] = user.name
     return user
 
-
+@login_required
 def candidates(request):
     candidates = Candidate.objects.all()
     return render(request, 'candidates.html', {'candidates': candidates})
 
+
+@login_required
 def chat(request, slug):
     candidate = get_object_or_404(Candidate, slug=slug)
     curriculum_text = candidate.resume

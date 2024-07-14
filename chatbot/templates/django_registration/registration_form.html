@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}- Register{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 order-md-1">
+            <h4 class="mb-12">Register for an account</h4>
+            <div class="alert alert-secondary" role="alert">
+
+                Registering in the system is necessary to prevent potential attacks from malicious bots or users. This helps ensure a secure and reliable experience for all users.
+            </div>
+            <form class="underline-form" action="" method="post">
+                {% csrf_token %}
+                {{ form | crispy}}
+                <div class="form-group">
+                    <input type="submit" name="submit" value="Register" class="btn btn-primary" id="submit-id-submit" />
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

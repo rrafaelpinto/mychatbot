@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 order-md-1">
+            <h4 class="mb-12">Login</h4>
+            <form class="underline-form" method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+            </form>
+            <p class="text-center">Don't have an account? <a href="{% url 'django_registration_register' %}">Register</a>.</p>
+            <p class="text-center"><a href="{% url 'password_reset' %}">I forgot my password</a>.</p>
+        </div>
+    </div>
+{% endblock %}
