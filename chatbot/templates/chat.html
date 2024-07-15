@@ -18,33 +18,17 @@
         </div>
     </div>
 
-    {% if not request.session.user_id %}
-        <form id="user-form" class="mb-4">
-            <div class="form-group">
-                <p>Welcome to ResumeBot! I am designed to answer questions about the candidate's resume. To better assist you, I kindly ask that you identify yourself by providing your name and email below. This information is important for recording your interactions and providing a more personalized service. Thank you for your understanding!</p>
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    {% else %}
-
-        <div id="chat-box" class="chat-box">
-            <!-- Chat messages will be appended here -->
+    <div id="chat-box" class="chat-box">
+        <!-- Chat messages will be appended here -->
+    </div>
+    <p>Welcome, {{ request.user.username }}! Feel free to ask any questions about my resume.</p>
+    <form id="chat-form" class="mb-4">
+        <div class="form-group">
+            <label for="question">Question:</label>
+            <input type="text" id="question" name="question" class="form-control" required>
         </div>
-        <p>{% if user_name %}Welcome, {{ user_name }}!{% endif %} Feel free to ask any questions about my resume.</p>
-        <form id="chat-form" class="mb-4">
-            <div class="form-group">
-                <label for="question">Question:</label>
-                <input type="text" id="question" name="question" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Send</button>
-        </form>
-    {% endif %}
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
 
 {% endblock %}
 
@@ -56,23 +40,6 @@
     }
 
     $(document).ready(function() {
-        $('#user-form').on('submit', function(event) {
-            event.preventDefault();
-            let name = $('#name').val();
-            let email = $('#email').val();
-            $.ajax({
-                url: "{% url 'chat' candidate.slug %}",
-                method: 'POST',
-                data: {
-                    name: name,
-                    email: email,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    location.reload(); // Reload the page to show the chat form
-                }
-            });
-        });
 
         $('#chat-form').on('submit', function(event) {
             event.preventDefault();

@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from .models import Candidate, ExternalUser, Interaction
-from langchain_openai import OpenAI
-from langchain.prompts import PromptTemplate
+from django.shortcuts import render, get_object_or_404
 from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
+from langchain_openai import OpenAI
+
+from .models import Candidate, Interaction
+
 
 # Initialize chatbot once and reuse it
 def initialize_chatbot():
@@ -43,19 +45,6 @@ chatbot = initialize_chatbot()
 def about(request):
     return render(request, 'about.html')
 
-def get_or_create_external_user(request):
-    user_id = request.session.get('user_id')
-    if not user_id:
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        user = ExternalUser.objects.create(name=name, email=email)
-    else:
-        user = ExternalUser.objects.get(id=user_id)
-
-    request.session['user_id'] = user.id
-    request.session['user_name'] = user.name
-    return user
-
 @login_required
 def candidates(request):
     candidates = Candidate.objects.all()
@@ -66,8 +55,8 @@ def candidates(request):
 def chat(request, slug):
     candidate = get_object_or_404(Candidate, slug=slug)
     curriculum_text = candidate.resume
+    user = request.user
     if request.method == 'POST':
-        user = get_or_create_external_user(request)
         question = request.POST.get('question')
         if question:
             text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
@@ -77,13 +66,12 @@ def chat(request, slug):
                 response += chatbot.run({'curriculum': chunk, 'question': question})
 
             # Salvar a interação no banco de dados
-            interaction = Interaction.objects.create(external_user=user, candidate=candidate, question=question, response=response)
+            interaction = Interaction.objects.create(user=user, candidate=candidate, question=question, response=response)
             timestamp = interaction.timestamp.strftime('%d/%m/%Y %H:%M:%S')
             return JsonResponse({
                 'response': response,
-                'user': user.name,
+                'user': user.username,
                 'candidate': candidate.name,
                 'timestamp': timestamp
             })
-    user_name = request.session.get('user_name')
-    return render(request, 'chat.html', {'candidate': candidate, 'user_name': user_name})
+    return render(request, 'chat.html', {'candidate': candidate, 'user_name': user.username})

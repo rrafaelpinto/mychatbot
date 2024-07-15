@@ -62,8 +62,8 @@ INSTALLED_APPS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 ACCOUNT_ACTIVATION_DAYS = 3 # 3 days activation window -> django_registration
-LOGIN_REDIRECT_URL = '/'
-
+LOGIN_REDIRECT_URL = 'about'
+LOGOUT_REDIRECT_URL = 'about'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

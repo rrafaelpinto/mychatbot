@@ -11,7 +11,7 @@ class CandidateAdmin(admin.ModelAdmin):
 
 @admin.register(Interaction)
 class InteractionAdmin(admin.ModelAdmin):
-    list_display = ('external_user', 'candidate', 'question', 'timestamp')
-    list_filter = ('external_user', 'candidate')
+    list_display = ('user', 'candidate', 'question', 'timestamp')
+    list_filter = ('user', 'candidate')
     search_fields = ('question',)
 

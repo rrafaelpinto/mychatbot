@@ -18,16 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django_registration.backends.activation.views import RegistrationView
-
-from chatbot.forms import UserForm
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Django-Registration
     path('accounts/', include('django_registration.backends.activation.urls')),
-    path('accounts/register/', RegistrationView.as_view(form_class=UserForm), name='django_registration_register'),
+    # path('accounts/register/', RegistrationView.as_view(form_class=UserForm), name='django_registration_register'),
     path('accounts/', include('django.contrib.auth.urls')),
 
     path('', include('chatbot.urls')),

@@ -27,12 +27,15 @@
 
 <body>
 <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top">
-    <a class="navbar-brand" href="/rafael-pinto/">ResumeBot</a>
+    <a class="navbar-brand" href="/chat/rafael-pinto/">ResumeBot</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'about' %}">About</a>
+            </li>
             {% if not user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'django_registration_register' %}">Register</a>
@@ -50,20 +53,32 @@
                     <a class="nav-link" href="{% url 'password_change' %}">Reset my password</a>
                 </li>
                 <li class="nav-item">
-                    <form id="logout-form" method="post" action="{% url 'admin:logout' %}" style="display:none;">
+                    <form id="logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
                         {% csrf_token %}
                     </form>
                     <a class="nav-link" href="#" onclick="document.getElementById('logout-form').submit();">Log out</a>
                 </li>
             {% endif %}
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
+
         </ul>
     </div>
 </nav>
 
 <div class="container">
+    {% if messages %}
+        <div class="row justify-content-center">
+            <div class="col-md-6 order-md-1">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
     {% block content %}{% endblock %}
 </div>
 
