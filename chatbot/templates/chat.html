@@ -19,6 +19,15 @@
     </div>
 
     <div id="chat-box" class="chat-box">
+        {% for interaction in interactions %}
+            <div class="chat-message user">
+                <p><strong>You:</strong> {{ interaction.question }}</p>
+            </div>
+            <div class="chat-message bot">
+                <p><strong>{{ candidate.name }}:</strong> {{ interaction.response }}</p>
+            </div>
+        {% endfor %}
+
         <!-- Chat messages will be appended here -->
     </div>
     <p>Welcome, {{ request.user.username }}! Feel free to ask any questions about my resume.</p>
@@ -33,41 +42,41 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function scrollToBottom() {
-        let chatBox = document.getElementById('chat-box');
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    <script>
+        function scrollToBottom() {
+            let chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-    $(document).ready(function() {
+        $(document).ready(function() {
 
-        $('#chat-form').on('submit', function(event) {
-            event.preventDefault();
-            let question = $('#question').val();
-            if (question.trim() === "") {
-                return;
-            }
-
-            // Append user question to chat box
-            $('#chat-box').append('<div class="chat-message user"><p><strong>You:</strong> ' + question + '</p></div>').show();
-            scrollToBottom();
-
-            $.ajax({
-                url: "{% url 'chat' candidate.slug %}",
-                method: 'POST',
-                data: {
-                    question: question,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    // Append bot response to chat box
-                    $('#chat-box').append('<div class="chat-message bot"><p><strong>{{ candidate.name }}:</strong> ' + response.response + '</p>');
-                    $('#question').val('');
-                    // Scroll to the bottom of the chat box
-                    scrollToBottom();
+            $('#chat-form').on('submit', function(event) {
+                event.preventDefault();
+                let question = $('#question').val();
+                if (question.trim() === "") {
+                    return;
                 }
+
+                // Append user question to chat box
+                $('#chat-box').append('<div class="chat-message user"><p><strong>You:</strong> ' + question + '</p></div>').show();
+                scrollToBottom();
+
+                $.ajax({
+                    url: "{% url 'chat' candidate.slug %}",
+                    method: 'POST',
+                    data: {
+                        question: question,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        // Append bot response to chat box
+                        $('#chat-box').append('<div class="chat-message bot"><p><strong>{{ candidate.name }}:</strong> ' + response.response + '</p>');
+                        $('#question').val('');
+                        // Scroll to the bottom of the chat box
+                        scrollToBottom();
+                    }
+                });
             });
         });
-    });
-</script>
+    </script>
 {% endblock %}
