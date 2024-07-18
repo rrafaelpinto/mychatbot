@@ -27,17 +27,8 @@ SECRET_KEY = 'django-insecure-wj$l1!simm8#m)tus)^q9a(xzfti=l5=6jowhyc9qz17-@0a02
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = ['192.168.1.110', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = [
-    '161.35.114.168',
-    'agilize.info',
-    'www.agilize.info',
-    'localhost',
-    '127.0.0.1',
-]
-
 
 
 # Application definition
@@ -59,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
 ]
+
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -104,6 +96,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'resumebot',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 

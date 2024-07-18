@@ -1,10 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from langchain_text_splitters import CharacterTextSplitter
 
-from .core import resumebot
+from utils import process_resume
+from .prompts import resumebot
 from .forms import CandidateRegistrationForm
 from .models import Candidate, Interaction
 
@@ -19,18 +22,40 @@ def profile(request):
 
 
 @login_required
-def register_candidate(request):
+def manager_candidate(request):
+    try:
+        candidate = Candidate.objects.get(user=request.user)
+        title = 'Edit profile'
+    except Candidate.DoesNotExist:
+        candidate = None
+        title = 'Register as candidate'
     if request.method == 'POST':
-        form = CandidateRegistrationForm(request.POST, request.FILES)
+        form = CandidateRegistrationForm(request.POST or None, request.FILES, instance=candidate)
         if form.is_valid():
-            user = request.user
-            candidate = form.save(commit=False)
-            candidate.user = user
-            candidate.save()
-            return redirect('profile')
+            try:
+                candidate = form.save(commit=False)
+                candidate.user = request.user
+
+                # Process the uploaded resume file
+                resume_file = request.FILES.get('resume_file')
+                if resume_file:
+                    fs = FileSystemStorage()
+                    filename = fs.save(resume_file.name, resume_file)
+                    uploaded_file_path = fs.path(filename)
+
+                    # Extract text from the resume file
+                    candidate.resume = process_resume(uploaded_file_path)
+
+                candidate.save()
+                messages.success(request, 'Profile updated successfully.')
+                return redirect('profile')
+            except Exception as e:
+                messages.error(request, f'An error occurred: {str(e)}', extra_tags='danger')
+        else:
+            messages.error(request, 'Please correct the error below.', extra_tags='danger')
     else:
-        form = CandidateRegistrationForm()
-    return render(request, 'register_candidate.html', {'form': form})
+        form = CandidateRegistrationForm(request.GET or None, instance=candidate)
+    return render(request, 'manager_candidate.html', {'form': form, 'title': title})
 
 
 @login_required
@@ -52,7 +77,7 @@ def chat(request, slug):
             chunks = text_splitter.split_text(candidate.resume)
             response = ''
             for chunk in chunks:
-                response += resumebot.run({'curriculum': chunk, 'question': question})
+                response += resumebot.run({'resume': chunk, 'question': question})
 
             interaction = Interaction.objects.create(user=user, candidate=candidate, question=question, response=response)
             timestamp = interaction.timestamp.strftime('%d/%m/%Y %H:%M:%S')

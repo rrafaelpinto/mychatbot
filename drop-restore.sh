@@ -18,7 +18,13 @@ python manage.py makemigrations
 echo "Executando as migrações"
 python manage.py migrate
 
+echo "Criando superusuário admin"
+export DJANGO_SUPERUSER_USERNAME=admin
+export DJANGO_SUPERUSER_EMAIL=admin@example.com
+export DJANGO_SUPERUSER_PASSWORD=admin
+python manage.py createsuperuser --noinput
+
 echo "Carregando dados iniciais"
-#python manage.py load_data
+python manage.py loaddata initial_data.json
 
 echo "Projeto resetado com sucesso."

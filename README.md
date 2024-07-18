@@ -64,6 +64,14 @@ To set up ResumeBot locally, follow these steps:
 7. **Access the application:**
    Open your web browser and navigate to `http://localhost:8000`.
 
+8. **Add/Show/Remove crontab:**
+   ```sh
+    python manage.py crontab add
+    python manage.py crontab show
+    python manage.py crontab remove
+
+   ```
+
 ## Usage
 
 1. **User Identification:**

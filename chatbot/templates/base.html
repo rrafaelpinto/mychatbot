@@ -57,9 +57,8 @@
                         {% if user.candidate %}
                             <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
                         {% else %}
-                            <a class="dropdown-item" href="{% url 'register_candidate' %}">Register as Candidate</a>
+                            <a class="dropdown-item" href="{% url 'manager_candidate' %}">Register as Candidate</a>
                         {% endif %}
-                        <a class="dropdown-item" href="{% url 'password_change' %}">Reset my password</a>
                         <div class="dropdown-divider"></div>
                         <form id="logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
                             {% csrf_token %}
