@@ -28,4 +28,9 @@ def process_resume(uploaded_file_path):
     else:
         resume_text = ""
     print(resume_text)
+
+    # Remove the uploaded file after processing
+    if os.path.exists(uploaded_file_path):
+        os.remove(uploaded_file_path)
+
     return resume_text
