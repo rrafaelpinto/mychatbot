@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
 
     'chatbot',
+    # 'chatbot.apps.ChatbotConfig',
 
     'django.contrib.admin',
     'django.contrib.auth',

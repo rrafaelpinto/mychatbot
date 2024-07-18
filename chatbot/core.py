@@ -2,7 +2,7 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 
-def initialize_chatbot():
+def initialize_resumebot():
     prompt_template = """
     You are a chatbot that will answer questions in the first person, as if you were responding to an interviewer or recruiter.
     Your answers should always be honest, clear, and objective.
@@ -27,8 +27,7 @@ def initialize_chatbot():
 
     llm = OpenAI()
     chain = LLMChain(llm=llm, prompt=prompt)
-    print('######### Inicializou')
     return chain
 
 # Global variable to hold the initialized chatbot
-chatbot = initialize_chatbot()
+resumebot = initialize_resumebot()

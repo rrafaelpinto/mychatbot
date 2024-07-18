@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}- Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 order-md-1">
+        <h4 class="mb-3">Candidate Profile</h4>
+        <div class="candidate-info">
+            {% if candidate.image %}
+                <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
+            {% endif %}
+            <div>
+                <h1 class="my-4">{{ candidate.name }}</h1>
+                <p>Email: {{ candidate.email }}</p>
+                {% if candidate.phone %}
+                    <p>Phone: {{ candidate.phone }}</p>
+                {% endif %}
+                {% if candidate.linkedin %}
+                    <p>LinkedIn: <a href="{{ candidate.linkedin }}">{{ candidate.linkedin }}</a></p>
+                {% endif %}
+                {% comment %}
+                    <h4 class="my-4">Resume</h4>
+                    <pre>{{ candidate.resume }}</pre>
+                {% endcomment %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

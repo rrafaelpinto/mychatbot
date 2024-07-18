@@ -1,28 +1,486 @@
 [
 {
-    "model": "chatbot.candidate",
+    "model": "contenttypes.contenttype",
     "pk": 1,
     "fields": {
-        "name": "Rafael Pinto",
-        "email": "rrafaelpinto@gmail.com",
-        "phone": null,
-        "linkedin": "https://www.linkedin.com/in/rafaelmpinto/",
-        "resume": "{\r\n  \"personal_info\": {\r\n    \"name\": \"Rafael Pinto\",\r\n    \"title\": \"Senior Software Developer\",\r\n    \"phone\": \"+55 84 994337518\",\r\n    \"email\": \"rrafaelpinto@gmail.com\",\r\n    \"linkedin\": \"https://www.linkedin.com/in/rafaelmpinto/\"\r\n  },\r\n  \"about\": {\r\n    \"education\": [\r\n      \"PhD in Computer Science (2022)\",\r\n      \"Master's degree in Computer Science (2016)\",\r\n      \"Specialist in Technology and Software Development for Web (2007)\",\r\n      \"Bachelor in Systems Information (2004)\"\r\n    ],\r\n    \"experience\": \"20 years of experience in design and development of web applications, mainly working with Python, MS SQL Server, and PostgreSQL\",\r\n    \"current_position\": \"Since 2014 working at Federal Institute of Science and Technology as Python Developer\",\r\n    \"phd_research\": \"Developed a software ecosystem for collecting, cleaning, and processing data using Natural Language Processing and Machine Learning algorithms to analyze the effects of a public health intervention over time. Findings were plotted in graphs using Matplotlib and Plotly for stakeholder discussions.\"\r\n  },\r\n  \"skills\": {\r\n    \"programming_languages\": [\"Python\", \"Django\", \"HTML\", \"Json\", \"CSS\", \"MS SQL Server\", \"PostgreSQL\"],\r\n    \"frameworks\": [\"Django REST\", \"Scrapy\", \"Machine Learning\", \"Natural Language Processing (NLP)\", \"Pandas\"],\r\n    \"tools\": [\"GitLab (CI/CD)\", \"Agile Methodologies (Scrum)\", \"Full Software Development Lifecycle (SDLC)\"],\r\n    \"project_management\": [\"Project Planning and Coordination\"]\r\n  },\r\n  \"experience\": [\r\n    {\r\n      \"company\": \"Federal Institute of Education, Science and Technology of Rio Grande do Norte\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"title\": \"Senior Software Developer\",\r\n      \"period\": \"Apr 2014 - Present\",\r\n      \"duration\": \"10 yrs 4 mos\",\r\n      \"responsibilities\": [\r\n        \"Developing and maintaining an ERP called Unified Public Administration System (SUAP)\",\r\n        \"Utilizing unit testing and behave tests to enhance quality\",\r\n        \"Defining database design specifications\",\r\n        \"Delivering code to meet functional or technical specifications\",\r\n        \"Conducting full lifecycle software development\",\r\n        \"Working with server-side (Django) and Resftull APIs\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"Thalocan Research Innovations\",\r\n      \"location\": \"Remote\",\r\n      \"title\": \"Project Manager\",\r\n      \"period\": \"Jan 2024 - Present\",\r\n      \"duration\": \"7 mos (Contract)\",\r\n      \"responsibilities\": [\r\n        \"Collaborating with stakeholders to define project scope, goals, and deliverables\",\r\n        \"Creating detailed project plans and establishing timelines\",\r\n        \"Overseeing project progress and adjusting strategies as needed\",\r\n        \"Mediating conflicts and eliminating barriers to team progress\",\r\n        \"Coordinating sprint cycles and maintaining project documentation\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"LAIS - Technological Innovation in Health Laboratory\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"title\": \"Project Manager @ Telehealth Project\",\r\n      \"period\": \"Feb 2023 - Present\",\r\n      \"duration\": \"1 yr 6 mos (Contract)\",\r\n      \"responsibilities\": [\r\n        \"Defining project scope, goals, and deliverables\",\r\n        \"Developing detailed project plans and timelines\",\r\n        \"Monitoring project progress and making adjustments\",\r\n        \"Resolving conflicts and removing obstacles\",\r\n        \"Planning and organizing sprint cycles\",\r\n        \"Ensuring stakeholder expectations are met\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"LAIS - Technological Innovation in Health Laboratory\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"title\": \"Senior Software Developer @ Hermes Project\",\r\n      \"period\": \"Feb 2018 - Feb 2023\",\r\n      \"duration\": \"5 yr 1 mo\",\r\n      \"responsibilities\": [\r\n        \"Developed a software ecosystem for collecting, cleaning, and processing data using NLP and Machine Learning algorithms\",\r\n        \"Identified, researched, and evaluated innovative machine learning technologies\",\r\n        \"Used statistical software to analyze large data sets\",\r\n        \"Collected unstructured online news data\",\r\n        \"Cleaned and manipulated raw data\",\r\n        \"Created graphs and charts detailing data analysis results\",\r\n        \"Used Scrapy Python Library for data extraction\",\r\n        \"Configured deployment process via GitLab\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"LAIS - Technological Innovation in Health Laboratory\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"title\": \"Software Developer @ Simaies Project\",\r\n      \"period\": \"Feb 2015 - Feb 2018\",\r\n      \"duration\": \"3 yr 1 mo\",\r\n      \"responsibilities\": [\r\n        \"Developed scalable web applications using the Django framework\",\r\n        \"Implemented RESTful APIs\",\r\n        \"Designed and maintained PostgreSQL databases\",\r\n        \"Developed and implemented software architecture and design patterns\",\r\n        \"Wrote unit tests and performed integration testing\",\r\n        \"Prepared technical documentation\",\r\n        \"Participated in agile development processes\",\r\n        \"Communicated with non-technical stakeholders\",\r\n        \"Stayed updated with industry trends\",\r\n        \"Mentored junior developers\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"Doctoral Student, Athabasca University\",\r\n      \"location\": \"Canada\",\r\n      \"title\": \"Researcher\",\r\n      \"period\": \"Sep 2019 - Dec 2020\",\r\n      \"duration\": \"1 yr 4 mos\",\r\n      \"responsibilities\": [\r\n        \"Participated in meetings and presentations\",\r\n        \"Built software in Python for data analysis\",\r\n        \"Identified and evaluated machine learning technologies\",\r\n        \"Conducted qualitative and quantitative analysis\",\r\n        \"Created graphs, spreadsheets, and presentation slides\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"Court of Justice of Rio Grande do Norte (TJRN)\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"title\": \"Software Developer / Software Architect\",\r\n      \"period\": \"Sep 2010 - Apr 2014\",\r\n      \"duration\": \"3 yr 8 mos\",\r\n      \"responsibilities\": [\r\n        \"Built software architecture using Java components\",\r\n        \"Developed object-oriented web applications\",\r\n        \"Mentored interns and junior developers\",\r\n        \"Participated in code review meetings\",\r\n        \"Documented technical specifications and project testing methods\"\r\n      ]\r\n    },\r\n    {\r\n      \"company\": \"Memes Educational Technology\",\r\n      \"location\": \"São Paulo Area, Brazil\",\r\n      \"title\": \"Software Developer / Software Architect\",\r\n      \"period\": \"Jan 2008 - Aug 2010\",\r\n      \"duration\": \"2 yr 8 mos\",\r\n      \"responsibilities\": [\r\n        \"Developed and maintained a communication portal for distance learning\",\r\n        \"Developed object-oriented web applications\",\r\n        \"Researched alternative solutions\",\r\n        \"Modified existing software systems\",\r\n        \"Conducted full lifecycle software development\",\r\n        \"Consumed and implemented REST APIs for payment integration\"\r\n      ]\r\n    }\r\n  ],\r\n  \"education\": [\r\n    {\r\n      \"degree\": \"Doctor’s Degree, Computer Science\",\r\n      \"institution\": \"Federal University of Rio Grande do Norte\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"period\": \"2019 - 2022\"\r\n    },\r\n    {\r\n      \"degree\": \"Master’s Degree, Computer Software Engineering\",\r\n      \"institution\": \"Federal University of Rio Grande do Norte\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"period\": \"2014 - 2016\"\r\n    },\r\n    {\r\n      \"degree\": \"Specialization, Computer Systems Analysis\",\r\n      \"institution\": \"Potiguar University\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"period\": \"2006 - 2007\"\r\n    },\r\n    {\r\n      \"degree\": \"Bachelor’s Degree, Computer Systems Analysis\",\r\n      \"institution\": \"Potiguar University\",\r\n      \"location\": \"Natal Area, Brazil\",\r\n      \"period\": \"2001 - 2004\"\r\n    }\r\n  ],\r\n  \"cover_letter\": \"With over a decade of experience in software development, particularly in Python, Django, and relational databases, I am excited about the opportunity to contribute to your team and help drive innovative solutions. Throughout my career, I have developed a strong proficiency in building scalable and robust web applications. At the Federal Institute of Education, Science and Technology of Rio Grande do Norte, I have been leading the development and maintenance of the Unified Public Administration System (SUAP) for the past ten years. This ERP system, which is crucial for managing the administrative processes of Federal Institutes in Brazil, has given me extensive experience in Python programming and Django framework. My role involves the full lifecycle of software development, from planning and coding to deployment and maintenance. In addition to my work on SUAP, I have successfully managed and developed several other significant projects. As a Project Manager at LAIS, I have been coordinating the Telehealth Project, ensuring that stakeholder expectations are met through meticulous project planning and execution. My previous role as a Software Developer at the Technological Innovation in Health Laboratory allowed me to develop a software ecosystem for data processing using Natural Language Processing and Machine Learning, highlighting my ability to handle complex data and derive actionable insights. My experience also extends to backend development and database management. I have designed and maintained PostgreSQL databases, ensuring data integrity and performance optimization. My role at the Court of Justice of Rio Grande do Norte and Memes Educational Technology required me to develop object-oriented web applications and implement RESTful APIs, demonstrating my ability to create seamless integrations between various system components. Moreover, I am committed to continuous learning and staying updated with the latest industry trends. My involvement in agile development processes and mentorship of junior developers further underscores my dedication to fostering a collaborative and innovative work environment. I am confident that my technical skills, coupled with my proven track record of managing and developing successful software projects, make me a strong candidate for the [Job Title] position. I am excited about the possibility of bringing my expertise to [Company's Name] and contributing to the advancement of your technological solutions.\"\r\n}",
-        "slug": "rafael-pinto",
-        "image": "candidate_images/ProfileRafael_9Wtf2T1.jpg"
+        "app_label": "contenttypes",
+        "model": "contenttype"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 2,
+    "fields": {
+        "app_label": "sessions",
+        "model": "session"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 3,
+    "fields": {
+        "app_label": "chatbot",
+        "model": "candidate"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 4,
+    "fields": {
+        "app_label": "chatbot",
+        "model": "interaction"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 5,
+    "fields": {
+        "app_label": "admin",
+        "model": "logentry"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 6,
+    "fields": {
+        "app_label": "auth",
+        "model": "permission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 7,
+    "fields": {
+        "app_label": "auth",
+        "model": "group"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 8,
+    "fields": {
+        "app_label": "auth",
+        "model": "user"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 9,
+    "fields": {
+        "app_label": "chatbot",
+        "model": "defaultquestion"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "agwf6ceqb4lmp8qido8fh8td5i1yu5jq",
+    "fields": {
+        "session_data": ".eJxVjEEOwiAQRe_C2hBmCoW4dO8ZyMwAUjU0Ke3KeHdt0oVu_3vvv1Skba1x63mJU1JnBer0uzHJI7cdpDu126xlbusysd4VfdCur3PKz8vh_h1U6vVbj4hoAxJ7zEAQpEDxiSk7w95DMgKShoDopDD5EmAwGRgKjVacWPX-AOWNOD0:1sUBTu:qjY5Lln5IzvN-LVtmqoRKgTS3cwVJgYZ-kufcQvWoEU",
+        "expire_date": "2024-07-31T20:42:34.866Z"
     }
 },
 {
     "model": "chatbot.candidate",
     "pk": 2,
     "fields": {
-        "name": "Talita Brito",
-        "email": "talita.katianne@gmail.com",
-        "phone": null,
-        "linkedin": null,
-        "resume": "{\r\n  \"contact\": {\r\n    \"phone\": \"+5584994337542\",\r\n    \"email\": \"talita.katianne@gmail.com\",\r\n    \"linkedin\": \"www.linkedin.com/in/talita-brito\"\r\n  },\r\n  \"top_skills\": [\r\n    \"Teaching\",\r\n    \"Microsoft Office\",\r\n    \"Manuscript Editing\"\r\n  ],\r\n  \"publications\": [\r\n    \"Development of a Cyclic Voltammetry-Based Method for the Detection of Antigens and Antibodies as a Novel Strategy for Syphilis Diagnosis\",\r\n    \"Clinical Protocols and Treatment Guidelines for the Management of Maternal and Congenital Syphilis in Brazil and Portugal: Analysis and Comparisons: A Narrative Review\",\r\n    \"Quantum Biochemistry Screening and In Vitro Evaluation of Leishmania Metalloproteinase Inhibitors\",\r\n    \"Effectiveness of COVID-19 Vaccination on Reduction of Hospitalizations and Deaths in Elderly Patients in Rio Grande do Norte, Brazil\",\r\n    \"Synthesis of Silver Nanoparticle Employing Corn Cob Xylan as a Reducing Agent with Anti-Trypanosoma cruzi Activity\"\r\n  ],\r\n  \"profile\": {\r\n    \"name\": \"Talita Brito, PhD\",\r\n    \"title\": \"Researcher / Pharmacist / Biochemistry\",\r\n    \"location\": \"Rio Grande do Norte, Brazil\",\r\n    \"summary\": \"I completed my Bachelor's degree (BSc) in Pharmacy and Biochemistry in 2007 and my Master's in Biological Sciences in 2011 at the Federal University of São Paulo (UNIFESP), Brazil. I earned my Ph.D. in Health Sciences from the Federal University of Rio Grande do Norte (UFRN), Brazil, in 2019, and I completed a postdoctoral study (2022) from the Health Sciences Research Unit (UICISA-E) in Portugal. During my postdoctoral studies, I conducted comparative analyses of clinical protocols and therapeutic guidelines used in both countries (Brazil and Portugal) in managing syphilis in pregnant women and congenital cases. I also aimed to comparatively examine health systems with a platform developed by the Laboratory of Technological Innovation in Health (LAIS), used to control and manage syphilis cases in Brazil. One of the significant results of my postdoctoral studies is identifying differences and similarities in clinical protocols and therapeutic guidelines used in Brazil and Portugal. This finding could help improve the management of syphilis in pregnant women and congenital cases in both countries. My doctoral research involved the characterization and extraction of a molecule (carbohydrate) from the ear of corn. With this carbohydrate, we synthesized a nanoparticle containing silver, and from this nanoformulation, we conducted tests for assessing the trypanocidal activity of silver nanoparticles with xylan polysaccharide against different evolutionary forms of Trypanosoma cruzi. I also had the opportunity to teach Pharmacology classes at the Faculty of Science and Technology, a Nursing course, and in a Biomedicine course at the Federal University of Rio Grande do Norte. In addition, I was approved in a vetting process for a substitute professor position at the UFRN. During my Master's degree, I evaluated the inhibitory effects of glycosphingolipid synthesis on the growth and lipid expression in epimastigotes of Trypanosoma cruzi.\"\r\n  },\r\n  \"experience\": [\r\n    {\r\n      \"organization\": \"Ministério da Saúde\",\r\n      \"title\": \"Evaluator\",\r\n      \"period\": \"October 2022 - Present\",\r\n      \"duration\": \"1 year 10 months\",\r\n      \"responsibilities\": \"Analyze clinical records of basic health units, inspect hospital environments, maternity wards, pharmacies, laboratories, and inputs, and analyze epidemiological surveillance data in the municipality.\"\r\n    },\r\n    {\r\n      \"organization\": \"LAIS - Laboratório de Inovação Tecnológica em Saúde\",\r\n      \"title\": \"Researcher\",\r\n      \"period\": \"April 2021 - Present\",\r\n      \"duration\": \"3 years 4 months\",\r\n      \"location\": \"Natal, Rio Grande do Norte, Brazil\",\r\n      \"responsibilities\": \"As a researcher, I work on the development of projects that address new techniques for the development of devices for the diagnosis of syphilis and a health technological platform for case management, both included in the project 'Syphilis No' in partnership with the Brazilian Ministry of Health and Pan American Health Organization (OPAS).\"\r\n    },\r\n    {\r\n      \"organization\": \"Drugstore Saúde Fácil LTDA ME\",\r\n      \"title\": \"Senior Pharmacist\",\r\n      \"period\": \"March 2018 - August 2019\",\r\n      \"duration\": \"1 year 6 months\",\r\n      \"location\": \"Rio Grande do Norte\",\r\n      \"responsibilities\": \"As a responsible technician, I performed daily activities such as checking blood pressure, testing blood glucose levels, and taking body temperature. I also ensured that the National Controlled Products Management System was updated weekly. I provided pharmaceutical assistance with the objective of promoting health protection and recovery, and aimed at the rational use of medicines. Additionally, I conducted monthly conferences on prescription drugs, and delivered monthly and annual reports for health surveillance.\"\r\n    },\r\n    {\r\n      \"organization\": \"Emergency Care Unit\",\r\n      \"title\": \"Biochemist\",\r\n      \"period\": \"June 2018 - March 2019\",\r\n      \"duration\": \"10 months\",\r\n      \"location\": \"Natal, Rio Grande do Norte\",\r\n      \"responsibilities\": \"I worked as a biochemist in the analysis, preparation, and release of examination reports from the biochemistry, hematology, and uro-analysis sectors. I also performed activities such as purchasing inputs for the sector, providing technical assistance, and performing daily verification of the laboratory's temperature and humidity.\"\r\n    },\r\n    {\r\n      \"organization\": \"Faculty of Science and Technology of Natal\",\r\n      \"title\": \"Pharmacology Professor\",\r\n      \"period\": \"August 2014 - November 2015\",\r\n      \"duration\": \"1 year 4 months\",\r\n      \"location\": \"Natal, Rio Grande do Norte, Brazil\",\r\n      \"responsibilities\": \"As a Pharmacology Professor at a Brazilian University, I taught the principles of pharmacology, medicine mechanisms of action, and the clinical applications of different medicine classes. Additionally, I developed and administered assessments, provided student feedback, and engaged in student mentoring and advising.\"\r\n    },\r\n    {\r\n      \"organization\": \"Drugstore Irmã Dulce\",\r\n      \"title\": \"Senior Pharmacist\",\r\n      \"period\": \"January 2007 - April 2008\",\r\n      \"duration\": \"1 year 4 months\",\r\n      \"location\": \"Natal, Rio Grande do Norte, Brazil\",\r\n      \"responsibilities\": \"I led the day-to-day operations of the pharmacy, overseeing the dispensing and distribution of medications, ensuring compliance with regulatory requirements, and managing inventory and supply chain processes. Directed and supervised a team of pharmacy technicians and other support staff, providing training and mentorship to promote a high-performance and customer-focused culture. Additionally, I offered pharmaceutical consultation and counseling to patients and contributed to developing and implementing policies and procedures related to pharmacy management.\"\r\n    }\r\n  ],\r\n  \"education\": [\r\n    {\r\n      \"institution\": \"Escola Superior de Enfermagem de Coimbra\",\r\n      \"degree\": \"Postdoctoral\",\r\n      \"period\": \"February 2022 - December 2022\"\r\n    },\r\n    {\r\n      \"institution\": \"Federal University of Rio Grande do Norte\",\r\n      \"degree\": \"Doctor of Health Sciences, Biochemistry\",\r\n      \"period\": \"2015 - 2019\"\r\n    },\r\n    {\r\n      \"institution\": \"Federal University of São Paulo\",\r\n      \"degree\": \"Master's degree in Biological Sciences (Molecular Biology), Biochemistry\",\r\n      \"period\": \"2008 - 2011\"\r\n    },\r\n    {\r\n      \"institution\": \"Universidade Potiguar\",\r\n      \"degree\": \"Bachelor Degree in Pharmacy and Biochemistry, Health Sciences\",\r\n      \"period\": \"2002 - 2007\"\r\n    }\r\n  ]\r\n}",
-        "slug": "talita-brito",
-        "image": "candidate_images/telita_4INFWNk.jpg"
+        "user": 1,
+        "name": "Rafael Pinto",
+        "email": "rrafaelpinto@gmail.com",
+        "phone": "+5511984510258",
+        "linkedin": "https://www.linkedin.com/in/rafaelmpinto/",
+        "resume": "{\r\n    \"personal_info\":{\r\n        \"name\":\"Rafael Pinto\",\r\n        \"title\":\"Senior Software Developer\",\r\n        \"phone\":\"+55 84 994337518\",\r\n        \"email\":\"rrafaelpinto@gmail.com\",\r\n        \"linkedin\":\"https://www.linkedin.com/in/rafaelmpinto/\"\r\n    },\r\n    \"about\":{\r\n        \"education\":[\r\n            \"PhD in Computer Science (2022)\",\r\n            \"Master's degree in Computer Science (2016)\",\r\n            \"Specialist in Technology and Software Development for Web (2007)\",\r\n            \"Bachelor in Systems Information (2004)\"\r\n        ],\r\n        \"experience\":\"20 years of experience in design and development of web applications, mainly working with Python, MS SQL Server, and PostgreSQL\",\r\n        \"current_position\":\"Since 2014 working at Federal Institute of Science and Technology as Python Developer\",\r\n        \"phd_research\":\"Developed a software ecosystem for collecting, cleaning, and processing data using Natural Language Processing and Machine Learning algorithms to analyze the effects of a public health intervention over time. Findings were plotted in graphs using Matplotlib and Plotly for stakeholder discussions.\"\r\n    },\r\n    \"skills\":{\r\n        \"programming_languages\":[\r\n            \"Python\",\r\n            \"Django\",\r\n            \"HTML\",\r\n            \"Json\",\r\n            \"CSS\",\r\n            \"MS SQL Server\",\r\n            \"PostgreSQL\"\r\n        ],\r\n        \"frameworks\":[\r\n            \"Django REST\",\r\n            \"Scrapy\",\r\n            \"Machine Learning\",\r\n            \"Natural Language Processing (NLP)\",\r\n            \"Pandas\"\r\n        ],\r\n        \"tools\":[\r\n            \"GitLab (CI/CD)\",\r\n            \"Agile Methodologies (Scrum)\",\r\n            \"Full Software Development Lifecycle (SDLC)\"\r\n        ],\r\n        \"project_management\":[\r\n            \"Project Planning and Coordination\"\r\n        ]\r\n    },\r\n    \"experience\":[\r\n        {\r\n            \"company\":\"Federal Institute of Education, Science and Technology of Rio Grande do Norte\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"title\":\"Senior Software Developer\",\r\n            \"period\":\"Apr 2014 - Present\",\r\n            \"duration\":\"10 yrs 4 mos\",\r\n            \"responsibilities\":[\r\n                \"Developing and maintaining an ERP called Unified Public Administration System (SUAP)\",\r\n                \"Utilizing unit testing and behave tests to enhance quality\",\r\n                \"Defining database design specifications\",\r\n                \"Delivering code to meet functional or technical specifications\",\r\n                \"Conducting full lifecycle software development\",\r\n                \"Working with server-side (Django) and Resftull APIs\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"Thalocan Research Innovations\",\r\n            \"location\":\"Remote\",\r\n            \"title\":\"Project Manager\",\r\n            \"period\":\"Jan 2024 - Present\",\r\n            \"duration\":\"7 mos (Contract)\",\r\n            \"responsibilities\":[\r\n                \"Collaborating with stakeholders to define project scope, goals, and deliverables\",\r\n                \"Creating detailed project plans and establishing timelines\",\r\n                \"Overseeing project progress and adjusting strategies as needed\",\r\n                \"Mediating conflicts and eliminating barriers to team progress\",\r\n                \"Coordinating sprint cycles and maintaining project documentation\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"LAIS - Technological Innovation in Health Laboratory\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"title\":\"Project Manager @ Telehealth Project\",\r\n            \"period\":\"Feb 2023 - Present\",\r\n            \"duration\":\"1 yr 6 mos (Contract)\",\r\n            \"responsibilities\":[\r\n                \"Defining project scope, goals, and deliverables\",\r\n                \"Developing detailed project plans and timelines\",\r\n                \"Monitoring project progress and making adjustments\",\r\n                \"Resolving conflicts and removing obstacles\",\r\n                \"Planning and organizing sprint cycles\",\r\n                \"Ensuring stakeholder expectations are met\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"LAIS - Technological Innovation in Health Laboratory\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"title\":\"Senior Software Developer @ Hermes Project\",\r\n            \"period\":\"Feb 2018 - Feb 2023\",\r\n            \"duration\":\"5 yr 1 mo\",\r\n            \"responsibilities\":[\r\n                \"Developed a software ecosystem for collecting, cleaning, and processing data using NLP and Machine Learning algorithms\",\r\n                \"Identified, researched, and evaluated innovative machine learning technologies\",\r\n                \"Used statistical software to analyze large data sets\",\r\n                \"Collected unstructured online news data\",\r\n                \"Cleaned and manipulated raw data\",\r\n                \"Created graphs and charts detailing data analysis results\",\r\n                \"Used Scrapy Python Library for data extraction\",\r\n                \"Configured deployment process via GitLab\"\r\n            ],\r\n            \"project_highlights\": [\r\n                {\r\n                    \"technique\": \"Sentiment Analysis using the VADER algorithm\",\r\n                    \"description\": \"Adapted the VADER algorithm for Brazilian Portuguese to analyze the sentiment of online news articles related to the 'Syphilis No!' Project, identifying the impact of news sentiments on public health actions.\",\r\n                    \"field\": \"Natural Language Processing\"\r\n                },\r\n                {\r\n                    \"technique\": \"Text Mining and Clustering using DBSCAN\",\r\n                    \"description\": \"Utilized the Hermes ecosystem to preprocess and cluster online news articles about syphilis using TF-IDF and the DBSCAN algorithm, assessing the influence of public health campaigns on media coverage.\",\r\n                    \"field\": \"Text Mining\"\r\n                },\r\n                {\r\n                    \"technique\": \"Text Mining and Feature Extraction using Bigrams and TF-IDF\",\r\n                    \"description\": \"Employed the Hermes digital ecosystem to extract and categorize news articles, analyzing the quality and quantity of news coverage to evaluate the effectiveness of public health communication campaigns.\",\r\n                    \"field\": \"Text Mining\"\r\n                },\r\n                {\r\n                    \"technique\": \"Interrupted Time Series (ITS) Analysis and Segmented Regression\",\r\n                    \"description\": \"Applied ITS and segmented regression to assess the impact of the 'Syphilis No!' Project on congenital syphilis rates, demonstrating the effectiveness of targeted public health interventions.\",\r\n                    \"field\": \"Statistical Analysis\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"LAIS - Technological Innovation in Health Laboratory\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"title\":\"Software Developer @ Simaies Project\",\r\n            \"period\":\"Feb 2015 - Feb 2018\",\r\n            \"duration\":\"3 yr 1 mo\",\r\n            \"responsibilities\":[\r\n                \"Developed scalable web applications using the Django framework\",\r\n                \"Implemented RESTful APIs\",\r\n                \"Designed and maintained PostgreSQL databases\",\r\n                \"Developed and implemented software architecture and design patterns\",\r\n                \"Wrote unit tests and performed integration testing\",\r\n                \"Prepared technical documentation\",\r\n                \"Participated in agile development processes\",\r\n                \"Communicated with non-technical stakeholders\",\r\n                \"Stayed updated with industry trends\",\r\n                \"Mentored junior developers\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"Doctoral Student, Athabasca University\",\r\n            \"location\":\"Canada\",\r\n            \"title\":\"Researcher\",\r\n            \"period\":\"Sep 2019 - Dec 2020\",\r\n            \"duration\":\"1 yr 4 mos\",\r\n            \"responsibilities\":[\r\n                \"Participated in meetings and presentations\",\r\n                \"Built software in Python for data analysis\",\r\n                \"Identified and evaluated machine learning technologies\",\r\n                \"Conducted qualitative and quantitative analysis\",\r\n                \"Created graphs, spreadsheets, and presentation slides\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"Court of Justice of Rio Grande do Norte (TJRN)\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"title\":\"Software Developer / Software Architect\",\r\n            \"period\":\"Sep 2010 - Apr 2014\",\r\n            \"duration\":\"3 yr 8 mos\",\r\n            \"responsibilities\":[\r\n                \"Built software architecture using Java components\",\r\n                \"Developed object-oriented web applications\",\r\n                \"Mentored interns and junior developers\",\r\n                \"Participated in code review meetings\",\r\n                \"Documented technical specifications and project testing methods\"\r\n            ]\r\n        },\r\n        {\r\n            \"company\":\"Memes Educational Technology\",\r\n            \"location\":\"São Paulo Area, Brazil\",\r\n            \"title\":\"Software Developer / Software Architect\",\r\n            \"period\":\"Jan 2008 - Aug 2010\",\r\n            \"duration\":\"2 yr 8 mos\",\r\n            \"responsibilities\":[\r\n                \"Developed and maintained a communication portal for distance learning\",\r\n                \"Developed object-oriented web applications\",\r\n                \"Researched alternative solutions\",\r\n                \"Modified existing software systems\",\r\n                \"Conducted full lifecycle software development\",\r\n                \"Consumed and implemented REST APIs for payment integration\"\r\n            ]\r\n        }\r\n    ],\r\n    \"education\":[\r\n        {\r\n            \"degree\":\"Doctor’s Degree, Computer Science\",\r\n            \"institution\":\"Federal University of Rio Grande do Norte\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"period\":\"2019 - 2022\"\r\n        },\r\n        {\r\n            \"degree\":\"Master’s Degree, Computer Software Engineering\",\r\n            \"institution\":\"Federal University of Rio Grande do Norte\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"period\":\"2014 - 2016\"\r\n        },\r\n        {\r\n            \"degree\":\"Specialization, Computer Systems Analysis\",\r\n            \"institution\":\"Potiguar University\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"period\":\"2006 - 2007\"\r\n        },\r\n        {\r\n            \"degree\":\"Bachelor’s Degree, Computer Systems Analysis\",\r\n            \"institution\":\"Potiguar University\",\r\n            \"location\":\"Natal Area, Brazil\",\r\n            \"period\":\"2001 - 2004\"\r\n        }\r\n    ],\r\n    \"languages\":[\r\n        {\r\n            \"English\":\"Professional working proficiency\"\r\n        },\r\n        {\r\n            \"Spanish\":\"Limited working proficiency\"\r\n        },\r\n        {\r\n            \"Portuguese\":\"Native or bilingual proficiency\"\r\n        }\r\n    ],\r\n    \"soft_skills\":[\r\n        {\r\n            \"skill\":\"Collaboration\",\r\n            \"description\":\"As a Senior Software Developer and Project Manager, I have consistently worked within diverse teams, fostering a collaborative environment to achieve project goals. My ability to collaborate effectively has been instrumental in delivering complex projects, such as the Unified Public Administration System (SUAP) and the Telehealth Project, where teamwork and mutual support were crucial to success.\"\r\n        },\r\n        {\r\n            \"skill\":\"Communication (Transparency)\",\r\n            \"description\":\"Throughout my career, I have prioritized clear and transparent communication with both technical and non-technical stakeholders. This skill has been essential in roles such as managing the Telehealth Project, where ensuring that all parties are well-informed and aligned has led to more efficient project execution and stakeholder satisfaction.\"\r\n        },\r\n        {\r\n            \"skill\":\"Emotional Intelligence (Empathy)\",\r\n            \"description\":\"My roles have required a high degree of emotional intelligence, particularly empathy, to understand and address the needs and concerns of team members and stakeholders. This has been evident in my work at LAIS, where empathetic leadership has fostered a positive work environment and enhanced team productivity.\"\r\n        },\r\n        {\r\n            \"skill\":\"Organization\",\r\n            \"description\":\"My organizational skills have been a cornerstone of my professional success, enabling me to manage multiple projects and responsibilities effectively. From developing detailed project plans to overseeing the full software development lifecycle, my ability to stay organized has ensured the timely and successful delivery of projects.\"\r\n        }\r\n    ],\r\n    \"portfolio\": [\r\n        {\r\n            \"project_name\": \"ResumeBot\",\r\n            \"description\": \"ResumeBot is a web-based application designed to interact with users by answering questions about candidates' resumes. The project leverages natural language processing and machine learning techniques to provide accurate and relevant responses. Built using Django framework, the application integrates with OpenAI's language models through LangChain.\",\r\n            \"technologies\": [\r\n                \"Python\",\r\n                \"Django\",\r\n                \"LangChain\",\r\n                \"OpenAI\",\r\n                \"JavaScript (jQuery)\",\r\n                \"Bootstrap\"\r\n            ],\r\n            \"responsibilities\": [\r\n                \"Developed and maintained the web application using Django framework.\",\r\n                \"Integrated OpenAI's language models to provide real-time, accurate responses.\",\r\n                \"Utilized LangChain for managing interactions with the language model.\",\r\n                \"Implemented user identification and interaction logging features.\",\r\n                \"Designed responsive front-end using Bootstrap and jQuery.\",\r\n                \"Ensured secure handling of user data and interactions.\",\r\n                \"Created a personalized experience by leveraging user input and session management.\"\r\n            ],\r\n            \"purpose\": \"The main objective of ResumeBot is to serve as part of the personal portfolio of Rafael Pinto, demonstrating skills and expertise in building web applications using advanced technologies.\"\r\n        }\r\n    ],\r\n    \"cover_letter\":\"With over a decade of experience in software development, particularly in Python, Django, and relational databases, I am excited about the opportunity to contribute to your team and help drive innovative solutions. Throughout my career, I have developed a strong proficiency in building scalable and robust web applications. At the Federal Institute of Education, Science and Technology of Rio Grande do Norte, I have been leading the development and maintenance of the Unified Public Administration System (SUAP) for the past ten years. This ERP system, which is crucial for managing the administrative processes of Federal Institutes in Brazil, has given me extensive experience in Python programming and Django framework. My role involves the full lifecycle of software development, from planning and coding to deployment and maintenance. In addition to my work on SUAP, I have successfully managed and developed several other significant projects. As a Project Manager at LAIS, I have been coordinating the Telehealth Project, ensuring that stakeholder expectations are met through meticulous project planning and execution. My previous role as a Software Developer at the Technological Innovation in Health Laboratory allowed me to develop a software ecosystem for data processing using Natural Language Processing and Machine Learning, highlighting my ability to handle complex data and derive actionable insights. My experience also extends to backend development and database management. I have designed and maintained PostgreSQL databases, ensuring data integrity and performance optimization. My role at the Court of Justice of Rio Grande do Norte and Memes Educational Technology required me to develop object-oriented web applications and implement RESTful APIs, demonstrating my ability to create seamless integrations between various system components. Moreover, I am committed to continuous learning and staying updated with the latest industry trends. My involvement in agile development processes and mentorship of junior developers further underscores my dedication to fostering a collaborative and innovative work environment. I am confident that my technical skills, coupled with my proven track record of managing and developing successful software projects, make me a strong candidate for the [Job Title] position. I am excited about the possibility of bringing my expertise to [Company's Name] and contributing to the advancement of your technological solutions.\"\r\n}",
+        "slug": "rafael-pinto",
+        "image": "candidate_images/ProfileRafael_7G85jtm.jpg",
+        "public_profile": true,
+        "activate": true
+    }
+},
+{
+    "model": "chatbot.interaction",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "candidate": 2,
+        "question": "What are your main strengths?",
+        "response": "\nI believe my main strengths lie in my technical proficiency and my ability to collaborate and communicate effectively. With over 20 years of experience in software development, I have honed my skills in Python, Django, and relational databases, making me a versatile and capable developer. Additionally, my experience in managing and developing complex projects, such as the Unified Public Administration System and the Telehealth Project, has allowed me to develop strong project planning and coordination abilities. Moreover, my commitment to continuous learning and staying updated with industry trends has enabled me to adapt to new technologies and methodologies quickly. Finally, my strong communication skills, particularly in fostering collaboration and transparency, have been instrumental in delivering successful projects and maintaining positive relationships with stakeholders.",
+        "timestamp": "2024-07-17T21:09:54.351Z"
+    }
+},
+{
+    "model": "chatbot.interaction",
+    "pk": 2,
+    "fields": {
+        "user": 1,
+        "candidate": 2,
+        "question": "Can you describe the most relevant work experience mentioned in your resume?",
+        "response": "The most relevant work experience mentioned in my resume is my current position as a Senior Software Developer at the Federal Institute of Education, Science and Technology of Rio Grande do Norte. I have been working in this role since 2014 and have gained 10 years of experience in developing and maintaining an ERP called Unified Public Administration System (SUAP). This system is crucial for managing the administrative processes of Federal Institutes in Brazil. In this role, I have also gained extensive experience in Python programming and the Django framework, as well as in utilizing unit testing and behave tests to enhance quality. I have also been responsible for defining database design specifications, delivering code to meet functional or technical specifications, and conducting full lifecycle software development. Additionally, I have worked with server-side (Django) and RESTful APIs. This experience has allowed me to sharpen my skills in Python, Django, and relational databases, making me a strong candidate for the [Job Title] position.",
+        "timestamp": "2024-07-17T21:10:30.406Z"
+    }
+},
+{
+    "model": "chatbot.interaction",
+    "pk": 3,
+    "fields": {
+        "user": 1,
+        "candidate": 2,
+        "question": "What are the key skills highlighted in your resume?",
+        "response": "\n    The key skills highlighted in my resume are programming languages such as Python, Django, HTML, Json, CSS, MS SQL Server, and PostgreSQL, frameworks including Django REST, Scrapy, Machine Learning, Natural Language Processing (NLP), and Pandas, tools such as GitLab (CI/CD), Agile Methodologies (Scrum), and Full Software Development Lifecycle (SDLC), and project management skills such as project planning and coordination.",
+        "timestamp": "2024-07-17T21:10:50.075Z"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+        "action_time": "2024-07-17T20:55:55.803Z",
+        "user": 1,
+        "content_type": 3,
+        "object_id": "1",
+        "object_repr": "Rafael Pinto",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+        "name": "Can add content type",
+        "content_type": 1,
+        "codename": "add_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+        "name": "Can change content type",
+        "content_type": 1,
+        "codename": "change_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+        "name": "Can delete content type",
+        "content_type": 1,
+        "codename": "delete_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+        "name": "Can view content type",
+        "content_type": 1,
+        "codename": "view_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 5,
+    "fields": {
+        "name": "Can add session",
+        "content_type": 2,
+        "codename": "add_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 6,
+    "fields": {
+        "name": "Can change session",
+        "content_type": 2,
+        "codename": "change_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 7,
+    "fields": {
+        "name": "Can delete session",
+        "content_type": 2,
+        "codename": "delete_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 8,
+    "fields": {
+        "name": "Can view session",
+        "content_type": 2,
+        "codename": "view_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 9,
+    "fields": {
+        "name": "Can add Candidate",
+        "content_type": 3,
+        "codename": "add_candidate"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+        "name": "Can change Candidate",
+        "content_type": 3,
+        "codename": "change_candidate"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+        "name": "Can delete Candidate",
+        "content_type": 3,
+        "codename": "delete_candidate"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 12,
+    "fields": {
+        "name": "Can view Candidate",
+        "content_type": 3,
+        "codename": "view_candidate"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 13,
+    "fields": {
+        "name": "Can add interaction",
+        "content_type": 4,
+        "codename": "add_interaction"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 14,
+    "fields": {
+        "name": "Can change interaction",
+        "content_type": 4,
+        "codename": "change_interaction"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 15,
+    "fields": {
+        "name": "Can delete interaction",
+        "content_type": 4,
+        "codename": "delete_interaction"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 16,
+    "fields": {
+        "name": "Can view interaction",
+        "content_type": 4,
+        "codename": "view_interaction"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 17,
+    "fields": {
+        "name": "Can add log entry",
+        "content_type": 5,
+        "codename": "add_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 18,
+    "fields": {
+        "name": "Can change log entry",
+        "content_type": 5,
+        "codename": "change_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 19,
+    "fields": {
+        "name": "Can delete log entry",
+        "content_type": 5,
+        "codename": "delete_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 20,
+    "fields": {
+        "name": "Can view log entry",
+        "content_type": 5,
+        "codename": "view_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 21,
+    "fields": {
+        "name": "Can add permission",
+        "content_type": 6,
+        "codename": "add_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 22,
+    "fields": {
+        "name": "Can change permission",
+        "content_type": 6,
+        "codename": "change_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 23,
+    "fields": {
+        "name": "Can delete permission",
+        "content_type": 6,
+        "codename": "delete_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 24,
+    "fields": {
+        "name": "Can view permission",
+        "content_type": 6,
+        "codename": "view_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 25,
+    "fields": {
+        "name": "Can add group",
+        "content_type": 7,
+        "codename": "add_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 26,
+    "fields": {
+        "name": "Can change group",
+        "content_type": 7,
+        "codename": "change_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 27,
+    "fields": {
+        "name": "Can delete group",
+        "content_type": 7,
+        "codename": "delete_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 28,
+    "fields": {
+        "name": "Can view group",
+        "content_type": 7,
+        "codename": "view_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 29,
+    "fields": {
+        "name": "Can add user",
+        "content_type": 8,
+        "codename": "add_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 30,
+    "fields": {
+        "name": "Can change user",
+        "content_type": 8,
+        "codename": "change_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 31,
+    "fields": {
+        "name": "Can delete user",
+        "content_type": 8,
+        "codename": "delete_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 32,
+    "fields": {
+        "name": "Can view user",
+        "content_type": 8,
+        "codename": "view_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 33,
+    "fields": {
+        "name": "Can add Question",
+        "content_type": 9,
+        "codename": "add_defaultquestion"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 34,
+    "fields": {
+        "name": "Can change Question",
+        "content_type": 9,
+        "codename": "change_defaultquestion"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 35,
+    "fields": {
+        "name": "Can delete Question",
+        "content_type": 9,
+        "codename": "delete_defaultquestion"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 36,
+    "fields": {
+        "name": "Can view Question",
+        "content_type": 9,
+        "codename": "view_defaultquestion"
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$720000$6ARPmMzDTN7xm7NXu7306M$f9brGwShLK/SwLhZedWAIONdkmeTZubZfEzGv+/KDUE=",
+        "last_login": "2024-07-17T20:42:34.861Z",
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-07-17T20:33:49.816Z",
+        "groups": [],
+        "user_permissions": []
     }
 }
 ]

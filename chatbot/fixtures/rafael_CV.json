@@ -103,6 +103,28 @@
                 "Created graphs and charts detailing data analysis results",
                 "Used Scrapy Python Library for data extraction",
                 "Configured deployment process via GitLab"
+            ],
+            "project_highlights": [
+                {
+                    "technique": "Sentiment Analysis using the VADER algorithm",
+                    "description": "Adapted the VADER algorithm for Brazilian Portuguese to analyze the sentiment of online news articles related to the 'Syphilis No!' Project, identifying the impact of news sentiments on public health actions.",
+                    "field": "Natural Language Processing"
+                },
+                {
+                    "technique": "Text Mining and Clustering using DBSCAN",
+                    "description": "Utilized the Hermes ecosystem to preprocess and cluster online news articles about syphilis using TF-IDF and the DBSCAN algorithm, assessing the influence of public health campaigns on media coverage.",
+                    "field": "Text Mining"
+                },
+                {
+                    "technique": "Text Mining and Feature Extraction using Bigrams and TF-IDF",
+                    "description": "Employed the Hermes digital ecosystem to extract and categorize news articles, analyzing the quality and quantity of news coverage to evaluate the effectiveness of public health communication campaigns.",
+                    "field": "Text Mining"
+                },
+                {
+                    "technique": "Interrupted Time Series (ITS) Analysis and Segmented Regression",
+                    "description": "Applied ITS and segmented regression to assess the impact of the 'Syphilis No!' Project on congenital syphilis rates, demonstrating the effectiveness of targeted public health interventions.",
+                    "field": "Statistical Analysis"
+                }
             ]
         },
         {

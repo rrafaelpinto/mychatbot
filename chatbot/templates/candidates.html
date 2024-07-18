@@ -10,6 +10,8 @@
         <h5>{{ candidate.name }}</h5>
         <a href="{% url 'chat' candidate.slug %}" class="btn btn-primary">Chat with {{ candidate.name }}</a>
     </li>
+    {% empty %}
+        <p class="mt-3">Sorry. No candidates registered at this time.</p>
     {% endfor %}
 </ul>
 {% endblock %}

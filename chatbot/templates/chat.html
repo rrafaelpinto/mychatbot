@@ -31,6 +31,15 @@
         <!-- Chat messages will be appended here -->
     </div>
     <p>Welcome, {{ request.user.username }}! Feel free to ask any questions about my resume.</p>
+    <!-- Suggested Questions -->
+    <div id="suggested-questions" class="mb-3">
+        <p>Suggested Questions:</p>
+        <ul>
+            <li><a href="#" class="suggested-question" data-question="What are your main strengths?">What are your main strengths?</a></li>
+            <li><a href="#" class="suggested-question" data-question="Can you describe the most relevant work experience mentioned in your resume?">Can you describe the most relevant work experience mentioned in your resume?</a></li>
+            <li><a href="#" class="suggested-question" data-question="What are the key skills highlighted in your resume?">What are the key skills highlighted in your resume?</a></li>
+        </ul>
+    </div>
     <form id="chat-form" class="mb-4">
         <div class="form-group">
             <label for="question">Question:</label>
@@ -49,6 +58,15 @@
         }
 
         $(document).ready(function() {
+
+            // Handle click on suggested questions
+            $('.suggested-question').on('click', function(event) {
+                event.preventDefault();
+                let question = $(this).data('question');
+                $('#question').val(question);
+                $(this).parent().remove(); // Remove the clicked question link
+                $('#chat-form').submit(); // Submit the form
+            });
 
             $('#chat-form').on('submit', function(event) {
                 event.preventDefault();

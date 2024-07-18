@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.text import slugify
 
 class Candidate(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidate', null=True, blank=True)
     name = models.CharField(max_length=255, verbose_name='Name')
     email = models.EmailField(verbose_name='Email')
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='Phone')
@@ -10,6 +11,8 @@ class Candidate(models.Model):
     resume = models.TextField(verbose_name='Resume')
     slug = models.SlugField(unique=True, blank=True, verbose_name='Slug')
     image = models.ImageField(upload_to='candidate_images/', blank=True, null=True, verbose_name="Image")
+    public_profile = models.BooleanField(verbose_name='Public profile', default=True, help_text='Public profiles will be listed in the public area. Note that non-public profiles will still be able to interact with users, provided their chat page is shared directly.')
+    activate = models.BooleanField(verbose_name='Activate', default=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
