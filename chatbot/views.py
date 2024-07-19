@@ -4,10 +4,11 @@ from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
+
 from langchain_text_splitters import CharacterTextSplitter
 
 from utils import process_resume
-from .prompts import resumebot
+from .prompts import resumebot, extraction_prompt
 from .forms import CandidateRegistrationForm
 from .models import Candidate, Interaction
 
@@ -19,6 +20,16 @@ def about(request):
 def profile(request):
     candidate = get_object_or_404(Candidate, user=request.user)
     return render(request, 'profile.html', {'candidate': candidate})
+
+
+@login_required
+def format_resume(request):
+    candidate = get_object_or_404(Candidate, user=request.user)
+    resume = extraction_prompt.run({'resume': candidate.resume})
+    candidate.resume = resume
+    candidate.save()
+    messages.success(request, 'Resume well formated successfully.')
+    return redirect('profile')
 
 
 @login_required
@@ -45,8 +56,8 @@ def manager_candidate(request):
 
                     # Extract text from the resume file
                     candidate.resume = process_resume(uploaded_file_path)
+                    candidate.save()
 
-                candidate.save()
                 messages.success(request, 'Profile updated successfully.')
                 return redirect('profile')
             except Exception as e:
@@ -55,6 +66,8 @@ def manager_candidate(request):
             messages.error(request, 'Please correct the error below.', extra_tags='danger')
     else:
         form = CandidateRegistrationForm(request.GET or None, instance=candidate)
+
+
     return render(request, 'manager_candidate.html', {'form': form, 'title': title})
 
 

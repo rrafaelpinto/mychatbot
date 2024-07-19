@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
-
+from os.path import abspath, dirname, join
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -94,13 +94,6 @@ WSGI_APPLICATION = 'mychatbot.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-DATABASES = {
-    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'resumebot',
         'USER': 'postgres',
@@ -142,15 +135,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+PROJECT_PATH = abspath(dirname(__file__))
 STATIC_URL = 'static/'
+STATIC_ROOT = join(PROJECT_PATH, 'deploy/static')
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = join(PROJECT_PATH, 'deploy/media')
+
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'mychatbot/static'),
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 SITE_ID = 1
 SITE_NAME = 'ResumeBot'

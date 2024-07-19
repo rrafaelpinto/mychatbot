@@ -15,13 +15,13 @@ def initialize_extraction_prompt():
     - Skills
 
     Resume:
-    {resume_text}
+    {resume}
 
     Extracted Information (in JSON format):
     """
     prompt = PromptTemplate(
         template=prompt_template,
-        input_variables=['resume_text']
+        input_variables=['resume']
     )
     llm = OpenAI()
     chain = LLMChain(llm=llm, prompt=prompt)
