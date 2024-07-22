@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 
 from langchain_text_splitters import CharacterTextSplitter
 
-from utils import process_resume
+from mychatbot.utils import process_resume
 from .prompts import resumebot, extraction_prompt
 from .forms import CandidateRegistrationForm
 from .models import Candidate, Interaction
