@@ -50,26 +50,32 @@ To set up ResumeBot locally, follow these steps:
     echo "export OPENAI_API_KEY='abcxyz'" >> ~/.zshrc
     ```
 
-5. **Apply migrations and load initial data:**
+5. **Installing Node.js:**
+   ```sh
+   sudo apt update
+   sudo apt install nodejs
+   sudo apt install npm
+   ```
+
+6. **Apply migrations and load initial data:**
    ```sh
    python manage.py migrate
    python manage.py loaddata initial_data.json
    ```
 
-6. **Run the development server:**
+7. **Run the development server:**
    ```sh
    python manage.py runserver
    ```
 
-7. **Access the application:**
+8. **Access the application:**
    Open your web browser and navigate to `http://localhost:8000`.
 
-8. **Add/Show/Remove crontab:**
+9. **Add/Show/Remove crontab:**
    ```sh
     python manage.py crontab add
     python manage.py crontab show
     python manage.py crontab remove
-
    ```
 
 ## Usage
