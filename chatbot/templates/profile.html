@@ -14,9 +14,7 @@
             </div>
         </div>
         <div class="candidate-info">
-            {% if candidate.image %}
-                <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
-            {% endif %}
+            <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
             <div>
                 <h4 class="my-4">{{ candidate.name }}</h4>
                 <ul class="list-unstyled">

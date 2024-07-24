@@ -22,6 +22,13 @@ class Candidate(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        else:
+            return '/static/img/DefaultAvatar.png'
+
     class Meta:
         verbose_name = 'Candidate'
         verbose_name_plural = 'Candidates'

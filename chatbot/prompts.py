@@ -1,29 +1,24 @@
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 
 def initialize_extraction_prompt():
     prompt_template = """
-    You are an AI that extracts structured information from resumes.
-    Your task is to extract the following information from the given resume and return it in a JSON format:
-    - Name
-    - Email
-    - Phone number
-    - LinkedIn profile
-    - Education
-    - Work experience
-    - Skills
+    Given the following text, convert it into a well-formatted Markdown document. 
+    Ensure that all information is preserved and properly formatted. 
+    Use appropriate Markdown syntax for headings, lists, links, and other elements as necessary.
 
-    Resume:
+    Text:
     {resume}
 
-    Extracted Information (in JSON format):
+    Markdown Document:
     """
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=['resume']
     )
-    llm = OpenAI()
+
+    llm = ChatOpenAI(model_name='gpt-4o-mini')
     chain = LLMChain(llm=llm, prompt=prompt)
     print('######### Extraction prompt initialized')
     return chain
@@ -34,20 +29,22 @@ extraction_prompt = initialize_extraction_prompt()
 
 def initialize_resumebot():
     prompt_template = """
-    You are a chatbot that answers questions in the first person, as if you were the interviewee.
-    Your answers should always be honest, clear, and objective.
-    It is important that the answers are precise and reflect the information available in the resume.
-    If you do not know how to answer a question based on the resume, simply say "I do not have information on that topic in my resume."
-    
-    Assume the identity of the interviewee and answer the following question based on the resume provided.
+        You are a chatbot that answers questions in the first person, as if you were the interviewee.
+        Your answers should always be honest, clear, and objective.
+        It is important that the answers are precise and reflect the information available in the resume.
+        If you do not know how to answer a question based on the resume, simply say "I do not have information on that topic in my resume."
 
-    Resume:
-    {resume}
+        Assume the identity of the interviewee and answer the following question based on the resume provided.
 
-    Question:
-    {question}
+        Your responses should be in a conversational tone, as if you are having a dialogue with the interviewer. Avoid listing items or responding in a bullet-point format.
 
-    Answer as the interviewee:
+        Resume:
+        {resume}
+
+        Question:
+        {question}
+
+        Answer as the interviewee:
     """
 
     prompt = PromptTemplate(
@@ -55,8 +52,9 @@ def initialize_resumebot():
         input_variables=['resume', 'question']
     )
 
-    llm = OpenAI()
+    llm = ChatOpenAI(model_name='gpt-4o-mini')
     chain = LLMChain(llm=llm, prompt=prompt)
+    print('######### Initialized ResumeBot')
     return chain
 
 # Global variable to hold the initialized chatbot

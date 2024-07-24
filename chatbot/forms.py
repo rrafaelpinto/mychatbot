@@ -2,7 +2,7 @@ from django import forms
 from .models import Candidate
 
 class CandidateRegistrationForm(forms.ModelForm):
-    resume_file = forms.FileField(label='Upload Resume', help_text='Only PDF or DOCX files are allowed.',)
+    resume_file = forms.FileField(label='Upload Resume', help_text='Only PDF or DOCX files are allowed.', required=False)
 
     class Meta:
         model = Candidate

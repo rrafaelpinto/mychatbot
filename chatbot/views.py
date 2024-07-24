@@ -46,18 +46,16 @@ def manager_candidate(request):
             try:
                 candidate = form.save(commit=False)
                 candidate.user = request.user
-
                 # Process the uploaded resume file
                 resume_file = request.FILES.get('resume_file')
                 if resume_file:
                     fs = FileSystemStorage()
                     filename = fs.save(resume_file.name, resume_file)
                     uploaded_file_path = fs.path(filename)
-
                     # Extract text from the resume file
                     candidate.resume = process_resume(uploaded_file_path)
-                    candidate.save()
 
+                candidate.save()
                 messages.success(request, 'Profile updated successfully.')
                 return redirect('profile')
             except Exception as e:
