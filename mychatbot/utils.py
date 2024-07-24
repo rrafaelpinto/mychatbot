@@ -1,7 +1,15 @@
 import os
 import fitz  # PyMuPDF
+import re
 from docx import Document
 
+
+def clean_text(text):
+    # Remove bullets and special characters
+    text = re.sub(r'[\u2022\u2023\u25E6\u2043\u2219]', '', text)  # Remover bullets comuns
+    #text = re.sub(r'[^\x00-\x7F]+', ' ', text)  # Remover caracteres não ASCII
+    #text = re.sub(r'\s+', ' ', text).strip()  # Remover múltiplos espaços
+    return text
 
 def extract_text_from_pdf(pdf_path):
     text = ""
@@ -27,10 +35,11 @@ def process_resume(uploaded_file_path):
         resume_text = extract_text_from_docx(uploaded_file_path)
     else:
         resume_text = ""
-    print(resume_text)
+    clean_text_content = clean_text(resume_text)
+    print(clean_text_content)
 
     # Remove the uploaded file after processing
     if os.path.exists(uploaded_file_path):
         os.remove(uploaded_file_path)
 
-    return resume_text
+    return clean_text_content

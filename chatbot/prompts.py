@@ -4,26 +4,20 @@ from langchain_openai import OpenAI
 
 def initialize_extraction_prompt():
     prompt_template = """
-    You are an AI that extracts structured information from resumes.
-    Your task is to extract the following information from the given resume and return it in a JSON format:
-    - Name
-    - Email
-    - Phone number
-    - LinkedIn profile
-    - Education
-    - Work experience
-    - Skills
+    Given the following text, convert it into a well-formatted Markdown document. 
+    Ensure that all information is preserved and properly formatted. 
+    Use appropriate Markdown syntax for headings, lists, links, and other elements as necessary.
 
-    Resume:
+    Text:
     {resume}
 
-    Extracted Information (in JSON format):
+    Markdown Document:
     """
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=['resume']
     )
-    llm = OpenAI()
+    llm = OpenAI(model_name='gpt-4o-mini')
     chain = LLMChain(llm=llm, prompt=prompt)
     print('######### Extraction prompt initialized')
     return chain
@@ -55,7 +49,7 @@ def initialize_resumebot():
         input_variables=['resume', 'question']
     )
 
-    llm = OpenAI()
+    llm = OpenAI(model_name='gpt-4o-mini')
     chain = LLMChain(llm=llm, prompt=prompt)
     return chain
 

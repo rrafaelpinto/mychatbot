@@ -52,9 +52,16 @@ To set up ResumeBot locally, follow these steps:
 
 5. **Installing Node.js:**
    ```sh
-   sudo apt update
-   sudo apt install nodejs
-   sudo apt install npm
+   # layouts.download.codeBox.installsFnm
+   curl -fsSL https://fnm.vercel.app/install | bash
+   # layouts.download.codeBox.activateFNM
+   source ~/.bashrc
+   # layouts.download.codeBox.downloadAndInstallNodejs
+   fnm use --install-if-missing 20
+   # layouts.download.codeBox.verifiesRightNodejsVersion
+   node -v # layouts.download.codeBox.shouldPrint
+   # layouts.download.codeBox.verifiesRightNpmVersion
+   npm -v # layouts.download.codeBox.shouldPrint
    ```
 
 6. **Apply migrations and load initial data:**

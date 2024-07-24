@@ -1,6 +1,6 @@
 # chatbot/urls.py
 from django.urls import path
-from chatbot.views import about, candidates, chat, manager_candidate, profile, format_resume
+from chatbot.views import about, candidates, chat, manager_candidate, profile, format_resume, ChatConsumer
 
 urlpatterns = [
     path('', about, name='about'),
@@ -10,6 +10,6 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('format_resume/', format_resume, name='format_resume'),
     path('chat/<slug:slug>/', chat, name='chat'),
-
+    path('ws/chat/', ChatConsumer.as_asgi()),
 ]
 

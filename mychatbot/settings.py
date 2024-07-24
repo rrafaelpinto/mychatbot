@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne', #must be listed before django.contrib.staticfiles
 
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -86,7 +87,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mychatbot.wsgi.application'
+#Removido na tentativa de usar o React
+#WSGI_APPLICATION = 'mychatbot.wsgi.application'
+ASGI_APPLICATION = 'mychatbot.asgi.application'
 
 
 # Database

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-
+{% load markdown_extras %}
 {% block title %}- Profile{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 order-md-1">
+    <div class="col-md-8">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">Candidate Profile</h4>
             <div>
                 <a href="{% url 'manager_candidate' %}" class="btn btn-primary btn-sm mr-2">Edit Profile</a>
                 <a href="{% url 'password_change' %}" class="btn btn-secondary btn-sm">Change Password</a>
-                <a href="{% url 'format_resume' %}" class="btn btn-secondary btn-sm">Format Resume</a>
+                <a href="/ws/chat/" class="btn btn-secondary btn-sm">Format Resume</a>
             </div>
         </div>
         <div class="candidate-info">
@@ -27,9 +27,15 @@
                     {% if candidate.linkedin %}
                         <li><strong>LinkedIn:</strong> <a href="{{ candidate.linkedin }}" target="_blank">{{ candidate.linkedin }}</a></li>
                     {% endif %}
-                    <li>Public profile: {{ candidate.public_profile|yesno:"Yes,No" }}</li>
+                    <li><strong>Public profile:</strong> {{ candidate.public_profile|yesno:"Yes,No" }}</li>
                     <li><a href="{% url 'chat' candidate.slug %}">My ResumeBot</a></li>
                 </ul>
+            </div>
+        </div>
+        <div class="resume-content mt-4">
+            <h4 class="mb-3">Resume</h4>
+            <div class="markdown-content">
+                {{ candidate.resume|markdown|safe }}
             </div>
         </div>
     </div>

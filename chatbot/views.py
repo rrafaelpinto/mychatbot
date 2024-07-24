@@ -1,5 +1,11 @@
+import json
+
+from asgiref.sync import sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -13,13 +19,67 @@ from .forms import CandidateRegistrationForm
 from .models import Candidate, Interaction
 
 
-def about(request):
-    return render(request, 'about.html')
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
 
-@login_required
-def profile(request):
-    candidate = get_object_or_404(Candidate, user=request.user)
-    return render(request, 'profile.html', {'candidate': candidate})
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        # user_id = text_data_json["user_id"]  # Assuming user_id is passed in the WebSocket message
+        user_id = 1
+
+        candidate = await self.get_candidate(user_id)
+
+        if candidate:
+            resume = candidate.resume
+            # Print the resume for debugging
+            print(resume)
+            try:
+                complete_result = ""
+                async for chunk in extraction_prompt.astream_events({'resume': resume}, version="v1"):
+                    print(f'chunk: {chunk}')
+                    if chunk["event"] in ["on_llm_start", "on_llm_stream", "on_chain_stream"]:
+                        await self.send(text_data=json.dumps(chunk))
+                    if chunk["event"] == "on_llm_end":
+                        # Save the final result to the candidate's resume
+                        result = chunk.get("data", {}).get("output", {}).get("generations", [])[0][0].get("text", "")
+                        complete_result += result
+
+                if complete_result:
+                    print('####################################')
+                    print(complete_result)
+                    await self.save_candidate_resume(candidate, complete_result)
+                    await self.send(text_data=json.dumps({'result': complete_result, 'message': 'Resume updated successfully.'}))
+                else:
+                    print("Resultado não encontrado no chunk.")
+                    await self.send(text_data=json.dumps({'error': 'Result not found in the chunks.'}))
+
+            except Exception as e:
+                print(e)
+                await self.send(text_data=json.dumps({'error': str(e)}))
+        else:
+            await self.send(text_data=json.dumps({'error': 'Candidate not found'}))
+
+    @sync_to_async
+    def get_candidate(self, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            candidate = Candidate.objects.get(user=user)
+            print(f'Encontrou: {candidate}')
+            return candidate
+        except User.DoesNotExist:
+            return None
+        except Candidate.DoesNotExist:
+            return None
+
+    @sync_to_async
+    def save_candidate_resume(self, candidate, resume):
+        candidate.resume = resume
+        print('salvando')
+        candidate.save()
 
 
 @login_required
@@ -30,6 +90,15 @@ def format_resume(request):
     candidate.save()
     messages.success(request, 'Resume well formated successfully.')
     return redirect('profile')
+
+
+def about(request):
+    return render(request, 'about.html')
+
+@login_required
+def profile(request):
+    candidate = get_object_or_404(Candidate, user=request.user)
+    return render(request, 'profile.html', {'candidate': candidate})
 
 
 @login_required
