@@ -43,3 +43,7 @@ class Interaction(models.Model):
 
     def __str__(self):
         return f'Interaction by {self.user.username} with {self.candidate.name} on {self.timestamp.strftime("%d/%m/%Y %H:%M:%S")}'
+    
+    class Meta:
+        verbose_name = 'Interaction'
+        verbose_name_plural = 'Interactions'

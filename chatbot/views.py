@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
@@ -73,6 +75,21 @@ def manager_candidate(request):
 def candidates(request):
     candidates = Candidate.objects.filter(public_profile=True).order_by('name')
     return render(request, 'candidates.html', {'candidates': candidates})
+
+
+@staff_member_required
+def interactions(request):
+    interactions = Interaction.objects.values('user__id', 'user__username', 'candidate__id', 'candidate__name').distinct()
+    print(interactions.count())
+    return render(request, 'interactions.html', {'interactions': interactions})
+
+
+@staff_member_required
+def view_interaction(request, user_id, candidate_id):
+    user = get_object_or_404(User, pk=user_id)
+    candidate = get_object_or_404(Candidate, pk=candidate_id)
+    interactions = Interaction.objects.filter(user=user, candidate=candidate).order_by('timestamp')
+    return render(request, 'view_interaction.html', {'user': user, 'candidate': candidate, 'interactions': interactions})
 
 
 @login_required

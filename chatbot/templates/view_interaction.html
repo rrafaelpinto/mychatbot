@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}- {{ user.username }} talked to {{ candidate.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <!-- User Information -->
+        <div class="col-md-6">
+            <h5 class="my-3">User Information</h5>
+            <div class="user-info p-3 border rounded">
+                <ul class="list-unstyled small">
+                    <li><strong>Username:</strong> {{ user.username }}</li>
+                    <li><strong>Email:</strong> {{ user.email }}</li>
+                </ul>
+            </div>
+        </div>
+        <!-- Candidate Information -->
+        <div class="col-md-6">
+            <h5 class="my-3">Candidate Information</h5>
+            <div class="candidate-info p-3 border rounded">
+                <div class="d-flex align-items-center">
+                    <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mr-3" style="max-width: 80px;">
+                    <ul class="list-unstyled small mb-0">
+                        <li><strong>Name:</strong> {{ candidate.name }}</li>
+                        <li><strong>Email:</strong> {{ candidate.email }}</li>
+                        {% if candidate.linkedin %}
+                            <li><strong>LinkedIn:</strong> <a href="{{ candidate.linkedin }}" target="_blank">{{ candidate.linkedin }}</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chat-box" class="chat-box mt-4">
+        {% for interaction in interactions %}
+            <div class="chat-message user p-2 border-bottom">
+                <p class="mb-1"><strong>{{ user }}:</strong> {{ interaction.question }}</p>
+            </div>
+            <div class="chat-message bot p-2 border-bottom">
+                <p class="mb-1"><strong>{{ candidate.name }}:</strong> {{ interaction.response }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

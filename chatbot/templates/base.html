@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResumeBot {% block title %} {% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.png' %}"">
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- CSS -->
@@ -42,6 +43,9 @@
                 </li>
             {% else %}
                 {% if user.is_superuser and user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'interactions' %}">Interactions</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
                     </li>

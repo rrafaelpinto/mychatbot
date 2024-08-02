@@ -10,6 +10,12 @@ ResumeBot is a web-based application designed to interact with users by answerin
 - [Usage](#usage)
 - [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
+- [Gunicorn Configuration](#gunicorn-configuration)
+- [Nginx Configuration](#nginx-configuration)
+- [Quick Access Guide](#quick-access-guide)
+- [File Permissions](#file-permissions)
+- [Error Tracking](#error-tracking)
+- [Protecting Files with Nginx](#protecting-files-with-nginx)
 
 ## Project Overview
 
@@ -27,7 +33,6 @@ ResumeBot aims to provide an interactive platform where users can ask questions 
 
 To set up ResumeBot locally, follow these steps:
 
-
 1. **Clone the repository:**
    ```sh
    git clone git@github.com:rrafaelpinto/mychatbot.git
@@ -37,46 +42,35 @@ To set up ResumeBot locally, follow these steps:
 2. **Create and activate a virtual environment:**
    ```sh
    python -m venv chatbot
+   # Localhost
    source ../venvs/chatbot/bin/activate
+   # Digital Ocean
+   source .venv/bin/activate 
    ```
 
 3. **Install the required dependencies:**
    ```sh
    pip install -r requirements.txt
    ```
-   
+
 4. **Set the OPENAI_API_KEY:**
     ```sh
-    echo "export OPENAI_API_KEY='abcxyz'" >> ~/.zshrc
+    echo "export OPENAI_API_KEY='abcxyz'" >> ~/.bashrc
     ```
 
-5. **Installing Node.js:**
-   ```sh
-   sudo apt update
-   sudo apt install nodejs
-   sudo apt install npm
-   ```
-
-6. **Apply migrations and load initial data:**
+5. **Apply migrations and load initial data:**
    ```sh
    python manage.py migrate
    python manage.py loaddata initial_data.json
    ```
 
-7. **Run the development server:**
+6. **Run the development server:**
    ```sh
    python manage.py runserver
    ```
 
-8. **Access the application:**
-   Open your web browser and navigate to `http://localhost:8000`.
-
-9. **Add/Show/Remove crontab:**
-   ```sh
-    python manage.py crontab add
-    python manage.py crontab show
-    python manage.py crontab remove
-   ```
+7. **Access the application:**
+   Open your web browser and navigate to `http://localhost:8001`.
 
 ## Usage
 
@@ -108,3 +102,133 @@ We welcome contributions to improve ResumeBot. If you would like to contribute, 
 4. Commit your changes (`git commit -am 'Add some feature'`).
 5. Push to the branch (`git push origin feature/your-feature-name`).
 6. Open a Pull Request.
+
+## Gunicorn Configuration
+
+1. **Locate the Gunicorn Executable:**
+   The path to the executable is `/home/rafael/mychatbot/.venv/bin/gunicorn`.
+
+2. **Create/Edit the Systemd Configuration File for Gunicorn:**
+   The file is usually located at `/etc/systemd/system/mychatbot-gunicorn.service`.
+   - **To edit:**
+     `sudo nano /etc/systemd/system/mychatbot-gunicorn.service`
+   
+   - **Example content:**
+     ```
+     [Unit]
+     Description=gunicorn daemon for mychatbot
+     After=network.target
+
+     [Service]
+     User=rafael
+     Group=rafael
+     WorkingDirectory=/home/rafael/mychatbot
+     ExecStart=/home/rafael/mychatbot/.venv/bin/gunicorn --workers=3 mychatbot.wsgi:application --bind 127.0.0.1:8001
+     Environment="OPENAI_API_KEY=abc123"
+
+     [Install]
+     WantedBy=multi-user.target
+     ```
+
+3. **Reload and Restart Gunicorn via Systemd:**
+   ```sh
+   sudo systemctl daemon-reload
+   sudo systemctl restart mychatbot-gunicorn
+   ```
+
+## Nginx Configuration
+
+1. **Locate or Create the Configuration File for the Site:**
+   The file path is usually `/etc/nginx/sites-available/mychatbot`.
+   
+   - **To edit:**
+     `sudo nano /etc/nginx/sites-available/mychatbot`
+
+2. **Create a Symbolic Link to Activate the Site:**
+   ```sh
+   sudo ln -s /etc/nginx/sites-available/mychatbot /etc/nginx/sites-enabled
+   ```
+
+3. **Check Configuration and Restart Nginx:**
+   ```sh
+   sudo nginx -t
+   sudo systemctl restart nginx
+   ```
+
+## Quick Access Guide
+
+1. **Restart Gunicorn and Nginx:**
+   ```sh
+   sudo systemctl daemon-reload & systemctl restart mychatbot-gunicorn && systemctl restart nginx
+   ```
+
+2. **Status of Gunicorn and Nginx:**
+   ```sh
+   sudo journalctl -u gunicorn
+   sudo journalctl -u nginx
+   ```
+
+3. **View Logs:**
+   ```sh
+   sudo journalctl -u mychatbot-gunicorn -n 50 --no-hostname
+   ```
+
+4. **List Service Configuration:**
+   ```sh
+   sudo cat /etc/systemd/system/mychatbot-gunicorn.service
+   sudo nano /etc/systemd/system/mychatbot-gunicorn.service
+   ```
+
+## File Permissions
+
+1. **Change Ownership and Permissions for Static Directories and Files:**
+   ```sh
+   sudo chown -R rafael:www-data /home/rafael/mychatbot/mychatbot/deploy/static/
+   sudo chmod -R 750 /home/rafael/mychatbot/mychatbot/deploy/static/
+   ```
+
+## Error Tracking
+
+1. **Check Gunicorn Status/Log via Systemd:**
+   ```sh
+   sudo systemctl status mychatbot-gunicorn
+   ```
+   or
+   ```sh
+   journalctl -u mychatbot-gunicorn -n 50 --no-hostname
+   ```
+
+2. **Check Nginx Logs:**
+   ```sh
+   sudo tail -f /var/log/nginx/error.log
+   ```
+
+3. **Test Local Connection with Curl:**
+   ```sh
+   curl http://127.0.0.1:8001
+   ```
+   If a connection refused error occurs, restart Gunicorn.
+
+## Protecting Files with Nginx
+
+Configure Nginx to block direct access to a specific directory, in this case, `media/upload`.
+
+1. **Locate the Nginx Configuration File:**
+   ```sh
+   sudo nano /etc/nginx/sites-available/mychatbot
+   ```
+
+2. **Add the Following Location Block Within the Server Block:**
+   ```sh
+   location /media/upload/ {
+       deny all;
+       return 403;
+   }
+   ```
+   This configuration blocks all access to the directory and returns an HTTP 403 Forbidden error for any access attempts.
+
+3. **Reload Nginx:**
+   ```sh
+   sudo systemctl reload nginx
+   ```
+   Now, any attempt to directly access files within `media/upload` will be blocked by Nginx. However, your Django application can still access and serve these files, bypassing this restriction.

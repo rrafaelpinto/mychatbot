@@ -13,7 +13,7 @@
             "Specialist in Technology and Software Development for Web (2007)",
             "Bachelor in Systems Information (2004)"
         ],
-        "experience":"20 years of experience in design and development of web applications, mainly working with Python, MS SQL Server, and PostgreSQL",
+        "experience":"20 years of experience in design and development of web applications, mainly working with Python, Django, MS SQL Server, and PostgreSQL",
         "current_position":"Since 2014 working at Federal Institute of Science and Technology as Python Developer",
         "phd_research":"Developed a software ecosystem for collecting, cleaning, and processing data using Natural Language Processing and Machine Learning algorithms to analyze the effects of a public health intervention over time. Findings were plotted in graphs using Matplotlib and Plotly for stakeholder discussions."
     },
@@ -51,7 +51,7 @@
             "period":"Apr 2014 - Present",
             "duration":"10 yrs 4 mos",
             "responsibilities":[
-                "Developing and maintaining an ERP called Unified Public Administration System (SUAP)",
+                "Developing and maintaining an ERP called Unified Public Administration System (SUAP) using Python",
                 "Utilizing unit testing and behave tests to enhance quality",
                 "Defining database design specifications",
                 "Delivering code to meet functional or technical specifications",
@@ -95,7 +95,7 @@
             "period":"Feb 2018 - Feb 2023",
             "duration":"5 yr 1 mo",
             "responsibilities":[
-                "Developed a software ecosystem for collecting, cleaning, and processing data using NLP and Machine Learning algorithms",
+                "Developed a software ecosystem for collecting, cleaning, and processing data using Python, NLP and Machine Learning algorithms",
                 "Identified, researched, and evaluated innovative machine learning technologies",
                 "Used statistical software to analyze large data sets",
                 "Collected unstructured online news data",
@@ -134,7 +134,7 @@
             "period":"Feb 2015 - Feb 2018",
             "duration":"3 yr 1 mo",
             "responsibilities":[
-                "Developed scalable web applications using the Django framework",
+                "Developed scalable web applications using Python and Django framework",
                 "Implemented RESTful APIs",
                 "Designed and maintained PostgreSQL databases",
                 "Developed and implemented software architecture and design patterns",
@@ -147,13 +147,13 @@
             ]
         },
         {
-            "company":"Doctoral Student, Athabasca University",
+            "company":"Athabasca University",
             "location":"Canada",
-            "title":"Researcher",
+            "title":"Doctoral Student",
             "period":"Sep 2019 - Dec 2020",
             "duration":"1 yr 4 mos",
             "responsibilities":[
-                "Participated in meetings and presentations",
+                "Communicated with non-technical stakeholders",
                 "Built software in Python for data analysis",
                 "Identified and evaluated machine learning technologies",
                 "Conducted qualitative and quantitative analysis",
@@ -163,7 +163,7 @@
         {
             "company":"Court of Justice of Rio Grande do Norte (TJRN)",
             "location":"Natal Area, Brazil",
-            "title":"Software Developer / Software Architect",
+            "title":"Software Developer",
             "period":"Sep 2010 - Apr 2014",
             "duration":"3 yr 8 mos",
             "responsibilities":[
@@ -177,7 +177,7 @@
         {
             "company":"Memes Educational Technology",
             "location":"São Paulo Area, Brazil",
-            "title":"Software Developer / Software Architect",
+            "title":"Software Developer",
             "period":"Jan 2008 - Aug 2010",
             "duration":"2 yr 8 mos",
             "responsibilities":[
@@ -268,6 +268,5 @@
             ],
             "purpose": "The main objective of ResumeBot is to serve as part of the personal portfolio of Rafael Pinto, demonstrating skills and expertise in building web applications using advanced technologies."
         }
-    ],
-    "cover_letter":"With over a decade of experience in software development, particularly in Python, Django, and relational databases, I am excited about the opportunity to contribute to your team and help drive innovative solutions. Throughout my career, I have developed a strong proficiency in building scalable and robust web applications. At the Federal Institute of Education, Science and Technology of Rio Grande do Norte, I have been leading the development and maintenance of the Unified Public Administration System (SUAP) for the past ten years. This ERP system, which is crucial for managing the administrative processes of Federal Institutes in Brazil, has given me extensive experience in Python programming and Django framework. My role involves the full lifecycle of software development, from planning and coding to deployment and maintenance. In addition to my work on SUAP, I have successfully managed and developed several other significant projects. As a Project Manager at LAIS, I have been coordinating the Telehealth Project, ensuring that stakeholder expectations are met through meticulous project planning and execution. My previous role as a Software Developer at the Technological Innovation in Health Laboratory allowed me to develop a software ecosystem for data processing using Natural Language Processing and Machine Learning, highlighting my ability to handle complex data and derive actionable insights. My experience also extends to backend development and database management. I have designed and maintained PostgreSQL databases, ensuring data integrity and performance optimization. My role at the Court of Justice of Rio Grande do Norte and Memes Educational Technology required me to develop object-oriented web applications and implement RESTful APIs, demonstrating my ability to create seamless integrations between various system components. Moreover, I am committed to continuous learning and staying updated with the latest industry trends. My involvement in agile development processes and mentorship of junior developers further underscores my dedication to fostering a collaborative and innovative work environment. I am confident that my technical skills, coupled with my proven track record of managing and developing successful software projects, make me a strong candidate for the [Job Title] position. I am excited about the possibility of bringing my expertise to [Company's Name] and contributing to the advancement of your technological solutions."
+    ]
 }
