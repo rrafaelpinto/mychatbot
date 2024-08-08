@@ -5,9 +5,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResumeBot {% block title %} {% endblock %}</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.png' %}"">
-    <!-- Bootstrap CSS -->
+
+    <!-- Title and Meta Description -->
+    <title>ResumeBot {% block title %}Your AI-Powered Resume Assistant{% endblock %}</title>
+    <meta name="description" content="Discover the power of AI with ResumeBot, your intelligent assistant for analyzing and interacting with resumes. Elevate your hiring process with advanced AI insights." />
+
+    <!-- Open Graph Meta Tags for Social Media -->
+    <meta property="og:title" content="ResumeBot - Your AI-Powered Resume Assistant" />
+    <meta property="og:url" content="http://resumebot.info/" />
+    <meta property="og:description" content="Discover the power of AI with ResumeBot, your intelligent assistant for analyzing and interacting with resumes. Elevate your hiring process with advanced AI insights." />
+    <meta property="og:image" content="{% static 'img/LogoResumeBot.png' %}" />
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}" type="image/x-icon" />
+
+    <!-- Additional meta tags for SEO and social media -->
+    <meta name="author" content="Rafael Pinto">
+    <meta name="keywords" content="ResumeBot, resume, chatbot, AI, web application, professional preview">
+
+    <!-- Original Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}">

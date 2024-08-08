@@ -162,10 +162,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtpout.secureserver.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Agilize <contato@agilize.info>'
+DEFAULT_FROM_EMAIL = 'ResumeBot <support@resumebot.info>'
 #SERVER_EMAIL = 'contato@agilize.info'
-EMAIL_HOST_USER = 'contato@agilize.info'
-EMAIL_HOST_PASSWORD = 'V5Ag&QE,ux.zi&h'
+EMAIL_HOST_USER = 'support@resumebot.info'
+EMAIL_HOST_PASSWORD = '8@sJwBw7hn'
 
 try:
     from .local_settings import *
