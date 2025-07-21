@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '161.35.114.168',
