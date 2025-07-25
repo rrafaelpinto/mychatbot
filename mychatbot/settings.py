@@ -95,9 +95,9 @@ WSGI_APPLICATION = 'mychatbot.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'resumebot',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -162,10 +162,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtpout.secureserver.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'ResumeBot <support@resumebot.info>'
-#SERVER_EMAIL = 'contato@agilize.info'
-EMAIL_HOST_USER = 'support@resumebot.info'
-EMAIL_HOST_PASSWORD = '8@sJwBw7hn'
+DEFAULT_FROM_EMAIL = ''
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 try:
     from .local_settings import *
