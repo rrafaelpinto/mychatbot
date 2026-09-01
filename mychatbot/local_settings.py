@@ -1,4 +1,7 @@
-DEBUG = True
+import os
+
+
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in {'1', 'true', 'yes'}
 
 ALLOWED_HOSTS = [
     '161.35.114.168',
@@ -13,7 +16,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'resumebot',
         'USER': 'postgres',
-        'PASSWORD': 'O!0opimo76!',
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
         'HOST': 'localhost',
         'PORT': '5432',
     }
