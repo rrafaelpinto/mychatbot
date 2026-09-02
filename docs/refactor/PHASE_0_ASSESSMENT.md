@@ -627,76 +627,7 @@ For schema changes, use expand/backfill/verify/switch/contract. Migrations shoul
 
 Tooling modernization should be a focused early Phase 1 task because the current clean install cannot start, but credential rotation and immediate access/cost safety are not postponed for formatting work.
 
-# 18. AI-Assisted Development Architecture
-
-Use five responsibility-based development roles for complex work. They need not run on every small task, and they are not product agents.
-
-## Planner / Architect
-
-- **Responsibility:** repository context, domain boundaries, invariants, migration sequence, acceptance criteria, ADR-worthy decisions, and cross-surface coordination.
-- **Boundary:** proposes and validates direction; does not become the sole implementer or approve its own assumptions without evidence.
-- **Use when:** work crosses domains, introduces data models/policies, or has meaningful alternatives.
-- **Must not:** design speculative systems, introduce technology for portfolio value, or treat plans as runtime truth.
-
-## Backend Engineer
-
-- **Responsibility:** Django/DRF, models/migrations, policies/services, PostgreSQL, APIs, document/AI integrations, and backward-compatible data evolution.
-- **Boundary:** enforces server-side business rules and provider boundaries; coordinates public contracts with frontend and tests.
-- **Use when:** implementing a backend use case or migration.
-- **Must not:** put authorization only in templates/serializers, call paid providers before policy, or invent future abstractions without a use case.
-
-## Frontend Engineer
-
-- **Responsibility:** accessible/responsive candidate, public, admin, and chat UX; TypeScript/React only when introduced; API integration and safe rendering.
-- **Boundary:** presents server-authorized state and handles loading/error/disabled AI modes.
-- **Use when:** changing user-facing interaction or establishing a concrete React slice.
-- **Must not:** become the source of authorization, trust raw model HTML, or start a wholesale frontend rewrite.
-
-## Quality Engineer
-
-- **Responsibility:** characterization, unit/integration/API tests, migration tests, invariant regression, future AI evals, and review of test effectiveness.
-- **Boundary:** tests behavior and risk, including provider call counts/absence, without mirroring implementation.
-- **Use when:** before/alongside behavior changes and for release/regression review.
-- **Must not:** chase superficial coverage percentages or mock away the security/cost boundary being tested.
-
-## Security & Reliability Engineer
-
-- **Responsibility:** identity, object authorization, multi-user isolation, uploads/PII/secrets, prompt injection, abuse, quotas/budgets, failure modes, auditability, and operational hardening.
-- **Boundary:** threat-models and validates controls across backend/frontend/AI; implementation remains with the responsible engineer where appropriate.
-- **Use when:** any public/private, paid AI, upload, deployment, or cross-tenant path changes.
-- **Must not:** defer controls to prompts, demand infrastructure without a concrete threat/reliability need, or expand scope into unrelated compliance theater.
-
-For small bounded changes, one engineer can use the relevant skills and review checklist. Use multiple roles when their decision boundaries materially differ, not to maximize agent count.
-
-# 19. Recommended Skills
-
-A small curated initial set:
-
-| Skill | Purpose / users | Value and origin |
-| --- | --- | --- |
-| Repository assessment and incremental planning | Planner; all engineers before broad work | Custom lightweight procedure based on repository evidence, flow tracing, risk ranking, and acceptance criteria. Prevents rewrite-first behavior. |
-| Django authorization and multi-tenant review | Backend + Security + Quality | Custom checklist grounded in Django's authorization/queryset practices and OWASP IDOR guidance. Tests ownership, visibility, staff scope, deny paths, and zero provider calls. |
-| Django test and invariant design | Quality + Backend | Based on established Django/pytest practices; customize only project fixtures/invariants. Emphasizes behavior, database boundaries, migrations, and provider fakes. |
-| LLM threat, grounding, and cost review | Security + Backend + Quality | Custom ResumeBot checklist informed by OWASP LLM threat categories and provider usage semantics. Covers untrusted data, evidence, scope, tokens, retries, quotas, budget, and eval cases. |
-| Dependency/tooling modernization | Backend/Quality/Planner | Procedure based on official uv, Python packaging, Ruff, and pytest guidance. Separates direct dependencies, lock verification, platform testing, and mechanical formatting. |
-| ADR and engineering documentation | Planner + decision owner | Use a small established ADR template adapted to Context/Decision/Alternatives/Consequences/Trade-offs. Only invoke for accepted consequential decisions. |
-| Regression/release review | Quality + Security | Custom final checklist covering tests, migrations, docs, secrets, permissions, paid-call ordering, dependency lock, and rollback. |
-
-Do not install external skills during Phase 0. Review any external skill's prompts, scripts, permissions, network behavior, and assumptions before adoption. CI validation is a step within tooling/release skills, not a separate agent. Documentation updates are a reusable procedure, not a full-time agent.
-
-# 20. Public vs Private Repository Strategy
-
-Public, versioned engineering artifacts should include concise product/architecture documentation, setup/deployment contracts, tests, migrations, security/threat summaries appropriate for disclosure, ADRs for accepted decisions, `AGENTS.md` project conventions, `pyproject.toml`, `uv.lock`, generated compatibility requirements if needed, and CI.
-
-Private AI-working artifacts belong under `.local/`, which Phase 0 added to `.gitignore`. Create subdirectories (`learning/`, `linkedin/`, `prompts/`, `sessions/`, `research/`, `scratch/`) only when used. None may be a runtime dependency or the sole copy of a project decision.
-
-An `AGENTS.md` should be created in Phase 1 after tooling, test, security, and change-scope conventions are accepted. It should be short, actionable, and public: commands, boundaries, invariants, directory guidance, and definition of done. It should not contain transcripts or model-specific scratch prompts.
-
-Introduce `docs/adr/` when the first decision is accepted. Likely early candidates are verified facts as source of truth, access/cost policy before providers, and the tooling source of truth. Do not pre-create empty/speculative ADRs.
-
-Private learning notes and LinkedIn drafts should be rare and evidence-based. Public docs capture the durable engineering decision; `.local/learning` captures personal reflection; `.local/linkedin` may derive a first-person draft only from work that actually occurred. Existing committed CV fixtures should be reviewed separately because private professional data is not an engineering artifact merely because it is JSON.
-
-# 21. Proposed Phase 1
+# 18. Proposed Phase 1
 
 The sequence begins with outstanding credential action, then makes changes reproducible, then enforces access and paid-operation boundaries. Each task should be a separately reviewable change. Phase 1 must not silently expand into RAG, React, or tailored-resume implementation.
 
@@ -965,7 +896,7 @@ Least-privilege CI tokens, no production secrets or PII in CI, pinned actions, d
 
 CI/CD parity, reproducible builds, database service testing, supply-chain controls, deployment checks, rollback thinking, and turning architecture invariants into delivery gates.
 
-# 22. Open Questions / Decisions
+# 19. Open Questions / Decisions
 
 Only the following require owner/operational input; the rest have recommendations above.
 

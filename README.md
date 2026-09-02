@@ -91,4 +91,4 @@ Public candidate images use normal media storage during development. Candidate s
 
 ## Development guidance
 
-Stable engineering rules and the definition of done are in `AGENTS.md`. Architecture decisions are under `docs/adr/`. Private learning notes, prompts, research, and session artifacts belong under the fully ignored `.local/` directory.
+Engineering conventions and the definition of done are in [`AGENTS.md`](AGENTS.md). Product direction and phase status are in [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md), and accepted architecture decisions are under [`docs/adr/`](docs/adr/).

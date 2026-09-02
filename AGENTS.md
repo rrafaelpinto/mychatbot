@@ -1,5 +1,7 @@
 # ResumeBot Engineering Guide
 
+This file defines stable engineering conventions for repository contributors. Product sequencing is documented in `docs/roadmap/ROADMAP.md`, and accepted architectural decisions are under `docs/adr/`.
+
 ## Product and architecture invariants
 
 - Django remains the backend and PostgreSQL the primary datastore.
@@ -11,41 +13,58 @@
 - A denied AI operation must fail before any provider call.
 - Treat uploads, recruiter input, retrieved content, and model output as untrusted.
 - Do not render model or user content as HTML.
-- Do not add React, RAG, Redis, LangGraph, vector search, or background infrastructure without a concrete approved requirement.
+- Do not preserve compatibility for data or behavior with no real consumer. Once persistent shared or production data exists, migrations must preserve it intentionally.
+- Introduce frameworks or infrastructure only for a concrete, measured requirement. React, RAG, Redis, Celery, LangGraph, vector search, and new services are not defaults.
 
-## Commands
+## Repository conventions
+
+- Inspect affected flows, policies, tests, migrations, and configuration before editing.
+- Put HTTP translation in views, reusable authorization in `chatbot.policies`, document processing in `chatbot.services.documents`, and paid calls in `chatbot.services.ai`.
+- Never call OpenAI directly from a view, model, template, or unrelated task.
+- Keep migrations clean and review schema and real-data effects.
+- Prefer explicit code and domain-specific models over premature abstraction or generic data blobs when the domain is understood.
+- Keep application errors sanitized and logs free of resume/contact contents.
+- Use synthetic test data; never add real resumes, credentials, or PII fixtures.
+- Record consequential accepted decisions with real alternatives as ADRs; do not use ADRs as implementation diaries.
+- Preserve unrelated worktree changes.
+- `.local/` is ignored developer workspace. Runtime code, CI, tests, and durable engineering decisions must not depend on it.
+
+## Testing requirements
+
+- Test behavior and invariants rather than implementation details.
+- Cover negative authorization, tenant isolation, publication/suspension, verified-fact provenance, upload boundaries, safe rendering, and exact provider-call counts where relevant.
+- Every denied paid operation must prove that the provider was not invoked.
+- Mock external providers in automated tests; canonical validation must not make paid or network calls.
+- Add PostgreSQL execution when behavior depends on constraints, transactions, locking, indexes, JSON, or PostgreSQL-specific queries.
+
+## Tooling and commands
+
+Use Python 3.12. `pyproject.toml` is the dependency source of truth; commit matching `uv.lock` changes. Do not maintain a second requirements source unless a concrete deployment consumer needs a generated export.
 
 ```text
-uv sync
-uv run pytest
+uv sync --locked --group dev
 uv run ruff check .
 uv run ruff format --check .
-uv run python manage.py check
-uv run python manage.py makemigrations --check --dry-run
+uv run pytest
+uv run python manage.py check --settings=mychatbot.test_settings
+uv run python manage.py makemigrations --check --dry-run --settings=mychatbot.test_settings
 ```
 
-Use Python 3.12. Manage dependencies only through `pyproject.toml` and commit `uv.lock` changes. Do not recreate a hand-maintained `requirements.txt` unless a concrete deployment consumer requires a generated export.
+Run PostgreSQL-shaped and production deployment checks when changes touch database-specific behavior, settings, security, dependencies, or deployment. Apply formatting with `uv run ruff format .`.
 
-## Change rules
+## Documentation
 
-- Inspect affected flows, policies, tests, and migrations before editing.
-- Put HTTP translation in views, reusable authorization in `chatbot.policies`, document processing in `chatbot.services.documents`, and paid calls in `chatbot.services.ai`.
-- Never call OpenAI directly from a view, model, template, or task.
-- Keep migrations clean and review schema/data effects. Phase 1 has no legacy database, but future migrations must preserve real state once it exists.
-- Add tests for behavior and invariants, especially negative authorization and exact provider-call boundaries.
-- Use synthetic test data; never add real resumes, credentials, or PII fixtures.
-- Keep application errors sanitized and logs free of resume/contact contents.
-- Record only consequential accepted decisions as ADRs.
-
-## Private workspace
-
-`.local/` is fully ignored and may contain learning notes, prompts, research, scratch work, sessions, and LinkedIn drafts. It must never contain runtime requirements or the sole record of an engineering decision. Do not commit AI transcripts or raw collaboration artifacts.
+- `README.md` describes product architecture, setup, configuration, and development entry points.
+- `docs/roadmap/ROADMAP.md` describes product direction, phase status, boundaries, and completion criteria.
+- `docs/adr/` records accepted architectural decisions and their trade-offs.
+- Keep public documentation focused on durable product and engineering knowledge.
 
 ## Definition of done
 
-- behavior and security invariants have tests;
-- unauthorized paths do not cross provider or private-data boundaries;
-- migrations have no unexplained drift;
-- `uv run pytest`, Ruff lint, Ruff format check, and Django checks pass;
-- configuration and documentation reflect the change;
-- no secret, real PII, generated artifact, or private working material entered Git.
+- The requested behavior or roadmap phase meets its acceptance criteria.
+- Security and business invariants have outcome-focused tests.
+- Unauthorized paths do not cross provider or private-data boundaries.
+- Migrations have no unexplained drift.
+- Canonical validation and relevant production/PostgreSQL checks pass.
+- ADRs, roadmap status, configuration, and public documentation match actual behavior.
+- No secret, real PII, generated environment artifact, or private working material entered Git.
