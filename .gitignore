@@ -2,8 +2,16 @@
 *.pyc
 .env
 .idea/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 db.sqlite3
 # Ignore __pycache__ directories
 __pycache__/
 /deploy/*
 .local/
+.test-private-media/
+.test-public-media/
+private_media/

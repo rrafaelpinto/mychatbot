@@ -1,17 +1,35 @@
 from django import forms
-from .models import Candidate
 
-class CandidateRegistrationForm(forms.ModelForm):
-    resume_file = forms.FileField(label='Upload Resume', help_text='Only PDF or DOCX files are allowed.', required=False)
+from .models import CandidateProfile
+from .validators import validate_candidate_document
+
+
+class CandidateProfileForm(forms.ModelForm):
+    linkedin = forms.URLField(required=False, assume_scheme="https")
+    document = forms.FileField(
+        label="Upload resume",
+        help_text="PDF or DOCX, up to 5 MB. Source documents remain private.",
+        required=False,
+        validators=[validate_candidate_document],
+    )
 
     class Meta:
-        model = Candidate
-        fields = ['name', 'email', 'phone', 'linkedin', 'image', 'resume_file', 'public_profile']
+        model = CandidateProfile
+        fields = [
+            "name",
+            "professional_summary",
+            "image",
+            "linkedin",
+            "show_linkedin",
+            "contact_email",
+            "show_contact_email",
+            "phone",
+        ]
+        help_texts = {
+            "contact_email": "Private unless you explicitly opt in below.",
+            "phone": "Always private in Phase 1.",
+        }
 
-    def clean_resume_file(self):
-        resume_file = self.cleaned_data.get('resume_file')
-        if resume_file:
-            file_ext = resume_file.name.split('.')[-1].lower()
-            if file_ext not in ['pdf', 'docx']:
-                raise forms.ValidationError('Only PDF or DOCX files are allowed.')
-        return resume_file
+
+class ChatQuestionForm(forms.Form):
+    question = forms.CharField(max_length=1000, strip=True)

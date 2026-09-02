@@ -1,116 +1,161 @@
-from django.contrib.auth.models import User
-from django.contrib import messages
+from django.contrib import messages as django_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
-from langchain_text_splitters import CharacterTextSplitter
-
-from mychatbot.utils import process_resume
-from .prompts import resumebot, extraction_prompt
-from .forms import CandidateRegistrationForm
-from .models import Candidate, Interaction
+from .forms import CandidateProfileForm, ChatQuestionForm
+from .models import CandidateProfile, Conversation, Message
+from .policies import can_read_conversation
+from .services.ai import AIServiceError, AIUnavailable, ask_candidate
+from .services.documents import (
+    DocumentProcessingError,
+    create_candidate_document,
+    process_candidate_document,
+)
 
 
 def about(request):
-    return render(request, 'about.html')
+    return render(request, "about.html")
+
+
+def candidates(request):
+    profiles = CandidateProfile.objects.publicly_viewable()
+    return render(request, "candidates.html", {"candidates": profiles})
+
+
+def public_profile(request, slug):
+    candidate = get_object_or_404(
+        CandidateProfile.objects.publicly_viewable(), slug=slug
+    )
+    return render(request, "public_profile.html", {"candidate": candidate})
+
 
 @login_required
 def profile(request):
-    candidate = get_object_or_404(Candidate, user=request.user)
-    return render(request, 'profile.html', {'candidate': candidate})
-
-
-@login_required
-def format_resume(request):
-    candidate = get_object_or_404(Candidate, user=request.user)
-    resume = extraction_prompt.run({'resume': candidate.resume})
-    candidate.resume = resume
-    candidate.save()
-    messages.success(request, 'Resume well formated successfully.')
-    return redirect('profile')
+    candidate = get_object_or_404(CandidateProfile, user=request.user)
+    return render(
+        request,
+        "profile.html",
+        {"candidate": candidate, "documents": candidate.documents.all()},
+    )
 
 
 @login_required
 def manager_candidate(request):
-    try:
-        candidate = Candidate.objects.get(user=request.user)
-        title = 'Edit profile'
-    except Candidate.DoesNotExist:
-        candidate = None
-        title = 'Register as candidate'
-    if request.method == 'POST':
-        form = CandidateRegistrationForm(request.POST or None, request.FILES, instance=candidate)
+    candidate = CandidateProfile.objects.filter(user=request.user).first()
+    title = "Edit profile" if candidate else "Register as candidate"
+
+    if request.method == "POST":
+        form = CandidateProfileForm(request.POST, request.FILES, instance=candidate)
         if form.is_valid():
-            try:
-                candidate = form.save(commit=False)
-                candidate.user = request.user
-                # Process the uploaded resume file
-                resume_file = request.FILES.get('resume_file')
-                if resume_file:
-                    fs = FileSystemStorage()
-                    filename = fs.save(resume_file.name, resume_file)
-                    uploaded_file_path = fs.path(filename)
-                    # Extract text from the resume file
-                    candidate.resume = process_resume(uploaded_file_path)
-
-                candidate.save()
-                messages.success(request, 'Profile updated successfully.')
-                return redirect('profile')
-            except Exception as e:
-                messages.error(request, f'An error occurred: {str(e)}', extra_tags='danger')
-        else:
-            messages.error(request, 'Please correct the error below.', extra_tags='danger')
+            saved_candidate = form.save(commit=False)
+            saved_candidate.user = request.user
+            saved_candidate.save()
+            document_upload = form.cleaned_data.get("document")
+            if document_upload:
+                try:
+                    document = create_candidate_document(
+                        saved_candidate, document_upload
+                    )
+                    process_candidate_document(document)
+                except (DocumentProcessingError, ValidationError):
+                    django_messages.warning(
+                        request,
+                        "Your profile was saved, but the document could not be processed.",
+                    )
+                else:
+                    django_messages.success(
+                        request, "Profile and source document saved successfully."
+                    )
+            else:
+                django_messages.success(request, "Profile saved successfully.")
+            return redirect("profile")
+        django_messages.error(request, "Please correct the errors below.")
     else:
-        form = CandidateRegistrationForm(request.GET or None, instance=candidate)
+        form = CandidateProfileForm(instance=candidate)
 
-
-    return render(request, 'manager_candidate.html', {'form': form, 'title': title})
-
-
-@login_required
-def candidates(request):
-    candidates = Candidate.objects.filter(public_profile=True).order_by('name')
-    return render(request, 'candidates.html', {'candidates': candidates})
-
-
-@staff_member_required
-def interactions(request):
-    interactions = Interaction.objects.values('user__id', 'user__username', 'candidate__id', 'candidate__name').distinct()
-    print(interactions.count())
-    return render(request, 'interactions.html', {'interactions': interactions})
-
-
-@staff_member_required
-def view_interaction(request, user_id, candidate_id):
-    user = get_object_or_404(User, pk=user_id)
-    candidate = get_object_or_404(Candidate, pk=candidate_id)
-    interactions = Interaction.objects.filter(user=user, candidate=candidate).order_by('timestamp')
-    return render(request, 'view_interaction.html', {'user': user, 'candidate': candidate, 'interactions': interactions})
+    return render(
+        request,
+        "manager_candidate.html",
+        {"form": form, "title": title},
+    )
 
 
 @login_required
 def chat(request, slug):
-    candidate = get_object_or_404(Candidate, slug=slug)
-    user = request.user
-    interactions = Interaction.objects.filter(user=user, candidate=candidate).order_by('timestamp')
+    candidate = get_object_or_404(
+        CandidateProfile.objects.publicly_viewable(), slug=slug
+    )
+    conversation = Conversation.objects.filter(
+        candidate=candidate, recruiter=request.user
+    ).first()
 
-    if request.method == 'POST':
-        question = request.POST.get('question')
-        if question:
-            text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
-            chunks = text_splitter.split_text(candidate.resume)
-            response = ''
-            for chunk in chunks:
-                response += resumebot.run({'resume': chunk, 'question': question})
+    if request.method == "POST":
+        form = ChatQuestionForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse({"error": "Enter a valid question."}, status=400)
 
-            interaction = Interaction.objects.create(user=user, candidate=candidate, question=question, response=response)
-            timestamp = interaction.timestamp.strftime('%d/%m/%Y %H:%M:%S')
-            return JsonResponse({
-                'response': response,
-                'timestamp': timestamp
-            })
-    return render(request, 'chat.html', {'candidate': candidate, 'interactions': interactions})
+        question = form.cleaned_data["question"]
+        try:
+            ai_response = ask_candidate(
+                candidate=candidate,
+                initiated_by=request.user,
+                question=question,
+            )
+        except AIUnavailable:
+            return JsonResponse(
+                {"error": "The Candidate Agent is temporarily unavailable."},
+                status=503,
+            )
+        except AIServiceError as exc:
+            return JsonResponse({"error": str(exc)}, status=409)
+
+        conversation, _ = Conversation.objects.get_or_create(
+            candidate=candidate, recruiter=request.user
+        )
+        Message.objects.bulk_create(
+            [
+                Message(
+                    conversation=conversation,
+                    role=Message.Role.USER,
+                    content=question,
+                ),
+                Message(
+                    conversation=conversation,
+                    role=Message.Role.ASSISTANT,
+                    content=ai_response.content,
+                ),
+            ]
+        )
+        conversation.save(update_fields=["updated_at"])
+        return JsonResponse({"response": ai_response.content})
+
+    history = conversation.messages.all() if conversation else Message.objects.none()
+    return render(
+        request,
+        "chat.html",
+        {"candidate": candidate, "history": history},
+    )
+
+
+@staff_member_required
+def conversations(request):
+    records = Conversation.objects.select_related("candidate", "recruiter")
+    return render(request, "interactions.html", {"conversations": records})
+
+
+@login_required
+def conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(
+        Conversation.objects.select_related("candidate", "recruiter"),
+        pk=conversation_id,
+    )
+    if not can_read_conversation(request.user, conversation):
+        return JsonResponse({"error": "Not found."}, status=404)
+    return render(
+        request,
+        "view_interaction.html",
+        {"conversation": conversation, "history": conversation.messages.all()},
+    )

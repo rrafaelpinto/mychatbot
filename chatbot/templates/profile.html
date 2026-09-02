@@ -1,35 +1,30 @@
 {% extends "base.html" %}
-
 {% block title %}- Profile{% endblock %}
-
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 order-md-1">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Candidate Profile</h4>
-            <div>
-                <a href="{% url 'manager_candidate' %}" class="btn btn-primary btn-sm mr-2">Edit Profile</a>
-                <a href="{% url 'password_change' %}" class="btn btn-secondary btn-sm">Change Password</a>
-                <a href="{% url 'format_resume' %}" class="btn btn-secondary btn-sm">Format Resume</a>
-            </div>
-        </div>
-        <div class="candidate-info">
-            <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
-            <div>
-                <h4 class="my-4">{{ candidate.name }}</h4>
-                <ul class="list-unstyled">
-                    <li><strong>Email:</strong> {{ candidate.email }}</li>
-                    {% if candidate.phone %}
-                        <li><strong>Phone:</strong> {{ candidate.phone }}</li>
-                    {% endif %}
-                    {% if candidate.linkedin %}
-                        <li><strong>LinkedIn:</strong> <a href="{{ candidate.linkedin }}" target="_blank">{{ candidate.linkedin }}</a></li>
-                    {% endif %}
-                    <li>Public profile: {{ candidate.public_profile|yesno:"Yes,No" }}</li>
-                    <li><a href="{% url 'chat' candidate.slug %}">My ResumeBot</a></li>
-                </ul>
-            </div>
-        </div>
+<div class="my-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h3">Candidate profile</h1>
+        <a href="{% url 'manager_candidate' %}" class="btn btn-primary btn-sm">Edit profile</a>
     </div>
+    <dl class="row mt-4">
+        <dt class="col-sm-3">Name</dt><dd class="col-sm-9">{{ candidate.name }}</dd>
+        <dt class="col-sm-3">Candidate status</dt><dd class="col-sm-9">{{ candidate.get_status_display }}</dd>
+        <dt class="col-sm-3">Publication</dt><dd class="col-sm-9">{{ candidate.get_publication_status_display }}</dd>
+        <dt class="col-sm-3">Account email</dt><dd class="col-sm-9">{{ request.user.email }} <span class="text-muted">(private)</span></dd>
+        {% if candidate.contact_email %}<dt class="col-sm-3">Contact email</dt><dd class="col-sm-9">{{ candidate.contact_email }} — public: {{ candidate.show_contact_email|yesno:"yes,no" }}</dd>{% endif %}
+        {% if candidate.phone %}<dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ candidate.phone }} <span class="text-muted">(private)</span></dd>{% endif %}
+    </dl>
+    {% if candidate.publication_status == "published" %}
+        <a href="{% url 'public_profile' candidate.slug %}">View public profile</a>
+    {% endif %}
+
+    <h2 class="h4 mt-5">Private source documents</h2>
+    <ul class="list-group">
+        {% for document in documents %}
+            <li class="list-group-item">{{ document.original_filename }} — {{ document.get_processing_status_display }}</li>
+        {% empty %}
+            <li class="list-group-item">No source documents uploaded.</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

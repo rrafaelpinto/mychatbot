@@ -1,89 +1,45 @@
 <!DOCTYPE html>
 {% load static %}
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Title and Meta Description -->
-    <title>ResumeBot {% block title %}Your AI-Powered Resume Assistant{% endblock %}</title>
-    <meta name="description" content="Discover the power of AI with ResumeBot, your intelligent assistant for analyzing and interacting with resumes. Elevate your hiring process with advanced AI insights." />
-
-    <!-- Open Graph Meta Tags for Social Media -->
-    <meta property="og:title" content="ResumeBot - Your AI-Powered Resume Assistant" />
-    <meta property="og:url" content="http://resumebot.info/" />
-    <meta property="og:description" content="Discover the power of AI with ResumeBot, your intelligent assistant for analyzing and interacting with resumes. Elevate your hiring process with advanced AI insights." />
-    <meta property="og:image" content="{% static 'img/LogoResumeBot.png' %}" />
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}" type="image/x-icon" />
-
-    <!-- Additional meta tags for SEO and social media -->
-    <meta name="author" content="Rafael Pinto">
-    <meta name="keywords" content="ResumeBot, resume, chatbot, AI, web application, professional preview">
-
-    <!-- Original Bootstrap CSS -->
+    <title>ResumeBot {% block title %}{% endblock %}</title>
+    <meta name="description" content="Professional profiles grounded in candidate-verified information.">
+    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}" type="image/x-icon">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
-    {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
-<!-- Check if Debug False -->
-{% if not DEBUG %}
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8LYYFFJEXH"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-8LYYFFJEXH');
-    </script>
-{% endif %}
-
 <body>
 <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top">
     <a class="navbar-brand" href="{% url 'about' %}">ResumeBot</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{% url 'candidates' %}">Candidates</a></li>
             {% if not user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'django_registration_register' %}">Sign Up</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'django_registration_register' %}">Sign up</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Log in</a></li>
             {% else %}
-                {% if user.is_superuser and user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'interactions' %}">Interactions</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-                    </li>
+                {% if user.is_staff %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'conversations' %}">Conversations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'candidates' %}">Candidates</a>
-                </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Account
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                        {% if user.candidate %}
+                    <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-toggle="dropdown">Account</a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        {% if user.candidate_profile %}
                             <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
                         {% else %}
-                            <a class="dropdown-item" href="{% url 'manager_candidate' %}">Register as Candidate</a>
+                            <a class="dropdown-item" href="{% url 'manager_candidate' %}">Create candidate profile</a>
                         {% endif %}
-                        <div class="dropdown-divider"></div>
-                        <form id="logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
+                        <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
+                            <button class="dropdown-item" type="submit">Log out</button>
                         </form>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit();">Log out</a>
                     </div>
                 </li>
             {% endif %}
@@ -91,30 +47,16 @@
     </div>
 </nav>
 
-
-<div class="container">
+<main class="container">
     {% if messages %}
-        <div class="row justify-content-center">
-            <div class="col-md-6 order-md-1">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+        {% endfor %}
     {% endif %}
     {% block content %}{% endblock %}
-</div>
+</main>
 
-<div class="footer">
-    <p>&copy; 2024 ResumeBot. All rights reserved.</p>
-</div>
-
-<!-- jQuery and Bootstrap JS -->
+<footer class="footer"><p>&copy; ResumeBot</p></footer>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% block extra_js %}{% endblock %}

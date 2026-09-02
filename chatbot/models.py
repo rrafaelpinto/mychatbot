@@ -1,49 +1,291 @@
-from django.contrib.auth.models import User
+import uuid
+from pathlib import Path
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
-class Candidate(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidate', null=True, blank=True)
-    name = models.CharField(max_length=255, verbose_name='Name')
-    email = models.EmailField(verbose_name='Email')
-    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='Phone')
-    linkedin = models.URLField(blank=True, null=True, verbose_name='LinkedIn')
-    resume = models.TextField(verbose_name='Resume')
-    slug = models.SlugField(unique=True, blank=True, verbose_name='Slug')
-    image = models.ImageField(upload_to='candidate_images/', blank=True, null=True, verbose_name="Image")
-    public_profile = models.BooleanField(verbose_name='Public profile', default=True, help_text='Public profiles will be listed in the public area. Note that non-public profiles will still be able to interact with users, provided their chat page is shared directly.')
-    activate = models.BooleanField(verbose_name='Activate', default=True)
+from .storage import PrivateDocumentStorage
+from .validators import validate_candidate_document
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
-    def __str__(self):
+def candidate_document_path(instance, filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
+    return f"candidate-documents/{instance.candidate_id}/{uuid.uuid4().hex}{suffix}"
+
+
+class CandidateProfileQuerySet(models.QuerySet):
+    def publicly_viewable(self):
+        return self.filter(
+            status=CandidateProfile.Status.ACTIVE,
+            publication_status=CandidateProfile.PublicationStatus.PUBLISHED,
+        )
+
+
+class CandidateProfile(models.Model):
+    class Status(models.TextChoices):
+        PENDING_APPROVAL = "pending_approval", "Pending approval"
+        ACTIVE = "active", "Active"
+        SUSPENDED = "suspended", "Suspended"
+
+    class PublicationStatus(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PUBLISHED = "published", "Published"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="candidate_profile",
+    )
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    professional_summary = models.TextField(blank=True)
+    image = models.ImageField(upload_to="candidate-images/", blank=True)
+    linkedin = models.URLField(blank=True)
+    show_linkedin = models.BooleanField(default=False)
+    contact_email = models.EmailField(blank=True)
+    show_contact_email = models.BooleanField(default=False)
+    phone = models.CharField(max_length=30, blank=True)
+    status = models.CharField(
+        max_length=32,
+        choices=Status.choices,
+        default=Status.PENDING_APPROVAL,
+    )
+    publication_status = models.CharField(
+        max_length=16,
+        choices=PublicationStatus.choices,
+        default=PublicationStatus.DRAFT,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = CandidateProfileQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(publication_status="draft") | models.Q(status="active")
+                ),
+                name="published_candidate_must_be_active",
+            )
+        ]
+
+    def __str__(self) -> str:
         return self.name
 
+    def save(self, *args, **kwargs) -> None:
+        if not self.slug:
+            base_slug = slugify(self.name) or "candidate"
+            slug = base_slug
+            while (
+                CandidateProfile.objects.exclude(pk=self.pk).filter(slug=slug).exists()
+            ):
+                slug = f"{base_slug}-{uuid.uuid4().hex[:8]}"
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def publish(self) -> None:
+        if self.status != self.Status.ACTIVE:
+            raise ValidationError("Only active candidates can be published.")
+        self.publication_status = self.PublicationStatus.PUBLISHED
+
+    def suspend(self) -> None:
+        self.status = self.Status.SUSPENDED
+        self.publication_status = self.PublicationStatus.DRAFT
+
     @property
-    def image_url(self):
+    def image_url(self) -> str:
         if self.image:
             return self.image.url
-        else:
-            return '/static/img/DefaultAvatar.png'
+        return "/static/img/DefaultAvatar.png"
+
+
+class CandidateDocument(models.Model):
+    class DocumentType(models.TextChoices):
+        RESUME = "resume", "Resume"
+
+    class ProcessingStatus(models.TextChoices):
+        UPLOADED = "uploaded", "Uploaded"
+        PROCESSED = "processed", "Processed"
+        FAILED = "failed", "Failed"
+
+    candidate = models.ForeignKey(
+        CandidateProfile,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+    file = models.FileField(
+        storage=PrivateDocumentStorage(),
+        upload_to=candidate_document_path,
+        validators=[validate_candidate_document],
+    )
+    document_type = models.CharField(
+        max_length=16,
+        choices=DocumentType.choices,
+        default=DocumentType.RESUME,
+    )
+    original_filename = models.CharField(max_length=255)
+    detected_content_type = models.CharField(max_length=127)
+    size_bytes = models.PositiveIntegerField()
+    processing_status = models.CharField(
+        max_length=16,
+        choices=ProcessingStatus.choices,
+        default=ProcessingStatus.UPLOADED,
+    )
+    extracted_text = models.TextField(blank=True, editable=False)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Candidate'
-        verbose_name_plural = 'Candidates'
+        ordering = ["-uploaded_at"]
+
+    def __str__(self) -> str:
+        return f"{self.candidate} - {self.original_filename}"
+
+    def mark_processed(self, extracted_text: str) -> None:
+        self.extracted_text = extracted_text
+        self.processing_status = self.ProcessingStatus.PROCESSED
+        self.processed_at = timezone.now()
+
+    def mark_failed(self) -> None:
+        self.extracted_text = ""
+        self.processing_status = self.ProcessingStatus.FAILED
+        self.processed_at = timezone.now()
 
 
-class Interaction(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='interactions', verbose_name='User')
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='interactions', verbose_name='Candidate')
-    question = models.TextField(verbose_name='Question')
-    response = models.TextField(verbose_name='Response')
-    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Timestamp')
+class CandidateFact(models.Model):
+    class FactType(models.TextChoices):
+        SUMMARY = "summary", "Summary"
+        EXPERIENCE = "experience", "Experience"
+        EDUCATION = "education", "Education"
+        SKILL = "skill", "Skill"
+        PROJECT = "project", "Project"
+        OTHER = "other", "Other"
 
-    def __str__(self):
-        return f'Interaction by {self.user.username} with {self.candidate.name} on {self.timestamp.strftime("%d/%m/%Y %H:%M:%S")}'
-    
+    class VerificationStatus(models.TextChoices):
+        PENDING = "pending", "Pending review"
+        VERIFIED = "verified", "Verified"
+        REJECTED = "rejected", "Rejected"
+
+    candidate = models.ForeignKey(
+        CandidateProfile,
+        on_delete=models.CASCADE,
+        related_name="facts",
+    )
+    fact_type = models.CharField(max_length=16, choices=FactType.choices)
+    content = models.TextField()
+    verification_status = models.CharField(
+        max_length=16,
+        choices=VerificationStatus.choices,
+        default=VerificationStatus.PENDING,
+    )
+    source_document = models.ForeignKey(
+        CandidateDocument,
+        on_delete=models.SET_NULL,
+        related_name="facts",
+        null=True,
+        blank=True,
+    )
+    source_reference = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
-        verbose_name = 'Interaction'
-        verbose_name_plural = 'Interactions'
+        ordering = ["fact_type", "id"]
+
+    def clean(self) -> None:
+        super().clean()
+        if (
+            self.source_document_id
+            and self.candidate_id
+            and self.source_document.candidate_id != self.candidate_id
+        ):
+            raise ValidationError(
+                {"source_document": "Evidence must belong to the same candidate."}
+            )
+
+
+class Conversation(models.Model):
+    candidate = models.ForeignKey(
+        CandidateProfile,
+        on_delete=models.CASCADE,
+        related_name="conversations",
+    )
+    recruiter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="candidate_conversations",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate", "recruiter"],
+                name="one_conversation_per_recruiter_candidate",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.recruiter} and {self.candidate}"
+
+
+class Message(models.Model):
+    class Role(models.TextChoices):
+        USER = "user", "User"
+        ASSISTANT = "assistant", "Assistant"
+
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+    role = models.CharField(max_length=16, choices=Role.choices)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+
+class AIUsageEvent(models.Model):
+    class Operation(models.TextChoices):
+        CANDIDATE_CHAT = "candidate_chat", "Candidate chat"
+
+    class Status(models.TextChoices):
+        STARTED = "started", "Started"
+        SUCCEEDED = "succeeded", "Succeeded"
+        FAILED = "failed", "Failed"
+
+    initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="ai_usage_events",
+    )
+    candidate = models.ForeignKey(
+        CandidateProfile,
+        on_delete=models.PROTECT,
+        related_name="ai_usage_events",
+    )
+    operation = models.CharField(max_length=32, choices=Operation.choices)
+    provider = models.CharField(max_length=32, default="openai")
+    model = models.CharField(max_length=127)
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.STARTED,
+    )
+    input_tokens = models.PositiveIntegerField(null=True, blank=True)
+    output_tokens = models.PositiveIntegerField(null=True, blank=True)
+    provider_request_id = models.CharField(max_length=255, blank=True)
+    error_code = models.CharField(max_length=64, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]

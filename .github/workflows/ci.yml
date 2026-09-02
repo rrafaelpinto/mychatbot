@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: resumebot_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d resumebot_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      TEST_WITH_POSTGRES: "true"
+      POSTGRES_DB: resumebot_ci
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.8"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked --group dev
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Check migration drift
+        run: uv run python manage.py makemigrations --check --dry-run --settings=mychatbot.test_settings
+
+      - name: Run tests on PostgreSQL
+        run: uv run pytest
+
+      - name: Django system check
+        run: uv run python manage.py check --settings=mychatbot.test_settings
+
+      - name: Django deployment check
+        run: uv run python manage.py check --deploy --settings=mychatbot.settings
+        env:
+          RESUMEBOT_ENV: production
+          DJANGO_SECRET_KEY: ci-only-long-random-looking-secret-key-not-used-outside-checks-83d2a
+          DJANGO_ALLOWED_HOSTS: example.com
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://example.com
+          DJANGO_SECURE_HSTS_PRELOAD: "true"

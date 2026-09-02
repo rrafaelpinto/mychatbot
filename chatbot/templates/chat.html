@@ -1,98 +1,81 @@
 {% extends "base.html" %}
-
 {% block title %}- {{ candidate.name }}{% endblock %}
-
 {% block content %}
-    <div class="candidate-info">
-        <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
-        <div>
-            <h4 class="my-4">{{ candidate.name }}</h4>
-            <ul class="list-unstyled">
-                <li><strong>Email:</strong> {{ candidate.email }}</li>
-                {% if candidate.linkedin %}
-                    <li><strong>LinkedIn:</strong> <a href="{{ candidate.linkedin }}" target="_blank">{{ candidate.linkedin }}</a></li>
-                {% endif %}
-            </ul>
+<div class="candidate-info my-4">
+    <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
+    <div>
+        <h1 class="h4">{{ candidate.name }}</h1>
+        {% if candidate.professional_summary %}<p>{{ candidate.professional_summary }}</p>{% endif %}
+        {% if candidate.show_linkedin and candidate.linkedin %}<a href="{{ candidate.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
+    </div>
+</div>
+
+<div id="chat-box" class="chat-box" aria-live="polite">
+    {% for message in history %}
+        <div class="chat-message {% if message.role == 'user' %}user{% else %}bot{% endif %}">
+            <p><strong>{% if message.role == 'user' %}You{% else %}{{ candidate.name }}{% endif %}:</strong> {{ message.content }}</p>
         </div>
-    </div>
+    {% endfor %}
+</div>
 
-    <div id="chat-box" class="chat-box">
-        {% for interaction in interactions %}
-            <div class="chat-message user">
-                <p><strong>You:</strong> {{ interaction.question }}</p>
-            </div>
-            <div class="chat-message bot">
-                <p><strong>{{ candidate.name }}:</strong> {{ interaction.response }}</p>
-            </div>
-        {% endfor %}
-
-        <!-- Chat messages will be appended here -->
+<form id="chat-form" class="mb-4" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="question">Professional question</label>
+        <input type="text" id="question" name="question" maxlength="1000" class="form-control" required>
     </div>
-    <p>Welcome, {{ request.user.username }}! Feel free to ask any questions about my resume.</p>
-    <!-- Suggested Questions -->
-    <div id="suggested-questions" class="mb-3">
-        <p>Suggested Questions:</p>
-        <ul>
-            <li><a href="#" class="suggested-question" data-question="What are your main strengths?">What are your main strengths?</a></li>
-            <li><a href="#" class="suggested-question" data-question="Can you describe the most relevant work experience mentioned in your resume?">Can you describe the most relevant work experience mentioned in your resume?</a></li>
-            <li><a href="#" class="suggested-question" data-question="What are the key skills highlighted in your resume?">What are the key skills highlighted in your resume?</a></li>
-        </ul>
-    </div>
-    <form id="chat-form" class="mb-4">
-        <div class="form-group">
-            <label for="question">Question:</label>
-            <input type="text" id="question" name="question" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
-
+    <button id="send-button" type="submit" class="btn btn-primary">Send</button>
+    <p id="chat-error" class="text-danger mt-2" role="alert"></p>
+</form>
+{{ candidate.name|json_script:"candidate-name" }}
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        function scrollToBottom() {
-            let chatBox = document.getElementById('chat-box');
-            chatBox.scrollTop = chatBox.scrollHeight;
+<script>
+(() => {
+    const form = document.getElementById("chat-form");
+    const chatBox = document.getElementById("chat-box");
+    const questionInput = document.getElementById("question");
+    const sendButton = document.getElementById("send-button");
+    const errorBox = document.getElementById("chat-error");
+    const candidateName = JSON.parse(document.getElementById("candidate-name").textContent);
+
+    function appendMessage(label, content, className) {
+        const container = document.createElement("div");
+        container.classList.add("chat-message", className);
+        const paragraph = document.createElement("p");
+        const strong = document.createElement("strong");
+        strong.textContent = `${label}: `;
+        paragraph.append(strong, document.createTextNode(content));
+        container.appendChild(paragraph);
+        chatBox.appendChild(container);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const question = questionInput.value.trim();
+        if (!question || sendButton.disabled) return;
+
+        errorBox.textContent = "";
+        sendButton.disabled = true;
+        appendMessage("You", question, "user");
+        try {
+            const response = await fetch(form.action || window.location.href, {
+                method: "POST",
+                body: new FormData(form),
+                headers: {"X-Requested-With": "XMLHttpRequest"},
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "The request failed.");
+            appendMessage(candidateName, data.response, "bot");
+            questionInput.value = "";
+        } catch (error) {
+            errorBox.textContent = error.message;
+        } finally {
+            sendButton.disabled = false;
         }
-
-        $(document).ready(function() {
-
-            // Handle click on suggested questions
-            $('.suggested-question').on('click', function(event) {
-                event.preventDefault();
-                let question = $(this).data('question');
-                $('#question').val(question);
-                $(this).parent().remove(); // Remove the clicked question link
-                $('#chat-form').submit(); // Submit the form
-            });
-
-            $('#chat-form').on('submit', function(event) {
-                event.preventDefault();
-                let question = $('#question').val();
-                if (question.trim() === "") {
-                    return;
-                }
-
-                // Append user question to chat box
-                $('#chat-box').append('<div class="chat-message user"><p><strong>You:</strong> ' + question + '</p></div>').show();
-                scrollToBottom();
-
-                $.ajax({
-                    url: "{% url 'chat' candidate.slug %}",
-                    method: 'POST',
-                    data: {
-                        question: question,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        // Append bot response to chat box
-                        $('#chat-box').append('<div class="chat-message bot"><p><strong>{{ candidate.name }}:</strong> ' + response.response + '</p>');
-                        $('#question').val('');
-                        // Scroll to the bottom of the chat box
-                        scrollToBottom();
-                    }
-                });
-            });
-        });
-    </script>
+    });
+})();
+</script>
 {% endblock %}

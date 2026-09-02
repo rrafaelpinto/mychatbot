@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}- {{ candidate.name }}{% endblock %}
+{% block content %}
+<div class="candidate-info my-4">
+    <img src="{{ candidate.image_url }}" alt="{{ candidate.name }}" class="img-thumbnail mb-3">
+    <div>
+        <h1 class="h3">{{ candidate.name }}</h1>
+        {% if candidate.professional_summary %}<p>{{ candidate.professional_summary }}</p>{% endif %}
+        {% if candidate.show_linkedin and candidate.linkedin %}
+            <p><a href="{{ candidate.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn profile</a></p>
+        {% endif %}
+        {% if candidate.show_contact_email and candidate.contact_email %}
+            <p>Professional email: {{ candidate.contact_email }}</p>
+        {% endif %}
+        {% if user.is_authenticated %}
+            <a href="{% url 'chat' candidate.slug %}" class="btn btn-primary">Ask Candidate Agent</a>
+        {% else %}
+            <a href="{% url 'login' %}?next={% url 'chat' candidate.slug %}" class="btn btn-primary">Log in to ask the Candidate Agent</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

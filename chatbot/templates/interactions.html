@@ -1,19 +1,15 @@
 {% extends "base.html" %}
-
-{% block title %}- Interactions{% endblock %}
-
+{% block title %}- Conversations{% endblock %}
 {% block content %}
-<h1 class="my-4">Interactions</h1>
+<h1 class="my-4">Conversations</h1>
 <ul class="list-group">
-    {% for interaction in interactions %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>
-            <b>{{ interaction.user__username }}</b> talked to <b>{{ interaction.candidate__name }}</b>
-        </span>
-        <a href="{% url 'view_interaction' interaction.user__id interaction.candidate__id %}" class="btn btn-primary btn-sm">View</a>
-    </li>
+    {% for conversation in conversations %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ conversation.recruiter.username }} with {{ conversation.candidate.name }}</span>
+            <a href="{% url 'conversation_detail' conversation.id %}" class="btn btn-primary btn-sm">View</a>
+        </li>
     {% empty %}
-        <p class="mt-3">Sorry. No interactions registered at this time.</p>
+        <li class="list-group-item">No conversations recorded.</li>
     {% endfor %}
 </ul>
 {% endblock %}
