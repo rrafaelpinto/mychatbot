@@ -73,7 +73,9 @@ def test_ai_quota_denial_returns_429(
     assert not AIUsageEvent.objects.exists()
 
 
-@pytest.mark.skipif(connection.vendor != "postgresql", reason="Requires PostgreSQL locks")
+@pytest.mark.skipif(
+    connection.vendor != "postgresql", reason="Requires PostgreSQL locks"
+)
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_ai_admission_does_not_exceed_candidate_quota(
     settings, recruiter, published_candidate, verified_fact
