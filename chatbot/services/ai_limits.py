@@ -12,7 +12,9 @@ class AIQuotaExceeded(Exception):
     """An AI request exceeded its operation limits."""
 
 
-def admit_ai_operation(*, identity_id: int, candidate_id: int, operation: str) -> AIUsageEvent:
+def admit_ai_operation(
+    *, identity_id: int, candidate_id: int, operation: str
+) -> AIUsageEvent:
     """Atomically enforce limits and record an admitted paid operation."""
     limits = settings.AI_USAGE_LIMITS[operation]
     now = timezone.now()
@@ -24,19 +26,26 @@ def admit_ai_operation(*, identity_id: int, candidate_id: int, operation: str) -
         CandidateProfile.objects.select_for_update().get(pk=candidate_id)
 
         events = AIUsageEvent.objects.filter(operation=operation)
-        if events.filter(
-            initiated_by_id=identity_id, created_at__gte=minute_start
-        ).count() >= limits["identity_per_minute"]:
+        if (
+            events.filter(
+                initiated_by_id=identity_id, created_at__gte=minute_start
+            ).count()
+            >= limits["identity_per_minute"]
+        ):
             raise AIQuotaExceeded("AI rate limit exceeded.")
 
-        if events.filter(
-            initiated_by_id=identity_id, created_at__gte=day_start
-        ).count() >= limits["identity_per_day"]:
+        if (
+            events.filter(
+                initiated_by_id=identity_id, created_at__gte=day_start
+            ).count()
+            >= limits["identity_per_day"]
+        ):
             raise AIQuotaExceeded("AI identity quota exceeded.")
 
-        if events.filter(
-            candidate_id=candidate_id, created_at__gte=day_start
-        ).count() >= limits["candidate_per_day"]:
+        if (
+            events.filter(candidate_id=candidate_id, created_at__gte=day_start).count()
+            >= limits["candidate_per_day"]
+        ):
             raise AIQuotaExceeded("AI candidate quota exceeded.")
 
         return AIUsageEvent.objects.create(
