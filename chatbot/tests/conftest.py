@@ -64,4 +64,5 @@ def verified_fact(published_candidate):
         fact_type=CandidateFact.FactType.EXPERIENCE,
         content="Built production Django services at Example Corp.",
         verification_status=CandidateFact.VerificationStatus.VERIFIED,
+        is_public=True,
     )

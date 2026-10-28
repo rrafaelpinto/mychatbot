@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "facts": [
+    {
+      "key": "summary-backend",
+      "type": "summary",
+      "content": "A sample software engineer develops backend services for operational applications.",
+      "source_reference": "Synthetic profile brief"
+    },
+    {
+      "key": "experience-platform",
+      "type": "experience",
+      "content": "At Example Systems, the candidate maintained Python web services and improved reliability.",
+      "source_reference": "Synthetic experience description"
+    },
+    {
+      "key": "skill-postgresql",
+      "type": "skill",
+      "content": "Uses PostgreSQL for transactional data modeling and query optimization.",
+      "source_reference": "Synthetic skills inventory"
+    },
+    {
+      "key": "project-notifications",
+      "type": "project",
+      "content": "Developed a notification delivery service with retries and audit records.",
+      "source_reference": "Synthetic project description"
+    },
+    {
+      "key": "education-computer-science",
+      "type": "education",
+      "content": "Completed a degree in computer science at Example University.",
+      "source_reference": "Synthetic education record"
+    }
+  ]
+}

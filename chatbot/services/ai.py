@@ -72,7 +72,8 @@ def ask_candidate(
 
     facts = list(
         candidate.facts.filter(
-            verification_status=CandidateFact.VerificationStatus.VERIFIED
+            verification_status=CandidateFact.VerificationStatus.VERIFIED,
+            is_public=True,
         ).values_list("content", flat=True)
     )
     if not facts:
