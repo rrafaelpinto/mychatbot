@@ -6,6 +6,23 @@ ResumeBot is evolving into an AI-powered professional-profile platform. Each can
 
 The product is not a general-purpose chatbot. Public profile visibility does not grant unlimited paid AI access, and generated language never becomes candidate truth automatically.
 
+## Portfolio Scope and Priorities
+
+ResumeBot is a publicly inspectable engineering portfolio with a low-traffic, deployed demonstration for recruiters and technical reviewers. It is not currently intended as a commercial SaaS product. The application should make it straightforward to explore a representative candidate profile, understand the architecture, and evaluate a working LLM-backed interaction.
+
+Prioritize a credible end-to-end experience and maintainable engineering: Python, Django, PostgreSQL, API and LLM integrations, automated tests, security, and economical deployment. Public documentation should explain observable behavior, architecture, technical trade-offs, and product direction.
+
+Candidate knowledge extraction, evaluation, recruiter access, APIs, and retrieval remain potential capabilities. Their scope and sequence should be based on demonstrated value to the portfolio, rather than the previously numbered phases. Additional frameworks, including LangChain, should be adopted when they solve a specific problem and offer a defensible trade-off against simpler alternatives.
+
+### Open product and operational decisions
+
+- Select a minimal, safe experience for occasional public recruiter demonstrations, including appropriate authorization and cost safeguards.
+- Define low-traffic hosting requirements and a sustainable operating budget, including persistent storage and essential communications.
+- Evaluate whether existing AI budget reservation limits impede the intended demonstration.
+- Define the handling of successful AI calls whose usage reconciliation remains pending; automated retry is not currently provided.
+- Determine the appropriate treatment of representative candidate data, including privacy and verification requirements.
+- Identify the minimum useful technical documentation and automated checks for a publicly reviewed application.
+
 ## Engineering Principles
 
 - **The LLM is never the source of truth. Verified candidate data is the source of truth.**
@@ -40,7 +57,7 @@ The domain now separates candidate ownership, lifecycle, publication, private so
 
 ### Phase 2 — AI Cost Governance and Policy Enforcement
 
-**Status:** Current
+**Status:** Implemented; release and operational verification remain separate concerns.
 
 **Objective:** Make paid AI consumption bounded, observable, concurrency-safe, and gracefully disableable before public access expands.
 
@@ -54,7 +71,7 @@ The domain now separates candidate ownership, lifecycle, publication, private so
 
 ### Phase 3 — Candidate Knowledge Extraction and Verification
 
-**Status:** Planned
+**Status:** Proposed; scope and priority under review
 
 **Objective:** Turn private candidate documents into reviewable, provenance-linked professional facts without treating extraction as truth.
 
