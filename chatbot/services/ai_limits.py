@@ -35,11 +35,14 @@ def admit_ai_operation(
         CandidateProfile.objects.select_for_update().get(pk=candidate_id)
 
         events = AIUsageEvent.objects.filter(operation=operation)
-        if idempotency_key is not None and events.filter(
-            initiated_by_id=identity_id,
-            candidate_id=candidate_id,
-            idempotency_key=idempotency_key,
-        ).exists():
+        if (
+            idempotency_key is not None
+            and events.filter(
+                initiated_by_id=identity_id,
+                candidate_id=candidate_id,
+                idempotency_key=idempotency_key,
+            ).exists()
+        ):
             raise AIDuplicateRequest("This AI request has already been submitted.")
         if (
             events.filter(
