@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    AIProjectBudget,
     AIUsageEvent,
     CandidateDocument,
     CandidateFact,
@@ -67,6 +68,8 @@ class AIUsageEventAdmin(admin.ModelAdmin):
         "initiated_by",
         "model",
         "status",
+        "reserved_micro_usd",
+        "actual_micro_usd",
         "created_at",
     )
     list_filter = ("operation", "status", "provider", "model")
@@ -80,7 +83,41 @@ class AIUsageEventAdmin(admin.ModelAdmin):
         "input_tokens",
         "output_tokens",
         "provider_request_id",
+        "idempotency_key",
+        "reserved_micro_usd",
+        "actual_micro_usd",
+        "settled_at",
         "error_code",
         "created_at",
         "completed_at",
     )
+
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AIProjectBudget)
+class AIProjectBudgetAdmin(admin.ModelAdmin):
+    list_display = (
+        "daily_window",
+        "monthly_window",
+        "daily_reserved_micro_usd",
+        "monthly_reserved_micro_usd",
+    )
+    readonly_fields = list_display
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
