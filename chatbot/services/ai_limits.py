@@ -9,12 +9,20 @@ from chatbot.models import AIUsageEvent, CandidateProfile
 from chatbot.services.ai_budget import reserve_project_budget
 
 
+class AIDuplicateRequest(Exception):
+    """An AI request key has already been used."""
+
+
 class AIQuotaExceeded(Exception):
     """An AI request exceeded its operation limits."""
 
 
 def admit_ai_operation(
-    *, identity_id: int, candidate_id: int, operation: str
+    *,
+    identity_id: int,
+    candidate_id: int,
+    operation: str,
+    idempotency_key: str | None = None,
 ) -> AIUsageEvent:
     """Atomically enforce limits and record an admitted paid operation."""
     limits = settings.AI_USAGE_LIMITS[operation]
@@ -27,6 +35,12 @@ def admit_ai_operation(
         CandidateProfile.objects.select_for_update().get(pk=candidate_id)
 
         events = AIUsageEvent.objects.filter(operation=operation)
+        if idempotency_key is not None and events.filter(
+            initiated_by_id=identity_id,
+            candidate_id=candidate_id,
+            idempotency_key=idempotency_key,
+        ).exists():
+            raise AIDuplicateRequest("This AI request has already been submitted.")
         if (
             events.filter(
                 initiated_by_id=identity_id, created_at__gte=minute_start
@@ -54,6 +68,7 @@ def admit_ai_operation(
             candidate_id=candidate_id,
             operation=operation,
             model=settings.OPENAI_MODEL,
+            idempotency_key=idempotency_key,
         )
         reserve_project_budget(usage=usage, now=now)
         return usage
