@@ -8,7 +8,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CandidateProfileForm, ChatQuestionForm
 from .models import CandidateProfile, Conversation, Message
 from .policies import can_read_conversation
-from .services.ai import AILimitExceeded, AIServiceError, AIUnavailable, ask_candidate
+from .services.ai import (
+    AILimitExceeded,
+    AIRequestAlreadySubmitted,
+    AIServiceError,
+    AIUnavailable,
+    ask_candidate,
+)
 from .services.documents import (
     DocumentProcessingError,
     create_candidate_document,
@@ -98,12 +104,22 @@ def chat(request, slug):
             return JsonResponse({"error": "Enter a valid question."}, status=400)
 
         question = form.cleaned_data["question"]
+        idempotency_key = request.headers.get("Idempotency-Key")
+        if idempotency_key is not None and (
+            not 1 <= len(idempotency_key) <= 128
+            or not idempotency_key.isascii()
+            or not idempotency_key.isprintable()
+        ):
+            return JsonResponse({"error": "Invalid idempotency key."}, status=400)
         try:
             ai_response = ask_candidate(
                 candidate=candidate,
                 initiated_by=request.user,
                 question=question,
+                idempotency_key=idempotency_key,
             )
+        except AIRequestAlreadySubmitted as exc:
+            return JsonResponse({"error": str(exc)}, status=409)
         except AILimitExceeded as exc:
             return JsonResponse({"error": str(exc)}, status=429)
         except AIUnavailable:
