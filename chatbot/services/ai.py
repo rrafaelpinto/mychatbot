@@ -7,7 +7,7 @@ from openai import OpenAI, OpenAIError
 
 from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
-from chatbot.services.ai_budget import AIBudgetExceeded
+from chatbot.services.ai_budget import AIBudgetExceeded, settle_usage
 from chatbot.services.ai_limits import AIQuotaExceeded, admit_ai_operation
 
 
@@ -98,6 +98,7 @@ def ask_candidate(
             "completed_at",
         ]
     )
+    settle_usage(usage_id=usage.pk)
     return response
 
 
