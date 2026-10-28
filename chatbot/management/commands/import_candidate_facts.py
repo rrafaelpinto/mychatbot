@@ -77,12 +77,18 @@ def read_manifest(path: str) -> list[dict[str, str]]:
 class Command(BaseCommand):
     """Import private, pending candidate facts without overwriting reviewed facts."""
 
-    help = "Import candidate facts as pending and private; never auto-verify or publish."
+    help = (
+        "Import candidate facts as pending and private; never auto-verify or publish."
+    )
 
     def add_arguments(self, parser):
-        parser.add_argument("--candidate", required=True, help="Existing candidate slug")
+        parser.add_argument(
+            "--candidate", required=True, help="Existing candidate slug"
+        )
         parser.add_argument("--file", required=True, help="Private JSON manifest path")
-        parser.add_argument("--dry-run", action="store_true", help="Validate without writing")
+        parser.add_argument(
+            "--dry-run", action="store_true", help="Validate without writing"
+        )
 
     def handle(self, *args, **options):
         facts = read_manifest(options["file"])
@@ -108,7 +114,8 @@ class Command(BaseCommand):
                 current = existing.get(item["import_key"])
                 if current is not None:
                     if any(
-                        getattr(current, field) != value for field, value in item.items()
+                        getattr(current, field) != value
+                        for field, value in item.items()
                     ):
                         raise CommandError(
                             f"Import key '{item['import_key']}' has different existing data."

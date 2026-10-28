@@ -12,7 +12,9 @@ from django.db import IntegrityError, transaction
 from chatbot.models import CandidateFact, CandidateProfile
 from chatbot.services.ai import NoVerifiedFacts, ask_candidate
 
-SYNTHETIC_MANIFEST = Path(__file__).parent / "fixtures" / "synthetic_candidate_facts.json"
+SYNTHETIC_MANIFEST = (
+    Path(__file__).parent / "fixtures" / "synthetic_candidate_facts.json"
+)
 
 
 def import_facts(candidate, manifest=SYNTHETIC_MANIFEST, *, dry_run=False):
@@ -91,7 +93,11 @@ def test_conflict_rolls_back_entire_import(published_candidate, tmp_path):
         tmp_path,
         [
             {"key": "new-item", "type": "skill", "content": "Example skill."},
-            {"key": "summary-backend", "type": "summary", "content": "Different claim."},
+            {
+                "key": "summary-backend",
+                "type": "summary",
+                "content": "Different claim.",
+            },
         ],
     )
     with pytest.raises(CommandError, match="different existing data"):
@@ -161,9 +167,7 @@ def test_missing_candidate_is_rejected(tmp_path):
 
 
 @pytest.mark.django_db
-def test_private_verified_fact_never_reaches_provider(
-    published_candidate, recruiter
-):
+def test_private_verified_fact_never_reaches_provider(published_candidate, recruiter):
     CandidateFact.objects.create(
         candidate=published_candidate,
         fact_type=CandidateFact.FactType.SKILL,

@@ -205,8 +205,7 @@ class CandidateFact(models.Model):
             ),
             models.CheckConstraint(
                 condition=(
-                    models.Q(is_public=False)
-                    | models.Q(verification_status="verified")
+                    models.Q(is_public=False) | models.Q(verification_status="verified")
                 ),
                 name="public_fact_must_be_verified",
             ),
@@ -214,7 +213,10 @@ class CandidateFact(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.is_public and self.verification_status != self.VerificationStatus.VERIFIED:
+        if (
+            self.is_public
+            and self.verification_status != self.VerificationStatus.VERIFIED
+        ):
             raise ValidationError({"is_public": "Only verified facts may be public."})
         if (
             self.source_document_id
