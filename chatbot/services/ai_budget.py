@@ -73,7 +73,10 @@ def settle_usage(*, usage_id: int) -> None:
     with transaction.atomic():
         budget = AIProjectBudget.objects.select_for_update().get(pk=1)
         usage = AIUsageEvent.objects.select_for_update().get(pk=usage_id)
-        if usage.settled_at is not None or usage.status != AIUsageEvent.Status.SUCCEEDED:
+        if (
+            usage.settled_at is not None
+            or usage.status != AIUsageEvent.Status.SUCCEEDED
+        ):
             return
         if usage.input_tokens is None or usage.output_tokens is None:
             return
