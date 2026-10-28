@@ -7,6 +7,7 @@ from openai import OpenAI, OpenAIError
 
 from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
+from chatbot.services.ai_budget import AIBudgetExceeded
 from chatbot.services.ai_limits import AIQuotaExceeded, admit_ai_operation
 
 
@@ -71,6 +72,8 @@ def ask_candidate(
             operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
         )
     except AIQuotaExceeded as exc:
+        raise AILimitExceeded(str(exc)) from exc
+    except AIBudgetExceeded as exc:
         raise AILimitExceeded(str(exc)) from exc
     try:
         response = invoke_candidate_chat(facts=facts, question=question)
