@@ -1,0 +1,68 @@
+from datetime import date
+from decimal import Decimal, ROUND_CEILING
+
+from django.conf import settings
+from django.db import transaction
+from django.utils import timezone
+
+from chatbot.models import AIProjectBudget, AIUsageEvent
+
+
+class AIBudgetExceeded(Exception):
+    """A paid operation cannot reserve project budget."""
+
+
+def reservation_micro_usd(model: str) -> int:
+    """Return a conservative maximum cost for a configured model call."""
+    if model != "gpt-4o-mini":
+        raise AIBudgetExceeded("AI model pricing is not configured.")
+    input_rate = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
+    output_rate = Decimal(str(settings.AI_OUTPUT_USD_PER_MILLION))
+    if input_rate <= 0 or output_rate <= 0:
+        raise AIBudgetExceeded("AI model pricing is not configured.")
+    micro_usd = (
+        Decimal(settings.AI_MAX_INPUT_TOKENS) * input_rate
+        + Decimal(settings.AI_MAX_OUTPUT_TOKENS) * output_rate
+    )
+    return int(micro_usd.to_integral_value(rounding=ROUND_CEILING))
+
+
+def reserve_project_budget(*, usage: AIUsageEvent, now=None) -> None:
+    """Reserve both UTC calendar windows while holding the project budget lock."""
+    now = now or timezone.now()
+    today = now.date()
+    month = date(today.year, today.month, 1)
+    amount = reservation_micro_usd(usage.model)
+    daily_cap = int(
+        (Decimal(str(settings.AI_DAILY_BUDGET_USD)) * 1_000_000).to_integral_value()
+    )
+    monthly_cap = int(
+        (Decimal(str(settings.AI_MONTHLY_BUDGET_USD)) * 1_000_000).to_integral_value()
+    )
+    if daily_cap <= 0 or monthly_cap <= 0:
+        raise AIBudgetExceeded("AI project budget is unavailable.")
+
+    with transaction.atomic():
+        budget, _ = AIProjectBudget.objects.get_or_create(
+            pk=1,
+            defaults={"daily_window": today, "monthly_window": month},
+        )
+        budget = AIProjectBudget.objects.select_for_update().get(pk=budget.pk)
+        if budget.daily_window != today:
+            budget.daily_window = today
+            budget.daily_reserved_micro_usd = 0
+        if budget.monthly_window != month:
+            budget.monthly_window = month
+            budget.monthly_reserved_micro_usd = 0
+
+        if (
+            budget.daily_reserved_micro_usd + amount > daily_cap
+            or budget.monthly_reserved_micro_usd + amount > monthly_cap
+        ):
+            raise AIBudgetExceeded("AI project budget exhausted.")
+
+        budget.daily_reserved_micro_usd += amount
+        budget.monthly_reserved_micro_usd += amount
+        budget.save()
+        usage.reserved_micro_usd = amount
+        usage.save(update_fields=["reserved_micro_usd"])
