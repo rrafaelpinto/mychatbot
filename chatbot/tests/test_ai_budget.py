@@ -53,9 +53,7 @@ def test_exhausted_daily_budget_never_calls_provider(
     settings, budget_config, recruiter, published_candidate, verified_fact
 ):
     amount = reservation_micro_usd("gpt-4o-mini")
-    settings.AI_DAILY_BUDGET_USD = str(
-        Decimal(amount) / Decimal(1_000_000)
-    )
+    settings.AI_DAILY_BUDGET_USD = str(Decimal(amount) / Decimal(1_000_000))
 
     with patch(
         "chatbot.services.ai.invoke_candidate_chat",
@@ -96,9 +94,7 @@ def test_concurrent_budget_reservations_cannot_overspend(
     settings, budget_config, recruiter, published_candidate, verified_fact
 ):
     amount = reservation_micro_usd("gpt-4o-mini")
-    settings.AI_DAILY_BUDGET_USD = str(
-        Decimal(amount) / Decimal(1_000_000)
-    )
+    settings.AI_DAILY_BUDGET_USD = str(Decimal(amount) / Decimal(1_000_000))
     recruiter_id = recruiter.pk
     candidate_id = published_candidate.pk
     barrier = Barrier(2)
