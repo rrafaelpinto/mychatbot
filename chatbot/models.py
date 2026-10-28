@@ -282,6 +282,7 @@ class AIUsageEvent(models.Model):
     )
     input_tokens = models.PositiveIntegerField(null=True, blank=True)
     output_tokens = models.PositiveIntegerField(null=True, blank=True)
+    reserved_micro_usd = models.PositiveBigIntegerField(default=0)
     provider_request_id = models.CharField(max_length=255, blank=True)
     error_code = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -289,3 +290,13 @@ class AIUsageEvent(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class AIProjectBudget(models.Model):
+    """Project-wide monetary reservation counters for current UTC windows."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    daily_window = models.DateField()
+    monthly_window = models.DateField()
+    daily_reserved_micro_usd = models.PositiveBigIntegerField(default=0)
+    monthly_reserved_micro_usd = models.PositiveBigIntegerField(default=0)
