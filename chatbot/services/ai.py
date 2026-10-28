@@ -6,7 +6,7 @@ from django.utils import timezone
 from openai import OpenAI, OpenAIError
 
 from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
-from chatbot.policies import can_interact_with_candidate
+from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
 
 
 class AIServiceError(Exception):
@@ -18,6 +18,10 @@ class AINotAuthorized(AIServiceError):
 
 
 class AIUnavailable(AIServiceError):
+    pass
+
+
+class AIOperationDisabled(AIUnavailable):
     pass
 
 
@@ -39,6 +43,13 @@ def ask_candidate(
     """Authorize first, then invoke the single paid-provider boundary."""
     if not can_interact_with_candidate(initiated_by, candidate):
         raise AINotAuthorized("This candidate is not available for AI interaction.")
+
+    if not settings.AI_ENABLED:
+        raise AIOperationDisabled("AI operations are disabled.")
+
+    policy = get_ai_operation_policy(AIUsageEvent.Operation.CANDIDATE_CHAT)
+    if not policy.enabled:
+        raise AIOperationDisabled("This AI operation is disabled.")
 
     facts = list(
         candidate.facts.filter(
