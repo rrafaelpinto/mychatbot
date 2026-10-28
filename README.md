@@ -83,6 +83,10 @@ The main variables are documented in `.env.example`.
 - `PRIVATE_MEDIA_ROOT` may point to a non-public document location.
 - `OPENAI_API_KEY` enables the Candidate Agent; tests never require it.
 - `OPENAI_MODEL` and `OPENAI_TIMEOUT_SECONDS` control the current provider call.
+- `AI_ENABLED` is the global switch for paid AI operations. It defaults to true in
+  development and false in production, where it must be explicitly enabled.
+- `AI_CANDIDATE_CHAT_ENABLED` controls the named `candidate_chat` operation.
+  These switches only gate AI and do not disable public profile pages.
 
 Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
 HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it only after HTTPS and subdomain coverage are intentionally permanent.
