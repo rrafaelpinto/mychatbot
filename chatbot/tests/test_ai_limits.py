@@ -3,7 +3,7 @@ from threading import Barrier
 from unittest.mock import patch
 
 import pytest
-from django.db import close_old_connections
+from django.db import close_old_connections, connection
 from django.urls import reverse
 
 from chatbot.models import AIUsageEvent
@@ -73,9 +73,10 @@ def test_ai_quota_denial_returns_429(
     assert not AIUsageEvent.objects.exists()
 
 
+@pytest.mark.skipif(connection.vendor != "postgresql", reason="Requires PostgreSQL locks")
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_ai_admission_does_not_exceed_candidate_quota(
-    settings, recruiter, published_candidate, verified_fact, django_db_blocker
+    settings, recruiter, published_candidate, verified_fact
 ):
     settings.AI_USAGE_LIMITS = {
         "candidate_chat": {
