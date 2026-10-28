@@ -87,6 +87,10 @@ The main variables are documented in `.env.example`.
   development and false in production, where it must be explicitly enabled.
 - `AI_CANDIDATE_CHAT_ENABLED` controls the named `candidate_chat` operation.
   These switches only gate AI and do not disable public profile pages.
+- `AI_CHAT_IDENTITY_PER_MINUTE`, `AI_CHAT_IDENTITY_PER_DAY`, and
+  `AI_CHAT_CANDIDATE_PER_DAY` set admitted-request limits for the chat operation.
+  Day limits use rolling 24-hour windows. Admitted attempts count even on provider failure.
+  PostgreSQL row locks enforce limits across concurrent workers; no cache is required.
 
 Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
 HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it only after HTTPS and subdomain coverage are intentionally permanent.

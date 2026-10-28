@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CandidateProfileForm, ChatQuestionForm
 from .models import CandidateProfile, Conversation, Message
 from .policies import can_read_conversation
-from .services.ai import AIServiceError, AIUnavailable, ask_candidate
+from .services.ai import AILimitExceeded, AIServiceError, AIUnavailable, ask_candidate
 from .services.documents import (
     DocumentProcessingError,
     create_candidate_document,
@@ -104,6 +104,8 @@ def chat(request, slug):
                 initiated_by=request.user,
                 question=question,
             )
+        except AILimitExceeded as exc:
+            return JsonResponse({"error": str(exc)}, status=429)
         except AIUnavailable:
             return JsonResponse(
                 {"error": "The Candidate Agent is temporarily unavailable."},

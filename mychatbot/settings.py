@@ -158,6 +158,14 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_TIMEOUT_SECONDS = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30"))
 
 AI_ENABLED = env_bool("AI_ENABLED", default=not IS_PRODUCTION)
+AI_USAGE_LIMITS = {
+    "candidate_chat": {
+        "identity_per_minute": int(os.environ.get("AI_CHAT_IDENTITY_PER_MINUTE", "5")),
+        "identity_per_day": int(os.environ.get("AI_CHAT_IDENTITY_PER_DAY", "100")),
+        "candidate_per_day": int(os.environ.get("AI_CHAT_CANDIDATE_PER_DAY", "500")),
+    }
+}
+
 AI_OPERATION_POLICIES = {
     "candidate_chat": env_bool("AI_CANDIDATE_CHAT_ENABLED", default=True),
 }
