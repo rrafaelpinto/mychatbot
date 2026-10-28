@@ -170,9 +170,7 @@ def test_disabled_ai_returns_503_without_disabling_public_profiles(
 
 
 @pytest.mark.django_db
-def test_ai_authorization_precedes_disabled_operation(
-    settings, recruiter, other_user
-):
+def test_ai_authorization_precedes_disabled_operation(settings, recruiter, other_user):
     from chatbot.models import CandidateProfile
     from chatbot.services.ai import AINotAuthorized
 
