@@ -97,7 +97,10 @@ The main variables are documented in `.env.example`.
   configured `gpt-4o-mini` price assumptions. Update them when pricing changes.
 - Each admitted operation reserves the full configured maximum token cost before
   the provider call. Reservations are not released or adjusted in this slice;
-  monetary reconciliation and unknown provider outcomes belong to Slice 4.
+  confirmed provider token usage is now settled after success. Unused funds are
+  credited back to the matching UTC calendar windows; missing usage data,
+  provider failures and ambiguous outcomes retain the full reservation.
+  Reconciliation is idempotent for settled operations.
   Other models fail closed until pricing/reservation support is added.
 
 Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.

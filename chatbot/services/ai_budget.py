@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import UTC, date
 from decimal import ROUND_CEILING, Decimal
 
 from django.conf import settings
@@ -66,3 +66,49 @@ def reserve_project_budget(*, usage: AIUsageEvent, now=None) -> None:
         budget.save()
         usage.reserved_micro_usd = amount
         usage.save(update_fields=["reserved_micro_usd"])
+
+
+def settle_usage(*, usage_id: int) -> None:
+    """Settle a successful call once; keep full reserve if usage is unknown."""
+    with transaction.atomic():
+        budget = AIProjectBudget.objects.select_for_update().get(pk=1)
+        usage = AIUsageEvent.objects.select_for_update().get(pk=usage_id)
+        if (
+            usage.settled_at is not None
+            or usage.status != AIUsageEvent.Status.SUCCEEDED
+        ):
+            return
+        if usage.input_tokens is None or usage.output_tokens is None:
+            return
+        if usage.model != "gpt-4o-mini":
+            return
+
+        input_rate = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
+        output_rate = Decimal(str(settings.AI_OUTPUT_USD_PER_MILLION))
+        if input_rate <= 0 or output_rate <= 0:
+            return
+
+        actual = int(
+            (
+                Decimal(usage.input_tokens) * input_rate
+                + Decimal(usage.output_tokens) * output_rate
+            ).to_integral_value(rounding=ROUND_CEILING)
+        )
+        # An unexpectedly expensive request is never refunded.
+        credit = max(0, usage.reserved_micro_usd - actual)
+        admitted_date = usage.created_at.astimezone(UTC).date()
+        admitted_month = date(admitted_date.year, admitted_date.month, 1)
+        if budget.daily_window == admitted_date:
+            budget.daily_reserved_micro_usd = max(
+                0, budget.daily_reserved_micro_usd - credit
+            )
+        if budget.monthly_window == admitted_month:
+            budget.monthly_reserved_micro_usd = max(
+                0, budget.monthly_reserved_micro_usd - credit
+            )
+        budget.save(
+            update_fields=["daily_reserved_micro_usd", "monthly_reserved_micro_usd"]
+        )
+        usage.actual_micro_usd = actual
+        usage.settled_at = timezone.now()
+        usage.save(update_fields=["actual_micro_usd", "settled_at"])

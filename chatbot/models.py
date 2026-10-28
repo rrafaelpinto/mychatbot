@@ -283,6 +283,8 @@ class AIUsageEvent(models.Model):
     input_tokens = models.PositiveIntegerField(null=True, blank=True)
     output_tokens = models.PositiveIntegerField(null=True, blank=True)
     reserved_micro_usd = models.PositiveBigIntegerField(default=0)
+    actual_micro_usd = models.PositiveBigIntegerField(null=True, blank=True)
+    settled_at = models.DateTimeField(null=True, blank=True)
     provider_request_id = models.CharField(max_length=255, blank=True)
     error_code = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
