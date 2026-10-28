@@ -7,6 +7,7 @@ from openai import OpenAI, OpenAIError
 
 from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
+from chatbot.services.ai_limits import AIQuotaExceeded, admit_ai_operation
 
 
 class AIServiceError(Exception):
@@ -22,6 +23,10 @@ class AIUnavailable(AIServiceError):
 
 
 class AIOperationDisabled(AIUnavailable):
+    pass
+
+
+class AILimitExceeded(AIServiceError):
     pass
 
 
@@ -59,12 +64,14 @@ def ask_candidate(
     if not facts:
         raise NoVerifiedFacts("This candidate has no verified facts available yet.")
 
-    usage = AIUsageEvent.objects.create(
-        initiated_by=initiated_by,
-        candidate=candidate,
-        operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
-        model=settings.OPENAI_MODEL,
-    )
+    try:
+        usage = admit_ai_operation(
+            identity_id=initiated_by.pk,
+            candidate_id=candidate.pk,
+            operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
+        )
+    except AIQuotaExceeded as exc:
+        raise AILimitExceeded(str(exc)) from exc
     try:
         response = invoke_candidate_chat(facts=facts, question=question)
     except AIServiceError as exc:
