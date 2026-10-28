@@ -52,7 +52,10 @@ class AIResponse:
 
 
 def ask_candidate(
-    *, candidate: CandidateProfile, initiated_by, question: str,
+    *,
+    candidate: CandidateProfile,
+    initiated_by,
+    question: str,
     idempotency_key: str | None = None,
 ) -> AIResponse:
     """Authorize first, then invoke the single paid-provider boundary."""
