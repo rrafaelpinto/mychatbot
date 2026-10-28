@@ -157,6 +157,11 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_TIMEOUT_SECONDS = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30"))
 
+AI_ENABLED = env_bool("AI_ENABLED", default=not IS_PRODUCTION)
+AI_OPERATION_POLICIES = {
+    "candidate_chat": env_bool("AI_CANDIDATE_CHAT_ENABLED", default=True),
+}
+
 if IS_PRODUCTION:
     SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
     SESSION_COOKIE_SECURE = True
