@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from chatbot.models import AIUsageEvent, CandidateFact, Conversation, Message
 from chatbot.services.ai import (
+    AIOperationDisabled,
     AIResponse,
     AIUnavailable,
     NoVerifiedFacts,
@@ -120,3 +121,70 @@ def test_unconfigured_provider_fails_gracefully_and_records_failure(
     assert usage.status == AIUsageEvent.Status.FAILED
     assert usage.error_code == "AIUnavailable"
     assert usage.completed_at is not None
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("setting_name", ["AI_ENABLED", "AI_CANDIDATE_CHAT_ENABLED"])
+def test_disabled_ai_policy_does_not_call_provider(
+    settings, recruiter, published_candidate, verified_fact, setting_name
+):
+    settings.AI_ENABLED = True
+    settings.AI_OPERATION_POLICIES = {"candidate_chat": True}
+    if setting_name == "AI_ENABLED":
+        settings.AI_ENABLED = False
+    else:
+        settings.AI_OPERATION_POLICIES = {"candidate_chat": False}
+
+    with patch("chatbot.services.ai.invoke_candidate_chat") as provider:
+        with pytest.raises(AIOperationDisabled):
+            ask_candidate(
+                candidate=published_candidate,
+                initiated_by=recruiter,
+                question="What did you build?",
+            )
+
+    provider.assert_not_called()
+    assert not AIUsageEvent.objects.exists()
+
+
+@pytest.mark.django_db
+def test_disabled_ai_returns_503_without_disabling_public_profiles(
+    client, settings, recruiter, published_candidate, verified_fact
+):
+    settings.AI_ENABLED = False
+    client.force_login(recruiter)
+
+    with patch("chatbot.services.ai.invoke_candidate_chat") as provider:
+        chat_response = client.post(
+            reverse("chat", args=[published_candidate.slug]),
+            {"question": "What did you build?"},
+        )
+        profile_response = client.get(
+            reverse("public_profile", args=[published_candidate.slug])
+        )
+
+    assert chat_response.status_code == 503
+    assert profile_response.status_code == 200
+    provider.assert_not_called()
+    assert not AIUsageEvent.objects.exists()
+
+
+@pytest.mark.django_db
+def test_ai_authorization_precedes_disabled_operation(
+    settings, recruiter, other_user
+):
+    from chatbot.models import CandidateProfile
+    from chatbot.services.ai import AINotAuthorized
+
+    settings.AI_ENABLED = False
+    candidate = CandidateProfile.objects.create(user=other_user, name="Private")
+    with patch("chatbot.services.ai.invoke_candidate_chat") as provider:
+        with pytest.raises(AINotAuthorized):
+            ask_candidate(
+                candidate=candidate,
+                initiated_by=recruiter,
+                question="What did you build?",
+            )
+
+    provider.assert_not_called()
+    assert not AIUsageEvent.objects.exists()
