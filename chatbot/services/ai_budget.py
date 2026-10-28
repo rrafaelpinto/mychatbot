@@ -1,5 +1,5 @@
 from datetime import date
-from decimal import Decimal, ROUND_CEILING
+from decimal import ROUND_CEILING, Decimal
 
 from django.conf import settings
 from django.db import transaction
