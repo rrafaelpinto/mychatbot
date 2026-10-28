@@ -6,23 +6,22 @@ ResumeBot is evolving into an AI-powered professional-profile platform. Each can
 
 The product is not a general-purpose chatbot. Public profile visibility does not grant unlimited paid AI access, and generated language never becomes candidate truth automatically.
 
-## Portfolio-first product direction (October 2026)
+## Portfolio Scope and Priorities
 
-**Primary purpose:** ResumeBot is a public engineering portfolio and a small deployed demonstration for technical reviewers and recruiters, not a SaaS product targeting sustained traffic or recurring revenue. Expected usage is occasional. Optimize for a clear, credible end-to-end demonstration of Python, Django, API integration, LLM integration, testing, deployment, and engineering decisions, rather than speculative scale.
+ResumeBot is a publicly inspectable engineering portfolio with a low-traffic, deployed demonstration for recruiters and technical reviewers. It is not currently intended as a commercial SaaS product. The application should make it straightforward to explore a representative candidate profile, understand the architecture, and evaluate a working LLM-backed interaction.
 
-**Planning decision:** The original phase sequence is a proposal, not an implementation commitment. In particular, Phase 3 (knowledge extraction and verification) must be re-scoped through discovery before work starts. Evaluate which features make the strongest, easiest-to-try portfolio experience. LangChain is a candidate technology to demonstrate, not a mandatory dependency: adopt it only when it contributes an inspectable integration or a clear technical advantage over the current direct OpenAI boundary.
+Prioritize a credible end-to-end experience and maintainable engineering: Python, Django, PostgreSQL, API and LLM integrations, automated tests, security, and economical deployment. Public documentation should explain observable behavior, architecture, technical trade-offs, and product direction.
 
-**Outstanding follow-ups (prioritize by portfolio value and risk):**
-- Close out Phase 2 only after confirming PR #7 integration and full CI status; document what is validated rather than assuming production readiness.
-- Confirm deployment cost and low-traffic hosting constraints, including database persistence, the public demo domain, email delivery and how a recruiter can try the app with minimal friction.
-- Evaluate the AI budget policy for occasional usage (especially maximum-token reservation sizing and whether the default budget blocks demonstration).
-- Determine whether public interactive AI access needs demo credentials, a short-lived access grant, or another low-friction but abuse-resistant approach.
-- Add an operational mechanism for inspecting/recovering successful but unsettled usage events only if deployment or testing shows it is necessary; current reconciliation has no automatic retry.
-- Assess privacy, safe synthetic demo data, verified-claim boundaries, and whether the recruiter journey currently showcases the system effectively.
-- Consider concise architecture documentation, a small demo video/GIF, an API example, and meaningful CI evidence as portfolio deliverables.
-- Reassess extraction, RAG, embeddings, LangChain, orchestration, React and other proposed capabilities against demonstrable engineering value; avoid implementation for technology-name coverage alone.
+Candidate knowledge extraction, evaluation, recruiter access, APIs, and retrieval remain potential capabilities. Their scope and sequence should be based on demonstrated value to the portfolio, rather than the previously numbered phases. Additional frameworks, including LangChain, should be adopted when they solve a specific problem and offer a defensible trade-off against simpler alternatives.
 
-**Next step:** Run a discovery interview to define target reviewer, ideal 3–5 minute demo, essential capabilities, technical showcase goals, operating budget, constraints, and success criteria. Produce a prioritized MVP/portfolio backlog and revised Phase 3 scope before opening implementation issues or PRs.
+### Open product and operational decisions
+
+- Select a minimal, safe experience for occasional public recruiter demonstrations, including appropriate authorization and cost safeguards.
+- Define low-traffic hosting requirements and a sustainable operating budget, including persistent storage and essential communications.
+- Evaluate whether existing AI budget reservation limits impede the intended demonstration.
+- Define the handling of successful AI calls whose usage reconciliation remains pending; automated retry is not currently provided.
+- Determine the appropriate treatment of representative candidate data, including privacy and verification requirements.
+- Identify the minimum useful technical documentation and automated checks for a publicly reviewed application.
 
 ## Engineering Principles
 
@@ -58,7 +57,7 @@ The domain now separates candidate ownership, lifecycle, publication, private so
 
 ### Phase 2 — AI Cost Governance and Policy Enforcement
 
-**Status:** Implemented via PRs #2–#7; formal close-out and CI verification pending.
+**Status:** Implemented; release and operational verification remain separate concerns.
 
 **Objective:** Make paid AI consumption bounded, observable, concurrency-safe, and gracefully disableable before public access expands.
 
@@ -72,7 +71,7 @@ The domain now separates candidate ownership, lifecycle, publication, private so
 
 ### Phase 3 — Candidate Knowledge Extraction and Verification
 
-**Status:** Discovery required; scope and priority subject to portfolio-first reassessment
+**Status:** Proposed; scope and priority under review
 
 **Objective:** Turn private candidate documents into reviewable, provenance-linked professional facts without treating extraction as truth.
 
