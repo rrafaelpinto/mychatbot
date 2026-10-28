@@ -284,6 +284,8 @@ class AIUsageEvent(models.Model):
     output_tokens = models.PositiveIntegerField(null=True, blank=True)
     reserved_micro_usd = models.PositiveBigIntegerField(default=0)
     actual_micro_usd = models.PositiveBigIntegerField(null=True, blank=True)
+    input_price_per_million = models.DecimalField(max_digits=12, decimal_places=6, null=True, blank=True)
+    output_price_per_million = models.DecimalField(max_digits=12, decimal_places=6, null=True, blank=True)
     settled_at = models.DateTimeField(null=True, blank=True)
     idempotency_key = models.CharField(max_length=128, null=True, blank=True)
     provider_request_id = models.CharField(max_length=255, blank=True)
