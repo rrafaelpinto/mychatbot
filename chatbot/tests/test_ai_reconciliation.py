@@ -32,8 +32,9 @@ def test_actual_cost_settlement_credits_unused_reservation(
         )
 
     actual = int(
-        (Decimal(40) * Decimal("0.15") + Decimal(10) * Decimal("0.60"))
-        .to_integral_value(rounding=ROUND_CEILING)
+        (
+            Decimal(40) * Decimal("0.15") + Decimal(10) * Decimal("0.60")
+        ).to_integral_value(rounding=ROUND_CEILING)
     )
     usage = AIUsageEvent.objects.get()
     budget = AIProjectBudget.objects.get(pk=1)
