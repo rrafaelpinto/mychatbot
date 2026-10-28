@@ -91,6 +91,14 @@ The main variables are documented in `.env.example`.
   `AI_CHAT_CANDIDATE_PER_DAY` set admitted-request limits for the chat operation.
   Day limits use rolling 24-hour windows. Admitted attempts count even on provider failure.
   PostgreSQL row locks enforce limits across concurrent workers; no cache is required.
+- `AI_DAILY_BUDGET_USD` and `AI_MONTHLY_BUDGET_USD` cap reservations in UTC
+  calendar windows; both default to zero in production until explicitly configured.
+- `AI_INPUT_USD_PER_MILLION` and `AI_OUTPUT_USD_PER_MILLION` supply the
+  configured `gpt-4o-mini` price assumptions. Update them when pricing changes.
+- Each admitted operation reserves the full configured maximum token cost before
+  the provider call. Reservations are not released or adjusted in this slice;
+  monetary reconciliation and unknown provider outcomes belong to Slice 4.
+  Other models fail closed until pricing/reservation support is added.
 
 Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
 HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it only after HTTPS and subdomain coverage are intentionally permanent.

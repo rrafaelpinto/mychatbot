@@ -6,6 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from chatbot.models import AIUsageEvent, CandidateProfile
+from chatbot.services.ai_budget import reserve_project_budget
 
 
 class AIQuotaExceeded(Exception):
@@ -48,9 +49,11 @@ def admit_ai_operation(
         ):
             raise AIQuotaExceeded("AI candidate quota exceeded.")
 
-        return AIUsageEvent.objects.create(
+        usage = AIUsageEvent.objects.create(
             initiated_by_id=identity_id,
             candidate_id=candidate_id,
             operation=operation,
             model=settings.OPENAI_MODEL,
         )
+        reserve_project_budget(usage=usage, now=now)
+        return usage
