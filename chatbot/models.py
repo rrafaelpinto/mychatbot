@@ -285,6 +285,7 @@ class AIUsageEvent(models.Model):
     reserved_micro_usd = models.PositiveBigIntegerField(default=0)
     actual_micro_usd = models.PositiveBigIntegerField(null=True, blank=True)
     settled_at = models.DateTimeField(null=True, blank=True)
+    idempotency_key = models.CharField(max_length=128, null=True, blank=True)
     provider_request_id = models.CharField(max_length=255, blank=True)
     error_code = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -292,6 +293,12 @@ class AIUsageEvent(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["initiated_by", "candidate", "operation", "idempotency_key"],
+                name="unique_ai_request_idempotency_key",
+            ),
+        ]
 
 
 class AIProjectBudget(models.Model):

@@ -8,7 +8,11 @@ from openai import OpenAI, OpenAIError
 from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
 from chatbot.services.ai_budget import AIBudgetExceeded, settle_usage
-from chatbot.services.ai_limits import AIQuotaExceeded, admit_ai_operation
+from chatbot.services.ai_limits import (
+    AIDuplicateRequest,
+    AIQuotaExceeded,
+    admit_ai_operation,
+)
 
 
 class AIServiceError(Exception):
@@ -31,6 +35,10 @@ class AILimitExceeded(AIServiceError):
     pass
 
 
+class AIRequestAlreadySubmitted(AIServiceError):
+    pass
+
+
 class NoVerifiedFacts(AIServiceError):
     pass
 
@@ -44,7 +52,11 @@ class AIResponse:
 
 
 def ask_candidate(
-    *, candidate: CandidateProfile, initiated_by, question: str
+    *,
+    candidate: CandidateProfile,
+    initiated_by,
+    question: str,
+    idempotency_key: str | None = None,
 ) -> AIResponse:
     """Authorize first, then invoke the single paid-provider boundary."""
     if not can_interact_with_candidate(initiated_by, candidate):
@@ -70,7 +82,10 @@ def ask_candidate(
             identity_id=initiated_by.pk,
             candidate_id=candidate.pk,
             operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
+            idempotency_key=idempotency_key,
         )
+    except AIDuplicateRequest as exc:
+        raise AIRequestAlreadySubmitted(str(exc)) from exc
     except AIQuotaExceeded as exc:
         raise AILimitExceeded(str(exc)) from exc
     except AIBudgetExceeded as exc:
