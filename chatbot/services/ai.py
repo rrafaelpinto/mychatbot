@@ -1,4 +1,5 @@
 import json
+import logging
 from dataclasses import dataclass
 
 from django.conf import settings
@@ -113,7 +114,14 @@ def ask_candidate(
             "completed_at",
         ]
     )
-    settle_usage(usage_id=usage.pk)
+    try:
+        settle_usage(usage_id=usage.pk)
+    except Exception:
+        # The provider response was already paid for and persisted. Do not
+        # turn a settlement outage into a client retry of the paid request.
+        logging.getLogger(__name__).exception(
+            "AI usage settlement failed for event %s", usage.pk
+        )
     return response
 
 

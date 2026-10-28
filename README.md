@@ -100,7 +100,11 @@ The main variables are documented in `.env.example`.
   confirmed provider token usage is now settled after success. Unused funds are
   credited back to the matching UTC calendar windows; missing usage data,
   provider failures and ambiguous outcomes retain the full reservation.
-  Reconciliation is idempotent for settled operations.
+  Reconciliation is idempotent for settled operations. Token prices are
+  snapshotted at admission, preventing later configuration changes from
+  repricing previously admitted calls. If settlement fails after a successful
+  provider response, the response remains available and the event remains
+  unsettled for operational recovery; no second provider request is made.
 - Clients may send an `Idempotency-Key` header (1–128 printable ASCII characters)
   with chat POST requests. Reusing a key for the same identity, candidate, and
   operation returns HTTP 409 without another paid provider call. Clients should
