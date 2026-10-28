@@ -62,12 +62,18 @@ def reserve_project_budget(*, usage: AIUsageEvent, now=None) -> None:
             raise AIBudgetExceeded("AI project budget exhausted.")
 
         usage.input_price_per_million = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
-    usage.output_price_per_million = Decimal(str(settings.AI_OUTPUT_USD_PER_MILLION))
-    budget.daily_reserved_micro_usd += amount
+        usage.output_price_per_million = Decimal(str(settings.AI_OUTPUT_USD_PER_MILLION))
+        budget.daily_reserved_micro_usd += amount
         budget.monthly_reserved_micro_usd += amount
         budget.save()
         usage.reserved_micro_usd = amount
-        usage.save(update_fields=["reserved_micro_usd", "input_price_per_million", "output_price_per_million"])
+        usage.save(
+            update_fields=[
+                "reserved_micro_usd",
+                "input_price_per_million",
+                "output_price_per_million",
+            ]
+        )
 
 
 def settle_usage(*, usage_id: int) -> None:
