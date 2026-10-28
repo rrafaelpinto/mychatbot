@@ -101,6 +101,12 @@ The main variables are documented in `.env.example`.
   credited back to the matching UTC calendar windows; missing usage data,
   provider failures and ambiguous outcomes retain the full reservation.
   Reconciliation is idempotent for settled operations.
+- Clients may send an `Idempotency-Key` header (1–128 printable ASCII characters)
+  with chat POST requests. Reusing a key for the same identity, candidate, and
+  operation returns HTTP 409 without another paid provider call. Clients should
+  use a fresh key for each intentional request; omitted keys preserve legacy behavior.
+- Django admin exposes read-only AI usage, reserved and settled costs, and the
+  current project budget counters. Monetary figures are stored in micro-USD.
   Other models fail closed until pricing/reservation support is added.
 
 Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
