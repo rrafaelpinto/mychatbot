@@ -4,6 +4,7 @@ from django.conf import settings
 
 from .models import CandidateProfile, Conversation
 
+
 @dataclass(frozen=True)
 class AIOperationPolicy:
     operation: str
