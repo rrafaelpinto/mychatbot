@@ -431,3 +431,37 @@ class CandidateExtractionRun(models.Model):
     last_usage_event = models.ForeignKey(
         AIUsageEvent, null=True, blank=True, on_delete=models.SET_NULL
     )
+
+
+class CandidateFactReviewEvent(models.Model):
+    """Record status and visibility decisions without duplicating fact content."""
+
+    class Action(models.TextChoices):
+        EDITED = "edited", "Edited"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        REOPENED = "reopened", "Reopened"
+        PUBLISHED = "published", "Published"
+        UNPUBLISHED = "unpublished", "Unpublished"
+
+    fact = models.ForeignKey(
+        CandidateFact, on_delete=models.CASCADE, related_name="review_events"
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="candidate_fact_reviews",
+    )
+    action = models.CharField(max_length=16, choices=Action.choices)
+    previous_status = models.CharField(
+        max_length=16, choices=CandidateFact.VerificationStatus.choices
+    )
+    new_status = models.CharField(
+        max_length=16, choices=CandidateFact.VerificationStatus.choices
+    )
+    previous_public = models.BooleanField()
+    new_public = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]

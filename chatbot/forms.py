@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import CandidateProfile
+from .models import CandidateFact, CandidateProfile
 from .validators import validate_candidate_document
 
 
@@ -33,3 +33,25 @@ class CandidateProfileForm(forms.ModelForm):
 
 class ChatQuestionForm(forms.Form):
     question = forms.CharField(max_length=1000, strip=True)
+
+
+class CandidateFactReviewForm(forms.ModelForm):
+    """Edit a fact proposal without exposing verification or publication fields."""
+
+    version = forms.CharField(widget=forms.HiddenInput)
+
+    class Meta:
+        model = CandidateFact
+        fields = ["fact_type", "content"]
+        widgets = {"content": forms.Textarea(attrs={"rows": 5})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["version"].initial = self.instance.updated_at.isoformat()
+
+    def clean_content(self):
+        content = self.cleaned_data["content"].strip()
+        if not content or len(content) > 4000:
+            raise forms.ValidationError("Enter a fact of at most 4,000 characters.")
+        return content

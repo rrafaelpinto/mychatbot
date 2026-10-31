@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}- Review fact{% endblock %}
+{% block content %}
+<section class="my-4">
+    <a href="{% url 'candidate_fact_review_list' %}" class="btn btn-link pl-0">&larr; All facts</a>
+    <h1 class="h3">Review professional fact</h1>
+    <p class="text-muted">Status: {{ fact.get_verification_status_display }}. Visibility: {% if fact.is_public %}Public{% else %}Private{% endif %}.</p>
+
+    <section class="card mb-4" aria-labelledby="source-title">
+        <div class="card-body">
+            <h2 class="h5" id="source-title">Private source evidence</h2>
+            {% if fact.source_document %}
+                <p class="mb-1"><strong>Document:</strong> {{ fact.source_document.original_filename }}</p>
+                <p class="mb-1"><strong>Evidence excerpt:</strong></p>
+                <blockquote class="blockquote border-left pl-3">
+                    <p class="mb-0">{{ fact.source_reference }}</p>
+                </blockquote>
+            {% elif fact.source_reference %}
+                <p><strong>Source reference:</strong> {{ fact.source_reference }}</p>
+            {% else %}
+                <p class="text-muted">No source reference available. Verify this claim independently.</p>
+            {% endif %}
+            <p class="small text-muted mb-0">Source documents and provenance are private. A quote alone does not establish that a claim is accurate.</p>
+        </div>
+    </section>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.version }}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-group">
+            <label for="{{ form.fact_type.id_for_label }}">Fact category</label>
+            {{ form.fact_type }}
+            {{ form.fact_type.errors }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.content.id_for_label }}">Professional claim</label>
+            {{ form.content }}
+            {{ form.content.errors }}
+        </div>
+        <p class="small text-muted">
+            Saving changed text resets verification and removes public visibility. Save edits before approving or changing publication.
+        </p>
+        <div class="d-flex flex-wrap" style="gap: .5rem">
+            <button class="btn btn-outline-primary" name="action" value="save" type="submit">Save edits</button>
+            {% if fact.verification_status == 'pending' %}
+                <button class="btn btn-success" name="action" value="approve" type="submit">Approve privately</button>
+                <button class="btn btn-outline-danger" name="action" value="reject" type="submit">Reject</button>
+            {% elif fact.verification_status == 'verified' %}
+                {% if fact.is_public %}
+                    <button class="btn btn-warning" name="action" value="unpublish" type="submit">Withdraw publication</button>
+                {% else %}
+                    <button class="btn btn-primary" name="action" value="publish" type="submit">Publish verified fact</button>
+                {% endif %}
+                <button class="btn btn-outline-danger" name="action" value="reject" type="submit">Reject and withdraw</button>
+            {% else %}
+                <button class="btn btn-outline-secondary" name="action" value="reopen" type="submit">Reopen for review</button>
+            {% endif %}
+        </div>
+    </form>
+
+    <section class="mt-5" aria-labelledby="review-history">
+        <h2 class="h5" id="review-history">Review decisions</h2>
+        <ul class="list-group">
+            {% for event in events %}
+                <li class="list-group-item">
+                    {{ event.get_action_display }} by {{ event.reviewed_by.username }} on {{ event.created_at|date:"Y-m-d H:i" }} UTC.
+                    <span class="small text-muted">{{ event.get_previous_status_display }} to {{ event.get_new_status_display }}; {% if event.new_public %}public{% else %}private{% endif %}.</span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No review decisions yet.</li>
+            {% endfor %}
+        </ul>
+    </section>
+</section>
+{% endblock %}

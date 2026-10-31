@@ -6,6 +6,7 @@ from .models import (
     CandidateDocument,
     CandidateExtractionRun,
     CandidateFact,
+    CandidateFactReviewEvent,
     CandidateProfile,
     Conversation,
     GuestChatSession,
@@ -178,6 +179,28 @@ class CandidateExtractionRunAdmin(admin.ModelAdmin):
         "proposed_count",
         "error_code",
         "last_usage_event",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(CandidateFactReviewEvent)
+class CandidateFactReviewEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "fact", "reviewed_by", "action", "previous_status",
+        "new_status", "new_public", "created_at"
+    )
+    list_filter = ("action", "new_status", "new_public")
+    readonly_fields = (
+        "fact", "reviewed_by", "action", "previous_status", "new_status",
+        "previous_public", "new_public", "created_at"
     )
 
     def has_add_permission(self, request):

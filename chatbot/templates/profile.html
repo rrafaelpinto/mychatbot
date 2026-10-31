@@ -18,6 +18,13 @@
         <a href="{% url 'public_profile' candidate.slug %}">View public profile</a>
     {% endif %}
 
+    <div class="mt-4">
+        <a class="btn btn-outline-primary" href="{% url 'candidate_fact_review_list' %}">
+            Review professional facts
+        </a>
+        <p class="small text-muted mt-2">Review evidence and approve publication separately.</p>
+    </div>
+
     <h2 class="h4 mt-5">Private source documents</h2>
     <ul class="list-group">
         {% for document in documents %}
