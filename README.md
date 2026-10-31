@@ -118,6 +118,14 @@ HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it
 
 Public candidate images use normal media storage during development. Candidate source documents use a separate storage backend with no public URL. Production static/media delivery is a deployment concern and is not provided by Django.
 
+## Candidate knowledge
+
+Candidate facts are private by default, even after verification. The Candidate Agent
+uses only facts that are both verified and explicitly marked public. Source resumes
+and extracted text remain private. To prepare a candidate knowledge corpus, see
+[Safe fact import](docs/engineering/FACT_IMPORT.md). No real resume or candidate
+fact pack is committed to the repository.
+
 ## Development guidance
 
 Engineering conventions and the definition of done are in [`AGENTS.md`](AGENTS.md). Product direction and phase status are in [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md), and accepted architecture decisions are under [`docs/adr/`](docs/adr/).

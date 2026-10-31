@@ -183,6 +183,8 @@ class CandidateFact(models.Model):
         choices=VerificationStatus.choices,
         default=VerificationStatus.PENDING,
     )
+    is_public = models.BooleanField(default=False)
+    import_key = models.CharField(max_length=64, blank=True, null=True)
     source_document = models.ForeignKey(
         CandidateDocument,
         on_delete=models.SET_NULL,
@@ -196,9 +198,26 @@ class CandidateFact(models.Model):
 
     class Meta:
         ordering = ["fact_type", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate", "import_key"],
+                name="unique_candidate_fact_import_key",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(is_public=False) | models.Q(verification_status="verified")
+                ),
+                name="public_fact_must_be_verified",
+            ),
+        ]
 
     def clean(self) -> None:
         super().clean()
+        if (
+            self.is_public
+            and self.verification_status != self.VerificationStatus.VERIFIED
+        ):
+            raise ValidationError({"is_public": "Only verified facts may be public."})
         if (
             self.source_document_id
             and self.candidate_id

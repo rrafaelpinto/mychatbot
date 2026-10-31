@@ -42,9 +42,16 @@ class CandidateDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateFact)
 class CandidateFactAdmin(admin.ModelAdmin):
-    list_display = ("candidate", "fact_type", "verification_status", "updated_at")
-    list_filter = ("fact_type", "verification_status")
-    search_fields = ("candidate__name", "content")
+    list_display = (
+        "candidate",
+        "import_key",
+        "fact_type",
+        "verification_status",
+        "is_public",
+        "updated_at",
+    )
+    list_filter = ("fact_type", "verification_status", "is_public")
+    search_fields = ("candidate__name", "content", "import_key")
 
 
 @admin.register(Conversation)
