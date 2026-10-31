@@ -14,7 +14,7 @@ from chatbot.evaluation.baseline import (
     load_dataset,
     load_responses,
 )
-from chatbot.models import CandidateFact, CandidateProfile
+from chatbot.models import CandidateFact
 from chatbot.services.ai import UNSUPPORTED_ANSWER, build_candidate_payload
 from chatbot.services.retrieval import (
     FullContextRetriever,
