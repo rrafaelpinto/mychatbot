@@ -286,7 +286,7 @@ def candidate_chat_messages(*, facts: list[dict], question: str, history: list[s
             ),
         },
         {"role": "user", "content": payload},
-    ],
+    ]
 
 
 def invoke_candidate_chat(
