@@ -85,7 +85,12 @@ def test_guest_session_and_history_are_isolated(
     conversation = Conversation.objects.get(guest_session__isnull=False)
     assert conversation.recruiter is None
     assert conversation.messages.count() == 4
-
+    assert (
+        AIUsageEvent.objects.filter(
+            guest_session=conversation.guest_session, initiated_by__isnull=True
+        ).count()
+        == 2
+    )
 
     assert b"Verified professional answer." in client.get(path).content
     from django.test import Client

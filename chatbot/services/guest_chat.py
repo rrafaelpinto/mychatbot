@@ -67,7 +67,9 @@ def verify_turnstile(token: str, *, hostname: str) -> bool:
         with urlopen(request, timeout=settings.GUEST_TURNSTILE_TIMEOUT) as response:
             result = json.load(response)
     except (TimeoutError, HTTPError, URLError, ValueError) as exc:
-
+        raise GuestVerificationUnavailable(
+            "Verification is temporarily unavailable."
+        ) from exc
 
     return (
         result.get("success") is True

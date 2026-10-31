@@ -47,7 +47,7 @@ def admit_ai_operation(
             guest_id = GuestChatSession.objects.only("origin_id").get(
                 pk=guest_session_id
             )
-
+            origin = GuestOrigin.objects.select_for_update().get(pk=guest_id.origin_id)
             guest = GuestChatSession.objects.select_for_update().get(
                 pk=guest_session_id
             )
@@ -68,7 +68,10 @@ def admit_ai_operation(
 
             budget, _ = AIProjectBudget.objects.get_or_create(
                 pk=1,
-
+                defaults={
+                    "daily_window": now.date(),
+                    "monthly_window": date(now.year, now.month, 1),
+                },
             )
             AIProjectBudget.objects.select_for_update().get(pk=budget.pk)
             session_events = events.filter(guest_session=guest)
@@ -76,11 +79,22 @@ def admit_ai_operation(
 
             if session_events.count() >= settings.GUEST_SESSION_QUESTION_LIMIT:
                 raise AIQuotaExceeded("Guest session question limit exceeded.")
-
+            if (
+                origin_events.filter(created_at__gte=minute_start).count()
+                >= settings.GUEST_ORIGIN_PER_MINUTE
+            ):
                 raise AIQuotaExceeded("Guest origin rate limit exceeded.")
-
+            if (
+                origin_events.filter(created_at__gte=day_start).count()
+                >= settings.GUEST_ORIGIN_PER_DAY
+            ):
                 raise AIQuotaExceeded("Guest origin daily limit exceeded.")
-
+            if (
+                events.filter(
+                    guest_origin__isnull=False, created_at__gte=day_start
+                ).count()
+                >= settings.GUEST_GLOBAL_PER_DAY
+            ):
                 raise AIQuotaExceeded("Guest daily capacity exhausted.")
             duplicate = session_events
         else:

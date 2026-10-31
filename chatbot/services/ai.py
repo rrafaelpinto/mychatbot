@@ -68,9 +68,20 @@ def ask_candidate(
 ) -> AIResponse:
     """Authorize first, then invoke the single paid-provider boundary."""
     if guest_session is None:
-
+        if initiated_by is None or not can_interact_with_candidate(
+            initiated_by, candidate
+        ):
             raise AINotAuthorized("This candidate is not available for AI interaction.")
-
+    elif (
+        initiated_by is not None
+        or not settings.GUEST_CHAT_ENABLED
+        or (
+            not candidate.status == CandidateProfile.Status.ACTIVE
+            or not candidate.publication_status
+            == CandidateProfile.PublicationStatus.PUBLISHED
+        )
+        or guest_session.candidate_id != candidate.pk
+    ):
         raise AINotAuthorized("This candidate is not available for guest interaction.")
 
     if not settings.AI_ENABLED:

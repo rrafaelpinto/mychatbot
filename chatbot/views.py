@@ -45,7 +45,8 @@ def public_profile(request, slug):
         CandidateProfile.objects.publicly_viewable(), slug=slug
     )
     return render(
-
+        request,
+        "public_profile.html",
         {"candidate": candidate, "guest_chat_enabled": settings.GUEST_CHAT_ENABLED},
     )
 
