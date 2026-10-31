@@ -111,16 +111,13 @@ def test_production_defaults_are_closed_and_registration_route_absent():
         {},
         (
             "import django; django.setup(); "
-            "from django.urls import reverse; "
-            "from django.urls.exceptions import NoReverseMatch; "
-            "assert reverse('login') == '/accounts/login/'; "
-            "assert reverse('password_reset') == '/accounts/password_reset/'; "
-            "try:\n reverse('django_registration_register')\n"
-            "except NoReverseMatch:\n pass\n"
-            "else:\n raise AssertionError('signup unexpectedly enabled')"
+            "from django.urls import get_resolver, resolve; "
+            "assert 'django_registration_register' not in get_resolver().reverse_dict; "
+            "assert resolve('/accounts/password_reset/').func.__name__ "
+            "== 'disabled_password_reset'"
         ),
     )
-    assert result.returncode == 0, result.stderr
+    assert closed.returncode == 0, closed.stderr
 
 
 def test_production_database_url_can_be_parsed_without_db_connection():

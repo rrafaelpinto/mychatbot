@@ -71,7 +71,9 @@ The domain now separates candidate ownership, lifecycle, publication, private so
 
 ### Phase 3 — Trusted Candidate Agent, RAG, and Public Demonstration
 
-**Status:** Approved; implementation in progress.
+**Status:** Implementation delivered through the evaluation runner.
+Production deployment, data approval and paid-model evaluation remain
+operational follow-ups, not completed deployment claims.
 
 **Objective:** Demonstrate a publicly accessible, trustworthy Candidate Agent
 grounded in reviewed professional information, with traceable evidence and
@@ -85,11 +87,12 @@ reproducible AI evaluations.
 3. Support structured LLM-assisted knowledge extraction and human review of
    proposed facts. Documents remain private; generated facts never self-approve.
 4. Compare full-context prompting, PostgreSQL full-text retrieval, and semantic
-   retrieval using LangChain, embeddings, and pgvector against a shared
-   evaluation dataset. Select the production approach based on measured quality,
-   latency, and cost.
-5. Publish a reproducible low-traffic demonstration, architecture documentation,
-   and minimal operational procedures.
+   retrieval using LangChain and pgvector against a shared synthetic dataset.
+   A paid real-model runner is available but execution is deferred.
+   Full-context remains the production default until evidence supports a change.
+5. Prepare a reproducible low-traffic demonstration, architecture documentation,
+   secure deploy configuration and minimal operational procedures.
+   Actual provisioning and public release require separate verification.
 
 **Trust boundaries:** Verified knowledge is necessary but not sufficient for
 public use; facts require explicit public approval. Candidate access policies,
@@ -104,3 +107,21 @@ infrastructure without measured need.
 Potential later work includes job description analysis, evidence-based resume
 generation, dedicated public APIs, frontend modernization, and stateful agent
 orchestration. These are not approved implementation commitments.
+
+## Release readiness and deferred work
+
+The repository includes production-focused configuration, static serving,
+readiness health checks, controlled account creation and a deployment runbook.
+These do not constitute a live deployed release.
+
+**Before enabling a public demo:** provision durable managed PostgreSQL with
+pgvector, verify DNS/TLS, create an owner account, review representative
+professional facts for public visibility, configure positive AI budgets and
+the OpenAI key, and enable Turnstile only with scheduled guest retention cleanup.
+Do not enable uploads without durable private and public media storage.
+
+**Deferred and optional:** paid real-embedding/response evaluation, strategy
+selection beyond full-context, production performance measurements, object
+storage, self-service registration, a verified outbound email provider, and
+expanded observability. These are not release blockers for an owner-controlled
+portfolio demo with uploads and registration disabled.
