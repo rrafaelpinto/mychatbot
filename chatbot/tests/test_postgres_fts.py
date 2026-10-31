@@ -1,5 +1,5 @@
-from io import StringIO
 import json
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -178,6 +178,7 @@ def test_fts_response_dataset_stable_ids_and_query_history():
     assert any("PostgreSQL" in fact["content"] for fact in result)
 
 
+@pytest.mark.django_db
 def test_full_context_remains_production_default(
     published_candidate, verified_fact
 ):
