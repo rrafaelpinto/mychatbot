@@ -45,7 +45,7 @@ def public_profile(request, slug):
         CandidateProfile.objects.publicly_viewable(), slug=slug
     )
     return render(
-        request, "public_profile.html",
+
         {"candidate": candidate, "guest_chat_enabled": settings.GUEST_CHAT_ENABLED},
     )
 
@@ -121,8 +121,11 @@ def chat(request, slug):
             return JsonResponse({"error": "Guest access is unavailable."}, status=403)
         guest = current_guest_session(request, candidate, digest)
         conversation = (
-            Conversation.objects.filter(candidate=candidate, guest_session=guest).first()
-            if guest else None
+            Conversation.objects.filter(
+                candidate=candidate, guest_session=guest
+            ).first()
+            if guest
+            else None
         )
 
     if request.method == "POST":
@@ -207,7 +210,9 @@ def chat(request, slug):
             ]
         )
         conversation.save(update_fields=["updated_at"])
-        return JsonResponse({"response": ai_response.content, "guest_verified": guest is not None})
+        return JsonResponse(
+            {"response": ai_response.content, "guest_verified": guest is not None}
+        )
 
     history = conversation.messages.all() if conversation else Message.objects.none()
     return render(
@@ -224,6 +229,7 @@ def chat(request, slug):
             ),
         },
     )
+
 
 @staff_member_required
 def conversations(request):

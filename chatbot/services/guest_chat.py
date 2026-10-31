@@ -67,7 +67,7 @@ def verify_turnstile(token: str, *, hostname: str) -> bool:
         with urlopen(request, timeout=settings.GUEST_TURNSTILE_TIMEOUT) as response:
             result = json.load(response)
     except (TimeoutError, HTTPError, URLError, ValueError) as exc:
-        raise GuestVerificationUnavailable("Verification is temporarily unavailable.") from exc
+
 
     return (
         result.get("success") is True
@@ -114,6 +114,6 @@ def create_guest_session(*, candidate, digest):
 
 def release_guest_operation(*, session_id, usage_id):
     """Release only the lease owned by this operation."""
-    GuestChatSession.objects.filter(
-        pk=session_id, active_usage_id=usage_id
-    ).update(active_usage=None, in_flight_until=None)
+    GuestChatSession.objects.filter(pk=session_id, active_usage_id=usage_id).update(
+        active_usage=None, in_flight_until=None
+    )

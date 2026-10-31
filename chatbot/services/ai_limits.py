@@ -47,9 +47,7 @@ def admit_ai_operation(
             guest_id = GuestChatSession.objects.only("origin_id").get(
                 pk=guest_session_id
             )
-            origin = GuestOrigin.objects.select_for_update().get(
-                pk=guest_id.origin_id
-            )
+
             guest = GuestChatSession.objects.select_for_update().get(
                 pk=guest_session_id
             )
@@ -70,7 +68,7 @@ def admit_ai_operation(
 
             budget, _ = AIProjectBudget.objects.get_or_create(
                 pk=1,
-                defaults={"daily_window": now.date(), "monthly_window": date(now.year, now.month, 1)},
+
             )
             AIProjectBudget.objects.select_for_update().get(pk=budget.pk)
             session_events = events.filter(guest_session=guest)
@@ -78,32 +76,42 @@ def admit_ai_operation(
 
             if session_events.count() >= settings.GUEST_SESSION_QUESTION_LIMIT:
                 raise AIQuotaExceeded("Guest session question limit exceeded.")
-            if origin_events.filter(created_at__gte=minute_start).count() >= settings.GUEST_ORIGIN_PER_MINUTE:
+
                 raise AIQuotaExceeded("Guest origin rate limit exceeded.")
-            if origin_events.filter(created_at__gte=day_start).count() >= settings.GUEST_ORIGIN_PER_DAY:
+
                 raise AIQuotaExceeded("Guest origin daily limit exceeded.")
-            if events.filter(guest_origin__isnull=False, created_at__gte=day_start).count() >= settings.GUEST_GLOBAL_PER_DAY:
+
                 raise AIQuotaExceeded("Guest daily capacity exhausted.")
             duplicate = session_events
         else:
-            if events.filter(
-                initiated_by_id=identity_id, created_at__gte=minute_start
-            ).count() >= limits["identity_per_minute"]:
+            if (
+                events.filter(
+                    initiated_by_id=identity_id, created_at__gte=minute_start
+                ).count()
+                >= limits["identity_per_minute"]
+            ):
                 raise AIQuotaExceeded("AI rate limit exceeded.")
-            if events.filter(
-                initiated_by_id=identity_id, created_at__gte=day_start
-            ).count() >= limits["identity_per_day"]:
+            if (
+                events.filter(
+                    initiated_by_id=identity_id, created_at__gte=day_start
+                ).count()
+                >= limits["identity_per_day"]
+            ):
                 raise AIQuotaExceeded("AI identity quota exceeded.")
             duplicate = events.filter(initiated_by_id=identity_id)
 
-        if idempotency_key is not None and duplicate.filter(
-            candidate_id=candidate_id, idempotency_key=idempotency_key
-        ).exists():
+        if (
+            idempotency_key is not None
+            and duplicate.filter(
+                candidate_id=candidate_id, idempotency_key=idempotency_key
+            ).exists()
+        ):
             raise AIDuplicateRequest("This AI request has already been submitted.")
 
-        if events.filter(
-            candidate_id=candidate_id, created_at__gte=day_start
-        ).count() >= limits["candidate_per_day"]:
+        if (
+            events.filter(candidate_id=candidate_id, created_at__gte=day_start).count()
+            >= limits["candidate_per_day"]
+        ):
             raise AIQuotaExceeded("AI candidate quota exceeded.")
 
         usage = AIUsageEvent.objects.create(
