@@ -43,7 +43,10 @@ def test_follow_up_questions_from_same_authenticated_conversation(
 
     with patch("chatbot.services.ai.invoke_candidate_chat", side_effect=respond):
         assert client.post(endpoint, {"question": "Which projects?"}).status_code == 200
-        assert client.post(endpoint, {"question": "Which one used Django?"}).status_code == 200
+        assert (
+            client.post(endpoint, {"question": "Which one used Django?"}).status_code
+            == 200
+        )
 
     assert snapshots[0][1] == []
     assert snapshots[1][1] == ["Which projects?"]
@@ -58,7 +61,9 @@ def test_context_omits_prior_model_output_even_if_untrusted(
         candidate=published_candidate, recruiter=recruiter
     )
     Message.objects.create(
-        conversation=conversation, role=Message.Role.USER, content="Tell me about projects."
+        conversation=conversation,
+        role=Message.Role.USER,
+        content="Tell me about projects.",
     )
     Message.objects.create(
         conversation=conversation,
@@ -100,9 +105,10 @@ def test_conversation_questions_are_bounded_and_do_not_cross_owners(
     assert conversation_questions(
         candidate=published_candidate, initiated_by=recruiter
     ) == ["Questi", "Questi"]
-    assert conversation_questions(
-        candidate=published_candidate, initiated_by=other_user
-    ) == []
+    assert (
+        conversation_questions(candidate=published_candidate, initiated_by=other_user)
+        == []
+    )
 
 
 @pytest.mark.django_db
@@ -235,9 +241,7 @@ def test_payload_serializes_untrusted_history_as_data():
 def test_openai_json_response_format_and_usage(settings):
     settings.OPENAI_API_KEY = "test-key"
     facts = [{"id": 123, "fact_type": "experience", "content": "Built APIs"}]
-    completion = provider_response(
-        '{"answer":"I built APIs.","fact_ids":[123]}'
-    )
+    completion = provider_response('{"answer":"I built APIs.","fact_ids":[123]}')
     with patch("chatbot.services.ai.OpenAI") as openai:
         openai.return_value.chat.completions.create.return_value = completion
         result = invoke_candidate_chat(
@@ -269,9 +273,7 @@ def test_context_too_large_never_calls_provider(
 
 
 @pytest.mark.django_db
-def test_public_evidence_filters_unverified(
-    published_candidate, verified_fact
-):
+def test_public_evidence_filters_unverified(published_candidate, verified_fact):
     pending = CandidateFact.objects.create(
         candidate=published_candidate,
         fact_type=CandidateFact.FactType.SKILL,
@@ -293,4 +295,4 @@ def test_suggestions_and_guest_remaining_label(
     assert response.status_code == 200
     assert b"Try a question" in response.content
     assert b"10 questions remaining" not in response.content
-    assert b"data-action=\"candidate_chat\"" in response.content
+    assert b'data-action="candidate_chat"' in response.content

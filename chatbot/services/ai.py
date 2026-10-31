@@ -223,7 +223,9 @@ def ask_candidate(
     return response
 
 
-def build_candidate_payload(*, facts: list[dict], question: str, history: list[str]) -> str:
+def build_candidate_payload(
+    *, facts: list[dict], question: str, history: list[str]
+) -> str:
     """Serialize approved facts and prior user questions as untrusted JSON data."""
     return json.dumps(
         {
@@ -240,7 +242,9 @@ def parse_candidate_answer(content: str) -> tuple[str, tuple[int, ...]]:
     try:
         value = json.loads(content)
     except (ValueError, TypeError) as exc:
-        raise AIUnavailable("The Candidate Agent returned an invalid response.") from exc
+        raise AIUnavailable(
+            "The Candidate Agent returned an invalid response."
+        ) from exc
     if not isinstance(value, dict) or set(value) != {"answer", "fact_ids"}:
         raise AIUnavailable("The Candidate Agent returned an invalid response.")
     answer, fact_ids = value["answer"], value["fact_ids"]
@@ -259,7 +263,9 @@ def parse_candidate_answer(content: str) -> tuple[str, tuple[int, ...]]:
     return answer.strip(), tuple(fact_ids)
 
 
-def invoke_candidate_chat(*, facts: list[dict], question: str, history: list[str]) -> AIResponse:
+def invoke_candidate_chat(
+    *, facts: list[dict], question: str, history: list[str]
+) -> AIResponse:
     """The only OpenAI call site for candidate chat."""
     if not settings.OPENAI_API_KEY:
         raise AIUnavailable("The Candidate Agent is not configured.")
