@@ -194,13 +194,24 @@ class CandidateExtractionRunAdmin(admin.ModelAdmin):
 @admin.register(CandidateFactReviewEvent)
 class CandidateFactReviewEventAdmin(admin.ModelAdmin):
     list_display = (
-        "fact", "reviewed_by", "action", "previous_status",
-        "new_status", "new_public", "created_at"
+        "fact",
+        "reviewed_by",
+        "action",
+        "previous_status",
+        "new_status",
+        "new_public",
+        "created_at",
     )
     list_filter = ("action", "new_status", "new_public")
     readonly_fields = (
-        "fact", "reviewed_by", "action", "previous_status", "new_status",
-        "previous_public", "new_public", "created_at"
+        "fact",
+        "reviewed_by",
+        "action",
+        "previous_status",
+        "new_status",
+        "previous_public",
+        "new_public",
+        "created_at",
     )
 
     def has_add_permission(self, request):

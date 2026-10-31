@@ -100,9 +100,10 @@ def test_approval_is_private_until_separately_published(
             verification_status=CandidateFact.VerificationStatus.VERIFIED,
         ).values_list("id", flat=True)
     ) == [pending_fact.pk]
-    assert list(
-        pending_fact.review_events.values_list("action", flat=True)
-    ) == ["published", "approved"]
+    assert list(pending_fact.review_events.values_list("action", flat=True)) == [
+        "published",
+        "approved",
+    ]
 
 
 @pytest.mark.django_db
@@ -111,9 +112,9 @@ def test_verified_fact_text_change_revokes_approval_and_publication(
 ):
     client.force_login(user)
     changed = "Revised claim based on reviewed evidence."
-    assert review_post(
-        client, verified_fact, "save", content=changed
-    ).status_code == 302
+    assert (
+        review_post(client, verified_fact, "save", content=changed).status_code == 302
+    )
     verified_fact.refresh_from_db()
     assert verified_fact.content == changed
     assert verified_fact.verification_status == CandidateFact.VerificationStatus.PENDING
@@ -128,9 +129,12 @@ def test_verified_fact_text_change_revokes_approval_and_publication(
 @pytest.mark.django_db
 def test_type_change_revokes_verified_public_fact(client, user, verified_fact):
     client.force_login(user)
-    assert review_post(
-        client, verified_fact, "save", fact_type=CandidateFact.FactType.PROJECT
-    ).status_code == 302
+    assert (
+        review_post(
+            client, verified_fact, "save", fact_type=CandidateFact.FactType.PROJECT
+        ).status_code
+        == 302
+    )
     verified_fact.refresh_from_db()
     assert verified_fact.fact_type == CandidateFact.FactType.PROJECT
     assert verified_fact.verification_status == CandidateFact.VerificationStatus.PENDING
@@ -143,9 +147,7 @@ def test_edits_cannot_be_combined_with_approval_or_publication(
 ):
     client.force_login(user)
     for fact, action in ((pending_fact, "approve"), (verified_fact, "unpublish")):
-        response = review_post(
-            client, fact, action, content="Unreviewed new statement"
-        )
+        response = review_post(client, fact, action, content="Unreviewed new statement")
         assert response.status_code == 200
         assert b"Save your text changes" in response.content
         fact.refresh_from_db()
@@ -170,9 +172,7 @@ def test_cannot_publish_pending_or_rejected_claim(client, user, pending_fact):
 
 
 @pytest.mark.django_db
-def test_rejected_fact_can_be_reopened_and_reapproved(
-    client, user, pending_fact
-):
+def test_rejected_fact_can_be_reopened_and_reapproved(client, user, pending_fact):
     client.force_login(user)
     assert review_post(client, pending_fact, "reject").status_code == 302
     pending_fact.refresh_from_db()
@@ -190,7 +190,9 @@ def test_rejecting_public_fact_withdraws_it_atomically(client, user, verified_fa
     client.force_login(user)
     assert review_post(client, verified_fact, "reject").status_code == 302
     verified_fact.refresh_from_db()
-    assert verified_fact.verification_status == CandidateFact.VerificationStatus.REJECTED
+    assert (
+        verified_fact.verification_status == CandidateFact.VerificationStatus.REJECTED
+    )
     assert not verified_fact.is_public
     e = verified_fact.review_events.get()
     assert e.previous_public and not e.new_public
@@ -203,7 +205,9 @@ def test_publication_can_be_withdrawn_without_losing_review(
     client.force_login(user)
     assert review_post(client, verified_fact, "unpublish").status_code == 302
     verified_fact.refresh_from_db()
-    assert verified_fact.verification_status == CandidateFact.VerificationStatus.VERIFIED
+    assert (
+        verified_fact.verification_status == CandidateFact.VerificationStatus.VERIFIED
+    )
     assert not verified_fact.is_public
     assert review_post(client, verified_fact, "publish").status_code == 302
     verified_fact.refresh_from_db()
@@ -211,9 +215,7 @@ def test_publication_can_be_withdrawn_without_losing_review(
 
 
 @pytest.mark.django_db
-def test_stale_review_form_cannot_overwrite_newer_decision(
-    client, user, pending_fact
-):
+def test_stale_review_form_cannot_overwrite_newer_decision(client, user, pending_fact):
     client.force_login(user)
     stale_version = pending_fact.updated_at.isoformat()
     assert review_post(client, pending_fact, "approve").status_code == 302
@@ -230,9 +232,7 @@ def test_stale_review_form_cannot_overwrite_newer_decision(
 
 
 @pytest.mark.django_db
-def test_validation_and_invalid_actions_do_not_modify_facts(
-    client, user, pending_fact
-):
+def test_validation_and_invalid_actions_do_not_modify_facts(client, user, pending_fact):
     client.force_login(user)
     invalid = review_post(client, pending_fact, "save", content=" ")
     assert invalid.status_code == 200
@@ -267,9 +267,7 @@ def test_evidence_is_private_and_html_escaped(client, user, published_candidate)
 def test_filters_only_show_current_candidate_facts(
     client, user, other_user, published_candidate, pending_fact
 ):
-    outsider = CandidateProfile.objects.create(
-        user=other_user, name="Other candidate"
-    )
+    outsider = CandidateProfile.objects.create(user=other_user, name="Other candidate")
     CandidateFact.objects.create(
         candidate=outsider,
         fact_type=CandidateFact.FactType.OTHER,
@@ -294,9 +292,7 @@ def test_evidence_links_remain_private_after_publication(
     assert review_post(client, pending_fact, "publish").status_code == 302
 
     client.logout()
-    public_page = client.get(
-        reverse("public_profile", args=[published_candidate.slug])
-    )
+    public_page = client.get(reverse("public_profile", args=[published_candidate.slug]))
     assert public_page.status_code == 200
     assert b"Reviewed private project notes" not in public_page.content
     assert client.get(review_url(pending_fact)).status_code == 302

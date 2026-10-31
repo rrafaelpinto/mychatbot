@@ -84,7 +84,12 @@ def candidate_fact_review_detail(request, fact_id):
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action not in {
-            "save", "approve", "reject", "reopen", "publish", "unpublish"
+            "save",
+            "approve",
+            "reject",
+            "reopen",
+            "publish",
+            "unpublish",
         }:
             raise Http404("Unknown review action.")
 
@@ -207,7 +212,6 @@ def _fact_review_action_error(*, action, changed, status, is_public):
     if action == "unpublish" and not is_public:
         return "Only public facts can be unpublished."
     return None
-
 
 
 def about(request):
