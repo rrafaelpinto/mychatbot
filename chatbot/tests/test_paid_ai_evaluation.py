@@ -9,14 +9,14 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from chatbot.evaluation.baseline import load_dataset
-from chatbot.evaluation.live_experiment import evaluate_live, run_paid_dataset
+from chatbot.evaluation.live_experiment import evaluate_live
 from chatbot.evaluation.paid_provider import (
     ExperimentBudget,
     ExperimentLimitError,
     ExperimentProvider,
 )
 from chatbot.models import CandidateFact, CandidateFactEmbedding, CandidateProfile
-from chatbot.services.ai import UNSUPPORTED_ANSWER, candidate_chat_messages
+from chatbot.services.ai import candidate_chat_messages
 from chatbot.services.embeddings import DeterministicTestEmbeddings
 
 DATASET = Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"

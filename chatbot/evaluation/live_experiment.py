@@ -3,7 +3,7 @@ import json
 import math
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from django.conf import settings
@@ -267,7 +267,7 @@ def evaluate_live(*, dataset, provider, include_judge=True):
         "dataset_sha256": hashlib.sha256(
             json.dumps(dataset, sort_keys=True).encode("utf-8")
         ).hexdigest(),
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "chat_model": settings.OPENAI_MODEL,
         "embedding_model": settings.AI_EMBEDDING_MODEL,
         "embedding_dimensions": settings.AI_EMBEDDING_DIMENSIONS,
