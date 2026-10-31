@@ -204,9 +204,7 @@ class CandidateFact(models.Model):
             GinIndex(
                 SearchVector("content", config="english"),
                 name="candidate_public_fact_fts",
-                condition=models.Q(
-                    verification_status="verified", is_public=True
-                ),
+                condition=models.Q(verification_status="verified", is_public=True),
             ),
         ]
         constraints = [
