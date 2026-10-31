@@ -48,13 +48,6 @@ jobs:
           version: "0.12.8"
           enable-cache: true
 
-      - name: Generate dependency lock
-        run: |
-          uv lock
-          echo "LOCK_MARKER_START"
-          cat uv.lock
-          echo "LOCK_MARKER_END"
-
       - name: Install locked dependencies
         run: uv sync --locked --group dev
 
@@ -73,7 +66,7 @@ jobs:
       - name: Offline Candidate Agent evaluation baseline
         run: uv run python manage.py evaluate_candidate_agent --fail-on-overflow --settings=mychatbot.test_settings
 
-      - name: PostgreSQL FTS retrieval comparison
+      - name: Three-way retrieval comparison
         run: |
           uv run python manage.py migrate --noinput --settings=mychatbot.test_settings
           uv run python manage.py evaluate_candidate_agent --strategy compare --fail-on-overflow --settings=mychatbot.test_settings

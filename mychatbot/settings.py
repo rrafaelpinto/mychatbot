@@ -167,6 +167,15 @@ AI_INPUT_USD_PER_MILLION = os.environ.get("AI_INPUT_USD_PER_MILLION", "0.15")
 AI_OUTPUT_USD_PER_MILLION = os.environ.get("AI_OUTPUT_USD_PER_MILLION", "0.60")
 AI_MAX_INPUT_TOKENS = int(os.environ.get("AI_MAX_INPUT_TOKENS", "8192"))
 AI_MAX_OUTPUT_TOKENS = int(os.environ.get("AI_MAX_OUTPUT_TOKENS", "500"))
+AI_EMBEDDING_MODEL = "text-embedding-3-small"
+AI_EMBEDDING_DIMENSIONS = 256
+AI_EMBEDDING_MAX_INPUT_BYTES = 2048
+AI_EMBEDDING_MAX_INPUT_TOKENS = 2048
+AI_EMBEDDING_INPUT_USD_PER_MILLION = os.environ.get(
+    "AI_EMBEDDING_INPUT_USD_PER_MILLION", "0.02"
+)
+AI_SEMANTIC_INDEX_ENABLED = env_bool("AI_SEMANTIC_INDEX_ENABLED", default=False)
+AI_SEMANTIC_QUERY_ENABLED = env_bool("AI_SEMANTIC_QUERY_ENABLED", default=False)
 AI_CHAT_CONTEXT_QUESTIONS = 4
 AI_CHAT_CONTEXT_QUESTION_CHARS = 500
 AI_CHAT_INPUT_OVERHEAD_BYTES = 1600
@@ -212,11 +221,23 @@ AI_USAGE_LIMITS = {
         "identity_per_day": 5,
         "candidate_per_day": 5,
     },
+    "embedding_index": {
+        "identity_per_minute": 30,
+        "identity_per_day": 200,
+        "candidate_per_day": 200,
+    },
+    "embedding_query": {
+        "identity_per_minute": 5,
+        "identity_per_day": 30,
+        "candidate_per_day": 60,
+    },
 }
 
 AI_OPERATION_POLICIES = {
     "candidate_chat": env_bool("AI_CANDIDATE_CHAT_ENABLED", default=True),
     "knowledge_extraction": AI_KNOWLEDGE_EXTRACTION_ENABLED,
+    "embedding_index": AI_SEMANTIC_INDEX_ENABLED,
+    "embedding_query": AI_SEMANTIC_QUERY_ENABLED,
 }
 
 if IS_PRODUCTION:

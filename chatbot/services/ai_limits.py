@@ -30,6 +30,7 @@ def admit_ai_operation(
     candidate_id: int,
     operation: str,
     idempotency_key: str | None = None,
+    model: str | None = None,
 ) -> AIUsageEvent:
     """Atomically enforce limits and record an admitted paid operation."""
     limits = settings.AI_USAGE_LIMITS[operation]
@@ -134,7 +135,7 @@ def admit_ai_operation(
             guest_origin=origin,
             candidate_id=candidate_id,
             operation=operation,
-            model=settings.OPENAI_MODEL,
+            model=model or settings.OPENAI_MODEL,
             idempotency_key=idempotency_key,
         )
         reserve_project_budget(usage=usage, now=now)

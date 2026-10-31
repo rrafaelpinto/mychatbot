@@ -96,3 +96,11 @@ privacy and interpretation details.
 LangChain + pgvector remains the next strategy to benchmark. Measure
 real latency and provider token costs only when explicitly budgeted and
 authorized before selecting a production strategy.
+
+## LangChain + pgvector experiment
+
+The offline three-way comparison also exercises a pgvector cosine-distance
+retriever through LangChain runnables. Its deterministic test vectors are
+not genuine semantic embeddings, so **do not compare its recall directly as
+real semantic model quality**. See [semantic retrieval](SEMANTIC_RETRIEVAL.md)
+for configuration and evaluation limitations.
