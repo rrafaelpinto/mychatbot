@@ -22,10 +22,7 @@ from chatbot.services.retrieval import (
 )
 
 DATASET = (
-    Path(__file__).resolve().parents[1]
-    / "evaluation"
-    / "data"
-    / "synthetic_v1.json"
+    Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"
 )
 
 
@@ -82,9 +79,7 @@ def test_retriever_never_includes_pending_rejected_or_private_facts(
     )
     assert len(returned) == 13
     assert {fact["id"] for fact in returned}.isdisjoint({991, 992, 993})
-    assert all(
-        set(fact) == {"id", "fact_type", "content"} for fact in returned
-    )
+    assert all(set(fact) == {"id", "fact_type", "content"} for fact in returned)
 
 
 @pytest.mark.django_db
@@ -137,9 +132,7 @@ def test_payload_size_uses_production_serialization(synthetic_dataset):
     payload = build_candidate_payload(
         facts=retrieved, question=case["question"], history=[]
     )
-    assert report["cases"][0]["input_payload_bytes"] == len(
-        payload.encode("utf-8")
-    )
+    assert report["cases"][0]["input_payload_bytes"] == len(payload.encode("utf-8"))
     assert report["cases"][0]["input_plus_overhead_bytes"] == (
         len(payload.encode("utf-8")) + 1600
     )
@@ -152,9 +145,7 @@ def test_budget_overflow_is_reported_without_silent_truncation(
         synthetic_dataset, input_limit_bytes=300, overhead_bytes=1600
     )
     assert report["metrics"]["over_budget_cases"] == 30
-    assert all(
-        case["within_input_budget"] is False for case in report["cases"]
-    )
+    assert all(case["within_input_budget"] is False for case in report["cases"])
 
 
 @pytest.mark.parametrize(

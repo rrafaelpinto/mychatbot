@@ -34,9 +34,7 @@ def retrieve_candidate_facts(*, candidate, question: str, history: list[str]):
     """Retrieve only candidate-owned facts approved for public interaction."""
     approved = candidate.facts.filter(
         verification_status="verified", is_public=True
-    ).values(
-        "id", "fact_type", "content", "verification_status", "is_public"
-    )
+    ).values("id", "fact_type", "content", "verification_status", "is_public")
     return FullContextRetriever().retrieve(
         facts=approved,
         question=question,

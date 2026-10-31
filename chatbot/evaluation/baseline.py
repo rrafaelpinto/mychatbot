@@ -46,8 +46,12 @@ def load_dataset(path: Path) -> dict:
         _require(
             set(fact)
             == {
-                "key", "id", "fact_type", "content",
-                "verification_status", "is_public",
+                "key",
+                "id",
+                "fact_type",
+                "content",
+                "verification_status",
+                "is_public",
             },
             "Unexpected fact fields.",
         )
@@ -64,13 +68,13 @@ def load_dataset(path: Path) -> dict:
         _require(fact["id"] not in fact_ids, "Duplicate fact numeric ID.")
         _require(fact["fact_type"] in FACT_TYPES, "Unknown fact category.")
         _require(
-            isinstance(fact["content"], str) and bool(fact["content"].strip())
+            isinstance(fact["content"], str)
+            and bool(fact["content"].strip())
             and len(fact["content"]) <= 4000,
             "Invalid fact content.",
         )
         _require(
-            fact["verification_status"] in STATUSES
-            and type(fact["is_public"]) is bool,
+            fact["verification_status"] in STATUSES and type(fact["is_public"]) is bool,
             "Invalid verification or visibility.",
         )
         _require(
@@ -87,9 +91,8 @@ def load_dataset(path: Path) -> dict:
         _require(isinstance(case, dict), "Every case must be an object.")
         _require(
             {"id", "category", "question", "expected_fact_keys"} <= set(case)
-            and set(case) <= {
-                "id", "category", "question", "expected_fact_keys", "history"
-            },
+            and set(case)
+            <= {"id", "category", "question", "expected_fact_keys", "history"},
             "Unexpected evaluation case fields.",
         )
         case_id = case["id"]
@@ -120,9 +123,7 @@ def load_dataset(path: Path) -> dict:
         _require(
             isinstance(history, list)
             and len(history) <= 4
-            and all(
-                isinstance(item, str) and len(item) <= 500 for item in history
-            ),
+            and all(isinstance(item, str) and len(item) <= 500 for item in history),
             "Invalid evaluation history.",
         )
         case_ids.add(case_id)
@@ -241,9 +242,7 @@ def evaluate_baseline(
             except (AIUnavailable, TypeError, ValueError):
                 pass
             cited_ids = set(cited)
-            correct_ids = {
-                fact["id"] for fact in facts if fact["key"] in expected
-            }
+            correct_ids = {fact["id"] for fact in facts if fact["key"] in expected}
             answered.append(
                 {
                     "id": case["id"],
