@@ -39,6 +39,7 @@ def test_only_candidate_owner_can_list_and_review(
 ):
     list_url = reverse("candidate_fact_review_list")
     for url in (list_url, review_url(pending_fact)):
+        client.logout()
         assert client.get(url).status_code == 302
         for outsider in (recruiter, other_user):
             client.force_login(outsider)

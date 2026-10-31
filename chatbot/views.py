@@ -95,9 +95,7 @@ def candidate_fact_review_detail(request, fact_id):
 
         with transaction.atomic():
             fact = get_object_or_404(
-                CandidateFact.objects.select_for_update().select_related(
-                    "source_document"
-                ),
+                CandidateFact.objects.select_for_update(),
                 pk=fact_id,
                 candidate=candidate,
             )
