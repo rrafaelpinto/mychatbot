@@ -66,6 +66,11 @@ jobs:
       - name: Offline Candidate Agent evaluation baseline
         run: uv run python manage.py evaluate_candidate_agent --fail-on-overflow --settings=mychatbot.test_settings
 
+      - name: PostgreSQL FTS retrieval comparison
+        run: |
+          uv run python manage.py migrate --noinput --settings=mychatbot.test_settings
+          uv run python manage.py evaluate_candidate_agent --strategy compare --fail-on-overflow --settings=mychatbot.test_settings
+
       - name: Django system check
         run: uv run python manage.py check --settings=mychatbot.test_settings
 

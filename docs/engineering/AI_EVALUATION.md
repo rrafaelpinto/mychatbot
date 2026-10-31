@@ -86,10 +86,13 @@ containing real candidate information. The optional paid model
 evaluation and LLM-as-judge belong in a later milestone with explicit
 budget controls; CI does not call a paid provider.
 
-## Future comparisons
+## Retrieval comparison
 
-Implement PostgreSQL full-text search and LangChain + pgvector behind
-the same retrieval contract. Measure with the same gold fact keys and
-report retrieval quality plus real measured model latency and token
-cost when explicitly authorized. Use those results to decide which
-strategy is appropriate for production.
+PostgreSQL FTS is now benchmarkable with the same dataset using
+`evaluate_candidate_agent --strategy compare`. See
+[PostgreSQL FTS evaluation](POSTGRES_FTS.md) for index, transaction,
+privacy and interpretation details.
+
+LangChain + pgvector remains the next strategy to benchmark. Measure
+real latency and provider token costs only when explicitly budgeted and
+authorized before selecting a production strategy.

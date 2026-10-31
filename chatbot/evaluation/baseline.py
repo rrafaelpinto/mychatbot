@@ -169,8 +169,9 @@ def evaluate_baseline(
     input_limit_bytes: int,
     overhead_bytes: int,
     responses: dict | None = None,
+    retriever=None,
 ) -> dict:
-    """Measure full-context retrieval without sending any data to a model."""
+    """Measure approved-fact retrieval without calling any AI provider."""
     _require(
         type(input_limit_bytes) is int and input_limit_bytes > 0,
         "Input budget must be positive.",
@@ -179,7 +180,8 @@ def evaluate_baseline(
         type(overhead_bytes) is int and overhead_bytes >= 0,
         "Input overhead must be nonnegative.",
     )
-    retriever = FullContextRetriever()
+    if retriever is None:
+        retriever = FullContextRetriever()
     facts = dataset["facts"]
     key_by_id = {fact["id"]: fact["key"] for fact in facts}
     rows = []
@@ -279,7 +281,9 @@ def evaluate_baseline(
         "strategy": retriever.name,
         "dataset_version": dataset["version"],
         "corpus_facts": len(facts),
-        "approved_facts": len(retriever.retrieve(facts=facts, question="", history=[])),
+        "approved_facts": len(
+            FullContextRetriever().retrieve(facts=facts, question="", history=[])
+        ),
         "input_limit_bytes": input_limit_bytes,
         "input_overhead_bytes": overhead_bytes,
         "metrics": metrics,
