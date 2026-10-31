@@ -2,6 +2,8 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -198,6 +200,15 @@ class CandidateFact(models.Model):
 
     class Meta:
         ordering = ["fact_type", "id"]
+        indexes = [
+            GinIndex(
+                SearchVector("content", config="english"),
+                name="candidate_public_fact_fts",
+                condition=models.Q(
+                    verification_status="verified", is_public=True
+                ),
+            ),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["candidate", "import_key"],
