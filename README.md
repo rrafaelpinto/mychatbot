@@ -130,6 +130,22 @@ fact pack is committed to the repository.
 
 Engineering conventions and the definition of done are in [`AGENTS.md`](AGENTS.md). Product direction and phase status are in [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md), and accepted architecture decisions are under [`docs/adr/`](docs/adr/).
 
+## Contextual answers and public evidence
+
+The Candidate Agent sends a bounded list of previous recruiter questions, not
+previous model responses. Conversations are fetched from the server-side
+authenticated user or the verified guest session, never from client-supplied
+history. The model receives only verified and explicitly public fact IDs,
+types, and content, and must return JSON with a factual answer and supporting
+fact IDs. The backend validates every cited ID against currently approved
+facts before exposing evidence; invalid citations result in a refusal.
+This provides reference authorization, not proof of semantic faithfulness.
+The AI evaluation milestone will measure claim-level support.
+
+Only the fact content and type are shown as evidence; source documents and
+private provenance labels remain inaccessible. Previously cited answers are
+hidden from the rendered history if their supporting facts are withdrawn.
+
 ## Anonymous demonstration access
 
 Guest chat is disabled by default. See

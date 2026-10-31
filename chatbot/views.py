@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CandidateProfileForm, ChatQuestionForm
-from .models import CandidateProfile, Conversation, Message
+from .models import AIUsageEvent, CandidateProfile, Conversation, Message
 from .policies import can_read_conversation
 from .services.ai import (
     AILimitExceeded,
@@ -15,6 +15,7 @@ from .services.ai import (
     AIServiceError,
     AIUnavailable,
     ask_candidate,
+    public_evidence,
 )
 from .services.documents import (
     DocumentProcessingError,
@@ -207,21 +208,64 @@ def chat(request, slug):
                     conversation=conversation,
                     role=Message.Role.ASSISTANT,
                     content=ai_response.content,
+                    evidence_fact_ids=list(ai_response.cited_fact_ids),
                 ),
             ]
         )
         conversation.save(update_fields=["updated_at"])
+        remaining = None
+        if guest is not None:
+            remaining = max(
+                0,
+                settings.GUEST_SESSION_QUESTION_LIMIT
+                - AIUsageEvent.objects.filter(
+                    guest_session=guest,
+                    operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
+                ).count(),
+            )
         return JsonResponse(
-            {"response": ai_response.content, "guest_verified": guest is not None}
+            {
+                "response": ai_response.content,
+                "evidence": ai_response.evidence,
+                "guest_verified": guest is not None,
+                "remaining": remaining,
+            }
         )
 
-    history = conversation.messages.all() if conversation else Message.objects.none()
+    history = list(conversation.messages.all()) if conversation else []
+    for message in history:
+        message.public_evidence = ()
+        if message.role == Message.Role.ASSISTANT and message.evidence_fact_ids:
+            evidence = public_evidence(candidate, message.evidence_fact_ids)
+            if evidence is None:
+                message.content = (
+                    "This answer is no longer available because its evidence changed."
+                )
+            else:
+                message.public_evidence = evidence
+    remaining = None
+    if guest is not None:
+        remaining = max(
+            0,
+            settings.GUEST_SESSION_QUESTION_LIMIT
+            - AIUsageEvent.objects.filter(
+                guest_session=guest,
+                operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
+            ).count(),
+        )
     return render(
         request,
         "chat.html",
         {
             "candidate": candidate,
             "history": history,
+            "guest_remaining": remaining,
+            "suggested_questions": [
+                "What are your main backend skills?",
+                "Which professional projects have you worked on?",
+                "What experience do you have with Django and PostgreSQL?",
+                "What is your educational background?",
+            ],
             "guest_chat_enabled": settings.GUEST_CHAT_ENABLED,
             "turnstile_site_key": (
                 settings.GUEST_TURNSTILE_SITE_KEY
