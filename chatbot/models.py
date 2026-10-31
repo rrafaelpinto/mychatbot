@@ -307,6 +307,7 @@ class Message(models.Model):
     )
     role = models.CharField(max_length=16, choices=Role.choices)
     content = models.TextField()
+    evidence_fact_ids = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

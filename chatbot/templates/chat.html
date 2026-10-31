@@ -14,10 +14,34 @@
     {% for message in history %}
         <div class="chat-message {% if message.role == 'user' %}user{% else %}bot{% endif %}">
             <p><strong>{% if message.role == 'user' %}You{% else %}{{ candidate.name }}{% endif %}:</strong> {{ message.content }}</p>
+            {% if message.public_evidence %}
+                <details class="chat-evidence">
+                    <summary>Verified professional evidence</summary>
+                    <ul>
+                        {% for fact in message.public_evidence %}
+                            <li><strong>{{ fact.fact_type|title }}:</strong> {{ fact.content }}</li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            {% endif %}
         </div>
     {% endfor %}
 </div>
 
+{% if suggested_questions and not history %}
+<section class="my-3" aria-label="Suggested questions">
+    <p class="mb-2">Try a question:</p>
+    <div class="d-flex flex-wrap">
+        {% for question in suggested_questions %}
+            <button class="btn btn-outline-secondary btn-sm mr-2 mb-2 suggested-question" type="button">{{ question }}</button>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% if guest_remaining is not None %}
+<p id="guest-remaining" class="text-muted" aria-live="polite">{{ guest_remaining }} questions remaining in this session.</p>
+{% endif %}
+<p class="text-muted small">Answers use candidate-approved professional facts. Evidence is shown when available. Do not share sensitive personal information.</p>
 <form id="chat-form" class="mb-4" method="post">
     {% csrf_token %}
     <div class="form-group">
@@ -49,8 +73,15 @@
     const sendButton = document.getElementById("send-button");
     const errorBox = document.getElementById("chat-error");
     const candidateName = JSON.parse(document.getElementById("candidate-name").textContent);
+    const remainingLabel = document.getElementById("guest-remaining");
+    document.querySelectorAll(".suggested-question").forEach((button) => {
+        button.addEventListener("click", () => {
+            questionInput.value = button.textContent.trim();
+            questionInput.focus();
+        });
+    });
 
-    function appendMessage(label, content, className) {
+    function appendMessage(label, content, className, evidence = []) {
         const container = document.createElement("div");
         container.classList.add("chat-message", className);
         const paragraph = document.createElement("p");
@@ -58,8 +89,27 @@
         strong.textContent = `${label}: `;
         paragraph.append(strong, document.createTextNode(content));
         container.appendChild(paragraph);
+        appendEvidence(container, evidence);
         chatBox.appendChild(container);
         chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendEvidence(container, evidence) {
+        if (!Array.isArray(evidence) || evidence.length === 0) return;
+        const details = document.createElement("details");
+        details.className = "chat-evidence";
+        const summary = document.createElement("summary");
+        summary.textContent = "Verified professional evidence";
+        const list = document.createElement("ul");
+        evidence.forEach((fact) => {
+            const item = document.createElement("li");
+            const label = document.createElement("strong");
+            label.textContent = fact.fact_type + ": ";
+            item.append(label, document.createTextNode(fact.content));
+            list.appendChild(item);
+        });
+        details.append(summary, list);
+        container.appendChild(details);
     }
 
     form.addEventListener("submit", async (event) => {
@@ -69,7 +119,6 @@
 
         errorBox.textContent = "";
         sendButton.disabled = true;
-        appendMessage("You", question, "user");
         try {
             const response = await fetch(form.action || window.location.href, {
                 method: "POST",
@@ -78,7 +127,12 @@
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "The request failed.");
-            appendMessage(candidateName, data.response, "bot");
+            appendMessage("You", question, "user");
+            appendMessage(candidateName, data.response, "bot", data.evidence);
+            if (remainingLabel && Number.isInteger(data.remaining)) {
+                remainingLabel.textContent = data.remaining + " questions remaining in this session.";
+                if (data.remaining === 0) sendButton.disabled = true;
+            }
             if (data.guest_verified) {
                 const widget = document.getElementById("turnstile-widget");
                 if (widget) widget.remove();
@@ -90,7 +144,9 @@
                 window.turnstile.reset();
             }
         } finally {
-            sendButton.disabled = false;
+            if (!remainingLabel || !remainingLabel.textContent.startsWith("0 ")) {
+                sendButton.disabled = false;
+            }
         }
     });
 })();

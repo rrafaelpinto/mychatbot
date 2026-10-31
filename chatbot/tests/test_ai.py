@@ -34,7 +34,15 @@ def test_ai_gateway_is_mockable_and_records_usage(
 
     assert result == response
     provider.assert_called_once_with(
-        facts=[verified_fact.content], question="What did you build?"
+        facts=[
+            {
+                "id": verified_fact.pk,
+                "fact_type": verified_fact.fact_type,
+                "content": verified_fact.content,
+            }
+        ],
+        question="What did you build?",
+        history=[],
     )
     usage = AIUsageEvent.objects.get()
     assert usage.status == AIUsageEvent.Status.SUCCEEDED
