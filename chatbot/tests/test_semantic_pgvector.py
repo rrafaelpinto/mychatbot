@@ -27,7 +27,9 @@ from chatbot.services.embeddings import (
 from chatbot.services.semantic_index import index_candidate_public_facts
 from chatbot.services.semantic_retrieval import SemanticPgvectorRetriever
 
-DATASET = Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"
+DATASET = (
+    Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"
+)
 
 
 @pytest.mark.django_db
@@ -133,8 +135,7 @@ def test_semantic_synthetic_benchmark_uses_real_pgvector_and_rolls_back():
     before = CandidateFactEmbedding.objects.count()
     with synthetic_semantic_pgvector(dataset) as retriever:
         report = evaluate_baseline(
-            dataset, input_limit_bytes=8192, overhead_bytes=1600,
-            retriever=retriever
+            dataset, input_limit_bytes=8192, overhead_bytes=1600, retriever=retriever
         )
         assert report["strategy"] == "semantic_pgvector"
         assert report["metrics"]["cases"] == 30
@@ -152,11 +153,15 @@ def test_semantic_synthetic_benchmark_uses_real_pgvector_and_rolls_back():
 def test_three_way_cli_is_offline_and_returns_same_case_set():
     output = StringIO()
     with patch("chatbot.services.embeddings.OpenAI") as provider:
-        call_command("evaluate_candidate_agent", strategy="compare", json=True, stdout=output)
+        call_command(
+            "evaluate_candidate_agent", strategy="compare", json=True, stdout=output
+        )
     provider.assert_not_called()
     result = json.loads(output.getvalue())
     assert set(result["strategies"]) == {
-        "full_context", "postgres_fts", "semantic_pgvector"
+        "full_context",
+        "postgres_fts",
+        "semantic_pgvector",
     }
     assert all(row["metrics"]["cases"] == 30 for row in result["strategies"].values())
     assert "synthetic" not in str(result.get("strategy", "")).lower()
@@ -257,7 +262,9 @@ def test_embedding_is_disabled_before_reservation(settings, published_candidate)
 
 
 @pytest.mark.django_db
-def test_invalid_provider_vector_preserves_budget_and_fails(settings, published_candidate):
+def test_invalid_provider_vector_preserves_budget_and_fails(
+    settings, published_candidate
+):
     settings.AI_ENABLED = True
     settings.AI_OPERATION_POLICIES = {
         **settings.AI_OPERATION_POLICIES,

@@ -45,7 +45,10 @@ class BudgetedOpenAIEmbeddings(Embeddings):
             or not settings.OPENAI_API_KEY
         ):
             raise EmbeddingUnavailable("Embedding operation is disabled.")
-        if not text.strip() or len(text.encode("utf-8")) > settings.AI_EMBEDDING_MAX_INPUT_BYTES:
+        if (
+            not text.strip()
+            or len(text.encode("utf-8")) > settings.AI_EMBEDDING_MAX_INPUT_BYTES
+        ):
             raise EmbeddingUnavailable("Embedding input exceeds the limit.")
 
         try:
@@ -81,8 +84,11 @@ class BudgetedOpenAIEmbeddings(Embeddings):
             event.completed_at = timezone.now()
             event.save(
                 update_fields=[
-                    "status", "input_tokens", "output_tokens",
-                    "provider_request_id", "completed_at",
+                    "status",
+                    "input_tokens",
+                    "output_tokens",
+                    "provider_request_id",
+                    "completed_at",
                 ]
             )
             try:

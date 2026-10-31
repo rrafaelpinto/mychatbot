@@ -14,8 +14,8 @@ class SemanticPgvectorRetriever:
     def __init__(self, *, embeddings, model: str):
         self.embeddings = embeddings
         self.model = model
-        self.chain = (
-            RunnableLambda(self._embed_query) | RunnableLambda(self._select_facts)
+        self.chain = RunnableLambda(self._embed_query) | RunnableLambda(
+            self._select_facts
         )
 
     def _embed_query(self, context):

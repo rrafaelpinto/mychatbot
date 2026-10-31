@@ -19,8 +19,9 @@ def reservation_micro_usd(model: str) -> int:
         if rate <= 0:
             raise AIBudgetExceeded("Embedding pricing is not configured.")
         return int(
-            (Decimal(settings.AI_EMBEDDING_MAX_INPUT_TOKENS) * rate)
-            .to_integral_value(rounding=ROUND_CEILING)
+            (Decimal(settings.AI_EMBEDDING_MAX_INPUT_TOKENS) * rate).to_integral_value(
+                rounding=ROUND_CEILING
+            )
         )
     if model != "gpt-4o-mini":
         raise AIBudgetExceeded("AI model pricing is not configured.")
@@ -75,7 +76,9 @@ def reserve_project_budget(*, usage: AIUsageEvent, now=None) -> None:
             )
             usage.output_price_per_million = Decimal("0")
         else:
-            usage.input_price_per_million = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
+            usage.input_price_per_million = Decimal(
+                str(settings.AI_INPUT_USD_PER_MILLION)
+            )
             usage.output_price_per_million = Decimal(
                 str(settings.AI_OUTPUT_USD_PER_MILLION)
             )

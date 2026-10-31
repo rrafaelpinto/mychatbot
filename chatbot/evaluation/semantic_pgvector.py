@@ -53,6 +53,4 @@ def synthetic_semantic_pgvector(dataset):
                 content_sha256=content_fingerprint(fact.content),
                 vector=vector,
             )
-        yield SyntheticSemanticRetriever(
-            candidate=candidate, id_map=adapter.id_map
-        )
+        yield SyntheticSemanticRetriever(candidate=candidate, id_map=adapter.id_map)

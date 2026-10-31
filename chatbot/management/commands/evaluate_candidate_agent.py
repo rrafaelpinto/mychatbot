@@ -91,18 +91,25 @@ class Command(BaseCommand):
                     "comparison": {
                         name: {
                             "retrieval_recall_delta": round(
-                                metrics["retrieval_recall"] - full["retrieval_recall"], 4
+                                metrics["retrieval_recall"] - full["retrieval_recall"],
+                                4,
                             ),
                             "retrieval_precision_delta": round(
-                                metrics["retrieval_precision"] - full["retrieval_precision"], 4
+                                metrics["retrieval_precision"]
+                                - full["retrieval_precision"],
+                                4,
                             ),
                             "mean_payload_bytes_delta": (
-                                metrics["mean_payload_bytes"] - full["mean_payload_bytes"]
+                                metrics["mean_payload_bytes"]
+                                - full["mean_payload_bytes"]
                             ),
                         }
                         for name, metrics in (
                             ("postgres_fts", fts),
-                            ("semantic_pgvector", reports["semantic_pgvector"]["metrics"]),
+                            (
+                                "semantic_pgvector",
+                                reports["semantic_pgvector"]["metrics"],
+                            ),
                         )
                     },
                     "semantic_embedding_note": (
