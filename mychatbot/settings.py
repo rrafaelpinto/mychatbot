@@ -171,6 +171,12 @@ AI_CHAT_CONTEXT_QUESTIONS = 4
 AI_CHAT_CONTEXT_QUESTION_CHARS = 500
 AI_CHAT_INPUT_OVERHEAD_BYTES = 1600
 
+AI_EXTRACTION_MAX_SOURCE_BYTES = 6000
+AI_EXTRACTION_MAX_FACTS = 5
+AI_KNOWLEDGE_EXTRACTION_ENABLED = env_bool(
+    "AI_KNOWLEDGE_EXTRACTION_ENABLED", default=False
+)
+
 GUEST_CHAT_ENABLED = env_bool("GUEST_CHAT_ENABLED", default=False)
 GUEST_TURNSTILE_SITE_KEY = os.environ.get("GUEST_TURNSTILE_SITE_KEY", "")
 GUEST_TURNSTILE_SECRET_KEY = os.environ.get("GUEST_TURNSTILE_SECRET_KEY", "")
@@ -200,11 +206,17 @@ AI_USAGE_LIMITS = {
         "identity_per_minute": int(os.environ.get("AI_CHAT_IDENTITY_PER_MINUTE", "5")),
         "identity_per_day": int(os.environ.get("AI_CHAT_IDENTITY_PER_DAY", "100")),
         "candidate_per_day": int(os.environ.get("AI_CHAT_CANDIDATE_PER_DAY", "500")),
-    }
+    },
+    "knowledge_extraction": {
+        "identity_per_minute": 1,
+        "identity_per_day": 5,
+        "candidate_per_day": 5,
+    },
 }
 
 AI_OPERATION_POLICIES = {
     "candidate_chat": env_bool("AI_CANDIDATE_CHAT_ENABLED", default=True),
+    "knowledge_extraction": AI_KNOWLEDGE_EXTRACTION_ENABLED,
 }
 
 if IS_PRODUCTION:

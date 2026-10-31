@@ -317,6 +317,7 @@ class Message(models.Model):
 class AIUsageEvent(models.Model):
     class Operation(models.TextChoices):
         CANDIDATE_CHAT = "candidate_chat", "Candidate chat"
+        KNOWLEDGE_EXTRACTION = "knowledge_extraction", "Knowledge extraction"
 
     class Status(models.TextChoices):
         STARTED = "started", "Started"
@@ -403,3 +404,30 @@ class AIProjectBudget(models.Model):
     monthly_window = models.DateField()
     daily_reserved_micro_usd = models.PositiveBigIntegerField(default=0)
     monthly_reserved_micro_usd = models.PositiveBigIntegerField(default=0)
+
+
+class CandidateExtractionRun(models.Model):
+    """Track exclusive, retryable extraction for one immutable source document."""
+
+    class Status(models.TextChoices):
+        RUNNING = "running", "Running"
+        SUCCEEDED = "succeeded", "Succeeded"
+        FAILED = "failed", "Failed"
+
+    document = models.OneToOneField(
+        CandidateDocument,
+        on_delete=models.CASCADE,
+        related_name="extraction_run",
+    )
+    source_sha256 = models.CharField(max_length=64)
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.RUNNING
+    )
+    attempts = models.PositiveSmallIntegerField(default=1)
+    started_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    proposed_count = models.PositiveSmallIntegerField(default=0)
+    error_code = models.CharField(max_length=64, blank=True)
+    last_usage_event = models.ForeignKey(
+        AIUsageEvent, null=True, blank=True, on_delete=models.SET_NULL
+    )

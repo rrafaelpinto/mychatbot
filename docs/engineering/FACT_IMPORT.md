@@ -34,6 +34,39 @@ and `other`. Each key must be stable and unique within the candidate manifest.
 The optional source reference is a descriptive provenance label, not a public
 URL to a private document.
 
+## LLM-assisted extraction (Phase 3)
+
+Document text can be turned into **private, pending suggestions** using the
+administrative `extract_candidate_facts` command. The operation is disabled by
+default even in development. It requires an already processed document, an
+explicitly selected candidate, `AI_ENABLED=true`,
+`AI_KNOWLEDGE_EXTRACTION_ENABLED=true`, an OpenAI API key, and available
+project budget.
+
+```sh
+uv run python manage.py extract_candidate_facts \\
+  --candidate candidate-slug --document 123
+```
+
+This sends a bounded portion of private extracted text to the configured
+OpenAI provider. It is not invoked automatically on upload, during public
+chat, or when merely viewing the document. Text longer than the supported
+input limit is rejected rather than silently truncated. Treat source
+documents as potentially sensitive and only initiate extraction for
+information the candidate is authorized to process externally.
+
+The LangChain prompt and Pydantic parser propose structured facts. Each
+suggestion must include an **exact source quotation**, verified by application
+code. Proposed facts remain `pending` and `is_public=False`, linked to
+the private document. Source quotations are private metadata, never exposed
+by the public Candidate Agent.
+
+Successful execution is idempotent per document, while failed attempts
+are recoverable subject to quotas and budgets. The extraction workflow does
+not decide whether the source claim is truthful or suitable for publication.
+That decision belongs to a human reviewer. The dedicated review interface
+will be delivered separately.
+
 ## Import and review
 
 First create a candidate with the usual account flow. The import command
