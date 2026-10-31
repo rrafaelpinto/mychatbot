@@ -152,3 +152,10 @@ Guest chat is disabled by default. See
 [Anonymous chat operation](docs/engineering/GUEST_CHAT.md) for Turnstile setup,
 proxy trust, quotas, data retention, and the cleanup command. Existing
 registered-user conversations keep their original authorization and quotas.
+
+## AI evaluation baseline
+
+Use `uv run python manage.py evaluate_candidate_agent --fail-on-overflow` to
+run the offline, deterministic synthetic full-context baseline. See
+[AI evaluation methodology](docs/engineering/AI_EVALUATION.md) for dataset
+coverage, metrics, response replay and limitations. CI never calls the AI provider.
