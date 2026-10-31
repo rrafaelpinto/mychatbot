@@ -12,7 +12,7 @@
         {% if candidate.show_contact_email and candidate.contact_email %}
             <p>Professional email: {{ candidate.contact_email }}</p>
         {% endif %}
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated or guest_chat_enabled %}
             <a href="{% url 'chat' candidate.slug %}" class="btn btn-primary">Ask Candidate Agent</a>
         {% else %}
             <a href="{% url 'login' %}?next={% url 'chat' candidate.slug %}" class="btn btn-primary">Log in to ask the Candidate Agent</a>

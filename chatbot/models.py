@@ -228,6 +228,31 @@ class CandidateFact(models.Model):
             )
 
 
+class GuestOrigin(models.Model):
+    """Pseudonymous IP origin used for short-lived abuse limits."""
+
+    digest = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class GuestChatSession(models.Model):
+    """Verified, expiring anonymous chat identity."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    candidate = models.ForeignKey(
+        CandidateProfile, on_delete=models.CASCADE, related_name="guest_sessions"
+    )
+    origin = models.ForeignKey(
+        GuestOrigin, on_delete=models.CASCADE, related_name="sessions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    in_flight_until = models.DateTimeField(null=True, blank=True)
+    active_usage = models.ForeignKey(
+        "AIUsageEvent", on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+
 class Conversation(models.Model):
     candidate = models.ForeignKey(
         CandidateProfile,
@@ -238,6 +263,15 @@ class Conversation(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="candidate_conversations",
+        null=True,
+        blank=True,
+    )
+    guest_session = models.OneToOneField(
+        GuestChatSession,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="conversation",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -247,11 +281,18 @@ class Conversation(models.Model):
             models.UniqueConstraint(
                 fields=["candidate", "recruiter"],
                 name="one_conversation_per_recruiter_candidate",
-            )
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(recruiter__isnull=False, guest_session__isnull=True)
+                    | models.Q(recruiter__isnull=True, guest_session__isnull=False)
+                ),
+                name="conversation_exactly_one_identity",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.recruiter} and {self.candidate}"
+        return f"{self.recruiter or self.guest_session_id} and {self.candidate}"
 
 
 class Message(models.Model):
@@ -285,6 +326,22 @@ class AIUsageEvent(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="ai_usage_events",
+        null=True,
+        blank=True,
+    )
+    guest_session = models.ForeignKey(
+        GuestChatSession,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="usage_events",
+    )
+    guest_origin = models.ForeignKey(
+        GuestOrigin,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="usage_events",
     )
     candidate = models.ForeignKey(
         CandidateProfile,
@@ -322,6 +379,17 @@ class AIUsageEvent(models.Model):
             models.UniqueConstraint(
                 fields=["initiated_by", "candidate", "operation", "idempotency_key"],
                 name="unique_ai_request_idempotency_key",
+            ),
+            models.UniqueConstraint(
+                fields=["guest_session", "candidate", "operation", "idempotency_key"],
+                name="unique_guest_request_idempotency_key",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(initiated_by__isnull=True)
+                    | models.Q(guest_origin__isnull=True)
+                ),
+                name="ai_usage_identity_not_mixed",
             ),
         ]
 

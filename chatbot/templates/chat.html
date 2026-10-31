@@ -24,13 +24,23 @@
         <label for="question">Professional question</label>
         <input type="text" id="question" name="question" maxlength="1000" class="form-control" required>
     </div>
+{% if user.is_authenticated or guest_chat_enabled %}
+    {% if turnstile_site_key %}
+    <div id="turnstile-widget" class="cf-turnstile mb-3" data-sitekey="{{ turnstile_site_key }}" data-action="candidate_chat"></div>
+    {% endif %}
     <button id="send-button" type="submit" class="btn btn-primary">Send</button>
+    {% else %}
+    <p>The Candidate Agent is temporarily unavailable for visitors.</p>
+    {% endif %}
     <p id="chat-error" class="text-danger mt-2" role="alert"></p>
 </form>
 {{ candidate.name|json_script:"candidate-name" }}
 {% endblock %}
 
 {% block extra_js %}
+{% if turnstile_site_key %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
 <script>
 (() => {
     const form = document.getElementById("chat-form");
@@ -69,9 +79,16 @@
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "The request failed.");
             appendMessage(candidateName, data.response, "bot");
+            if (data.guest_verified) {
+                const widget = document.getElementById("turnstile-widget");
+                if (widget) widget.remove();
+            }
             questionInput.value = "";
         } catch (error) {
             errorBox.textContent = error.message;
+            if (window.turnstile && document.getElementById("turnstile-widget")) {
+                window.turnstile.reset();
+            }
         } finally {
             sendButton.disabled = false;
         }

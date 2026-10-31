@@ -129,3 +129,10 @@ fact pack is committed to the repository.
 ## Development guidance
 
 Engineering conventions and the definition of done are in [`AGENTS.md`](AGENTS.md). Product direction and phase status are in [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md), and accepted architecture decisions are under [`docs/adr/`](docs/adr/).
+
+## Anonymous demonstration access
+
+Guest chat is disabled by default. See
+[Anonymous chat operation](docs/engineering/GUEST_CHAT.md) for Turnstile setup,
+proxy trust, quotas, data retention, and the cleanup command. Existing
+registered-user conversations keep their original authorization and quotas.

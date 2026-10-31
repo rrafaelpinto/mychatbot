@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -20,6 +21,14 @@ from .services.documents import (
     create_candidate_document,
     process_candidate_document,
 )
+from .services.guest_chat import (
+    GuestAccessDenied,
+    GuestVerificationUnavailable,
+    create_guest_session,
+    current_guest_session,
+    origin_digest,
+    verify_turnstile,
+)
 
 
 def about(request):
@@ -35,7 +44,11 @@ def public_profile(request, slug):
     candidate = get_object_or_404(
         CandidateProfile.objects.publicly_viewable(), slug=slug
     )
-    return render(request, "public_profile.html", {"candidate": candidate})
+    return render(
+        request,
+        "public_profile.html",
+        {"candidate": candidate, "guest_chat_enabled": settings.GUEST_CHAT_ENABLED},
+    )
 
 
 @login_required
@@ -89,14 +102,32 @@ def manager_candidate(request):
     )
 
 
-@login_required
 def chat(request, slug):
     candidate = get_object_or_404(
         CandidateProfile.objects.publicly_viewable(), slug=slug
     )
-    conversation = Conversation.objects.filter(
-        candidate=candidate, recruiter=request.user
-    ).first()
+    guest = None
+    if request.user.is_authenticated:
+        conversation = Conversation.objects.filter(
+            candidate=candidate, recruiter=request.user
+        ).first()
+    elif not settings.GUEST_CHAT_ENABLED:
+        if request.method == "POST":
+            return JsonResponse({"error": "Guest chat is disabled."}, status=503)
+        conversation = None
+    else:
+        try:
+            digest = origin_digest(request)
+        except GuestAccessDenied:
+            return JsonResponse({"error": "Guest access is unavailable."}, status=403)
+        guest = current_guest_session(request, candidate, digest)
+        conversation = (
+            Conversation.objects.filter(
+                candidate=candidate, guest_session=guest
+            ).first()
+            if guest
+            else None
+        )
 
     if request.method == "POST":
         form = ChatQuestionForm(request.POST)
@@ -111,10 +142,37 @@ def chat(request, slug):
             or not idempotency_key.isprintable()
         ):
             return JsonResponse({"error": "Invalid idempotency key."}, status=400)
+
+        if not request.user.is_authenticated:
+            if guest is None:
+                token = request.POST.get("cf-turnstile-response", "")
+                try:
+                    verified = verify_turnstile(
+                        token, hostname=request.get_host().split(":")[0]
+                    )
+                except GuestVerificationUnavailable:
+                    return JsonResponse(
+                        {"error": "Bot verification is temporarily unavailable."},
+                        status=503,
+                    )
+                if not verified:
+                    return JsonResponse(
+                        {"error": "Bot verification failed."}, status=403
+                    )
+                try:
+                    guest = create_guest_session(candidate=candidate, digest=digest)
+                except GuestAccessDenied:
+                    return JsonResponse(
+                        {"error": "Guest session limit exceeded."}, status=429
+                    )
+                request.session["guest_chat_session"] = str(guest.pk)
+                request.session.set_expiry(settings.GUEST_SESSION_HOURS * 3600)
+
         try:
             ai_response = ask_candidate(
                 candidate=candidate,
-                initiated_by=request.user,
+                initiated_by=request.user if request.user.is_authenticated else None,
+                guest_session=guest,
                 question=question,
                 idempotency_key=idempotency_key,
             )
@@ -130,9 +188,14 @@ def chat(request, slug):
         except AIServiceError as exc:
             return JsonResponse({"error": str(exc)}, status=409)
 
-        conversation, _ = Conversation.objects.get_or_create(
-            candidate=candidate, recruiter=request.user
-        )
+        if guest is not None:
+            conversation, _ = Conversation.objects.get_or_create(
+                candidate=candidate, guest_session=guest
+            )
+        else:
+            conversation, _ = Conversation.objects.get_or_create(
+                candidate=candidate, recruiter=request.user
+            )
         Message.objects.bulk_create(
             [
                 Message(
@@ -148,13 +211,24 @@ def chat(request, slug):
             ]
         )
         conversation.save(update_fields=["updated_at"])
-        return JsonResponse({"response": ai_response.content})
+        return JsonResponse(
+            {"response": ai_response.content, "guest_verified": guest is not None}
+        )
 
     history = conversation.messages.all() if conversation else Message.objects.none()
     return render(
         request,
         "chat.html",
-        {"candidate": candidate, "history": history},
+        {
+            "candidate": candidate,
+            "history": history,
+            "guest_chat_enabled": settings.GUEST_CHAT_ENABLED,
+            "turnstile_site_key": (
+                settings.GUEST_TURNSTILE_SITE_KEY
+                if not request.user.is_authenticated and guest is None
+                else ""
+            ),
+        },
     )
 
 
