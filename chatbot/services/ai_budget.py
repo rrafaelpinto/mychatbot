@@ -14,6 +14,15 @@ class AIBudgetExceeded(Exception):
 
 def reservation_micro_usd(model: str) -> int:
     """Return a conservative maximum cost for a configured model call."""
+    if model == settings.AI_EMBEDDING_MODEL:
+        rate = Decimal(str(settings.AI_EMBEDDING_INPUT_USD_PER_MILLION))
+        if rate <= 0:
+            raise AIBudgetExceeded("Embedding pricing is not configured.")
+        return int(
+            (Decimal(settings.AI_EMBEDDING_MAX_INPUT_TOKENS) * rate).to_integral_value(
+                rounding=ROUND_CEILING
+            )
+        )
     if model != "gpt-4o-mini":
         raise AIBudgetExceeded("AI model pricing is not configured.")
     input_rate = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
@@ -61,10 +70,18 @@ def reserve_project_budget(*, usage: AIUsageEvent, now=None) -> None:
         ):
             raise AIBudgetExceeded("AI project budget exhausted.")
 
-        usage.input_price_per_million = Decimal(str(settings.AI_INPUT_USD_PER_MILLION))
-        usage.output_price_per_million = Decimal(
-            str(settings.AI_OUTPUT_USD_PER_MILLION)
-        )
+        if usage.model == settings.AI_EMBEDDING_MODEL:
+            usage.input_price_per_million = Decimal(
+                str(settings.AI_EMBEDDING_INPUT_USD_PER_MILLION)
+            )
+            usage.output_price_per_million = Decimal("0")
+        else:
+            usage.input_price_per_million = Decimal(
+                str(settings.AI_INPUT_USD_PER_MILLION)
+            )
+            usage.output_price_per_million = Decimal(
+                str(settings.AI_OUTPUT_USD_PER_MILLION)
+            )
         budget.daily_reserved_micro_usd += amount
         budget.monthly_reserved_micro_usd += amount
         budget.save()
@@ -90,14 +107,16 @@ def settle_usage(*, usage_id: int) -> None:
             return
         if usage.input_tokens is None or usage.output_tokens is None:
             return
-        if usage.model != "gpt-4o-mini":
+        if usage.model not in ("gpt-4o-mini", settings.AI_EMBEDDING_MODEL):
             return
 
         input_rate = usage.input_price_per_million
         output_rate = usage.output_price_per_million
         if input_rate is None or output_rate is None:
             return
-        if input_rate <= 0 or output_rate <= 0:
+        if input_rate <= 0 or (
+            output_rate <= 0 and usage.model != settings.AI_EMBEDDING_MODEL
+        ):
             return
 
         actual = int(

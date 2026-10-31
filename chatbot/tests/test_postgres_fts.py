@@ -145,7 +145,7 @@ def test_synthetic_fts_comparison_rolls_back_and_uses_same_facts():
 
 @requires_postgres
 @pytest.mark.django_db
-def test_comparison_cli_reports_two_strategies_without_provider_calls():
+def test_comparison_cli_includes_fts_without_provider_calls():
     before = CandidateFact.objects.count()
     output = StringIO()
     with patch("chatbot.services.ai.OpenAI") as provider:
@@ -157,7 +157,11 @@ def test_comparison_cli_reports_two_strategies_without_provider_calls():
         )
     provider.assert_not_called()
     report = json.loads(output.getvalue())
-    assert set(report["strategies"]) == {"full_context", "postgres_fts"}
+    assert set(report["strategies"]) == {
+        "full_context",
+        "postgres_fts",
+        "semantic_pgvector",
+    }
     assert report["strategies"]["full_context"]["metrics"]["retrieval_recall"] == 1.0
     assert report["strategies"]["postgres_fts"]["metrics"]["cases"] == 30
     assert report["strategies"]["postgres_fts"]["metrics"]["over_budget_cases"] == 0

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_DB: resumebot_ci
           POSTGRES_USER: postgres
@@ -66,7 +66,7 @@ jobs:
       - name: Offline Candidate Agent evaluation baseline
         run: uv run python manage.py evaluate_candidate_agent --fail-on-overflow --settings=mychatbot.test_settings
 
-      - name: PostgreSQL FTS retrieval comparison
+      - name: Three-way retrieval comparison
         run: |
           uv run python manage.py migrate --noinput --settings=mychatbot.test_settings
           uv run python manage.py evaluate_candidate_agent --strategy compare --fail-on-overflow --settings=mychatbot.test_settings

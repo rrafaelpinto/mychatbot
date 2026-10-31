@@ -11,12 +11,13 @@ from chatbot.evaluation.baseline import (
     load_responses,
 )
 from chatbot.evaluation.postgres_fts import synthetic_postgres_fts
+from chatbot.evaluation.semantic_pgvector import synthetic_semantic_pgvector
 
 
 class Command(BaseCommand):
     """Run an offline Candidate Agent retrieval evaluation."""
 
-    help = "Compare full-context and PostgreSQL FTS with synthetic candidate facts."
+    help = "Compare full-context, PostgreSQL FTS and pgvector retrieval offline."
 
     def add_arguments(self, parser):
         default_dataset = (
@@ -29,7 +30,7 @@ class Command(BaseCommand):
         parser.add_argument("--responses", type=Path)
         parser.add_argument(
             "--strategy",
-            choices=("full_context", "postgres_fts", "compare"),
+            choices=("full_context", "postgres_fts", "semantic_pgvector", "compare"),
             default="full_context",
         )
         parser.add_argument("--output", type=Path)
@@ -72,6 +73,14 @@ class Command(BaseCommand):
                         retriever=retriever,
                         **limits,
                     )
+            if strategy in {"semantic_pgvector", "compare"}:
+                with synthetic_semantic_pgvector(dataset) as retriever:
+                    reports["semantic_pgvector"] = evaluate_baseline(
+                        dataset,
+                        responses=responses,
+                        retriever=retriever,
+                        **limits,
+                    )
             if strategy == "compare":
                 full = reports["full_context"]["metrics"]
                 fts = reports["postgres_fts"]["metrics"]
@@ -80,16 +89,34 @@ class Command(BaseCommand):
                     "dataset_version": dataset["version"],
                     "strategies": reports,
                     "comparison": {
-                        "retrieval_recall_delta": round(
-                            fts["retrieval_recall"] - full["retrieval_recall"], 4
-                        ),
-                        "retrieval_precision_delta": round(
-                            fts["retrieval_precision"] - full["retrieval_precision"], 4
-                        ),
-                        "mean_payload_bytes_delta": (
-                            fts["mean_payload_bytes"] - full["mean_payload_bytes"]
-                        ),
+                        name: {
+                            "retrieval_recall_delta": round(
+                                metrics["retrieval_recall"] - full["retrieval_recall"],
+                                4,
+                            ),
+                            "retrieval_precision_delta": round(
+                                metrics["retrieval_precision"]
+                                - full["retrieval_precision"],
+                                4,
+                            ),
+                            "mean_payload_bytes_delta": (
+                                metrics["mean_payload_bytes"]
+                                - full["mean_payload_bytes"]
+                            ),
+                        }
+                        for name, metrics in (
+                            ("postgres_fts", fts),
+                            (
+                                "semantic_pgvector",
+                                reports["semantic_pgvector"]["metrics"],
+                            ),
+                        )
                     },
+                    "semantic_embedding_note": (
+                        "Offline deterministic test vectors are not a real "
+                        "semantic embedding model and do not establish "
+                        "production retrieval quality."
+                    ),
                 }
             else:
                 report = reports[strategy]

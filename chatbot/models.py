@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from pgvector.django import VectorField
 
 from .storage import PrivateDocumentStorage
 from .validators import validate_candidate_document
@@ -327,6 +328,8 @@ class AIUsageEvent(models.Model):
     class Operation(models.TextChoices):
         CANDIDATE_CHAT = "candidate_chat", "Candidate chat"
         KNOWLEDGE_EXTRACTION = "knowledge_extraction", "Knowledge extraction"
+        EMBEDDING_INDEX = "embedding_index", "Embedding index"
+        EMBEDDING_QUERY = "embedding_query", "Embedding query"
 
     class Status(models.TextChoices):
         STARTED = "started", "Started"
@@ -474,3 +477,15 @@ class CandidateFactReviewEvent(models.Model):
 
     class Meta:
         ordering = ["-created_at", "-id"]
+
+
+class CandidateFactEmbedding(models.Model):
+    """Store a candidate fact's versioned vector representation."""
+
+    fact = models.OneToOneField(
+        CandidateFact, on_delete=models.CASCADE, related_name="semantic_embedding"
+    )
+    embedding_model = models.CharField(max_length=127)
+    content_sha256 = models.CharField(max_length=64)
+    vector = VectorField(dimensions=256)
+    updated_at = models.DateTimeField(auto_now=True)
