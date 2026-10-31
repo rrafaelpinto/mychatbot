@@ -4,8 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.http import Http404
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CandidateFactReviewForm, CandidateProfileForm, ChatQuestionForm
@@ -39,6 +38,7 @@ from .services.guest_chat import (
     origin_digest,
     verify_turnstile,
 )
+
 
 @login_required
 def candidate_fact_review_list(request):
