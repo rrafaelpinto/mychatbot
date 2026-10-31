@@ -130,6 +130,10 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+CANDIDATE_UPLOADS_ENABLED = env_bool(
+    "CANDIDATE_UPLOADS_ENABLED", default=not IS_PRODUCTION
+)
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "deploy" / "static"
 STATICFILES_DIRS = [BASE_DIR / "mychatbot" / "static"]
@@ -150,9 +154,6 @@ if IS_PRODUCTION:
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("PUBLIC_MEDIA_ROOT") or BASE_DIR / "deploy" / "media")
-CANDIDATE_UPLOADS_ENABLED = env_bool(
-    "CANDIDATE_UPLOADS_ENABLED", default=not IS_PRODUCTION
-)
 PUBLIC_REGISTRATION_ENABLED = env_bool(
     "PUBLIC_REGISTRATION_ENABLED", default=not IS_PRODUCTION
 )

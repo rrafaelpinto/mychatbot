@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.http import Http404
 from django.urls import include, path
 
+
 def disabled_password_reset(request):
     """Reject unconfigured public password-reset requests."""
     raise Http404("Password reset is not configured.")
