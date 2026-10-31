@@ -81,7 +81,9 @@ def test_public_profile_only_exposes_whitelisted_fields_and_approved_facts(
 
 
 @pytest.mark.django_db
-def test_public_contact_visibility_requires_explicit_consent(client, published_candidate):
+def test_public_contact_visibility_requires_explicit_consent(
+    client, published_candidate
+):
     published_candidate.show_contact_email = True
     published_candidate.show_linkedin = True
     published_candidate.save()
@@ -100,7 +102,9 @@ def test_suspended_or_draft_candidate_is_not_available_via_api(
     published_candidate.publication_status = CandidateProfile.PublicationStatus.DRAFT
     published_candidate.save()
     assert client.get(url).status_code == 404
-    published_candidate.publication_status = CandidateProfile.PublicationStatus.PUBLISHED
+    published_candidate.publication_status = (
+        CandidateProfile.PublicationStatus.PUBLISHED
+    )
     published_candidate.save()
     assert client.get(url).status_code == 200
 
@@ -163,11 +167,14 @@ def test_read_only_api_rejects_mutations_without_changing_data(
 ):
     client.force_login(published_candidate.user)
     for route in ("api-me-profile", "api-me-facts"):
-        assert client.patch(
-            reverse(route),
-            data=json.dumps({"content": "Unapproved update"}),
-            content_type="application/json",
-        ).status_code == 405
+        assert (
+            client.patch(
+                reverse(route),
+                data=json.dumps({"content": "Unapproved update"}),
+                content_type="application/json",
+            ).status_code
+            == 405
+        )
     url = reverse("api-candidate-detail", kwargs={"slug": published_candidate.slug})
     assert client.delete(url).status_code == 405
     verified_fact.refresh_from_db()

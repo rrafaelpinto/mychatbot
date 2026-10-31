@@ -30,9 +30,7 @@ class PublicCandidateSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_contact_email(obj) -> str | None:
         return (
-            obj.contact_email
-            if obj.show_contact_email and obj.contact_email
-            else None
+            obj.contact_email if obj.show_contact_email and obj.contact_email else None
         )
 
 

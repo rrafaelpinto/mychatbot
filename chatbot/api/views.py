@@ -63,6 +63,6 @@ class OwnerFactListView(generics.ListAPIView):
     serializer_class = OwnerFactSerializer
 
     def get_queryset(self):
-        return CandidateFact.objects.filter(
-            candidate__user=self.request.user
-        ).order_by("pk")
+        return CandidateFact.objects.filter(candidate__user=self.request.user).order_by(
+            "pk"
+        )
