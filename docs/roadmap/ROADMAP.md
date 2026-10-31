@@ -105,8 +105,9 @@ infrastructure without measured need.
 ## Future Considerations
 
 Potential later work includes job description analysis, evidence-based resume
-generation, dedicated public APIs, frontend modernization, and stateful agent
-orchestration. These are not approved implementation commitments.
+generation, and stateful agent orchestration. These are not approved
+implementation commitments. API and independent frontend modernization have
+been approved separately in Phase 4 below.
 
 ## Release readiness and deferred work
 
