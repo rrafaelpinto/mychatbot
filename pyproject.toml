@@ -10,6 +10,7 @@ dependencies = [
     "django-crispy-forms>=2.3,<3",
     "django-registration>=3.4,<4",
     "gunicorn>=23,<24",
+    "langchain-core>=1.7,<2",
     "openai>=1.68,<2",
     "pillow>=11,<13",
     "psycopg[binary]>=3.2,<4",

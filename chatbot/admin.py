@@ -4,6 +4,7 @@ from .models import (
     AIProjectBudget,
     AIUsageEvent,
     CandidateDocument,
+    CandidateExtractionRun,
     CandidateFact,
     CandidateProfile,
     Conversation,
@@ -152,6 +153,32 @@ class GuestChatSessionAdmin(admin.ModelAdmin):
 class GuestOriginAdmin(admin.ModelAdmin):
     list_display = ("created_at",)
     readonly_fields = ("digest", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(CandidateExtractionRun)
+class CandidateExtractionRunAdmin(admin.ModelAdmin):
+    list_display = ("document", "status", "attempts", "proposed_count", "completed_at")
+    list_filter = ("status",)
+    readonly_fields = (
+        "document",
+        "source_sha256",
+        "status",
+        "attempts",
+        "started_at",
+        "completed_at",
+        "proposed_count",
+        "error_code",
+        "last_usage_event",
+    )
 
     def has_add_permission(self, request):
         return False
