@@ -10,9 +10,9 @@ from chatbot.models import (
     AIUsageEvent,
     CandidateFact,
     CandidateProfile,
+    Conversation,
     GuestChatSession,
     Message,
-    Conversation,
 )
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
 from chatbot.services.ai_budget import AIBudgetExceeded, settle_usage
