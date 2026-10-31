@@ -6,9 +6,10 @@ from django.conf import settings
 from django.utils import timezone
 from openai import OpenAI, OpenAIError
 
-from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile
+from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile, GuestChatSession
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
 from chatbot.services.ai_budget import AIBudgetExceeded, settle_usage
+from chatbot.services.guest_chat import release_guest_operation
 from chatbot.services.ai_limits import (
     AIDuplicateRequest,
     AIQuotaExceeded,
@@ -55,13 +56,20 @@ class AIResponse:
 def ask_candidate(
     *,
     candidate: CandidateProfile,
-    initiated_by,
+    initiated_by=None,
+    guest_session: GuestChatSession | None = None,
     question: str,
     idempotency_key: str | None = None,
 ) -> AIResponse:
     """Authorize first, then invoke the single paid-provider boundary."""
-    if not can_interact_with_candidate(initiated_by, candidate):
-        raise AINotAuthorized("This candidate is not available for AI interaction.")
+    if guest_session is None:
+        if initiated_by is None or not can_interact_with_candidate(initiated_by, candidate):
+            raise AINotAuthorized("This candidate is not available for AI interaction.")
+    elif initiated_by is not None or not settings.GUEST_CHAT_ENABLED or (
+        not candidate.status == CandidateProfile.Status.ACTIVE
+        or not candidate.publication_status == CandidateProfile.PublicationStatus.PUBLISHED
+    ) or guest_session.candidate_id != candidate.pk:
+        raise AINotAuthorized("This candidate is not available for guest interaction.")
 
     if not settings.AI_ENABLED:
         raise AIOperationDisabled("AI operations are disabled.")
@@ -79,9 +87,15 @@ def ask_candidate(
     if not facts:
         raise NoVerifiedFacts("This candidate has no verified facts available yet.")
 
+    if len(build_candidate_payload(facts=facts, question=question).encode()) > (
+        settings.AI_MAX_INPUT_TOKENS
+    ):
+        raise AIServiceError("Candidate context exceeds the configured token budget.")
+
     try:
         usage = admit_ai_operation(
-            identity_id=initiated_by.pk,
+            identity_id=initiated_by.pk if initiated_by is not None else None,
+            guest_session_id=guest_session.pk if guest_session is not None else None,
             candidate_id=candidate.pk,
             operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
             idempotency_key=idempotency_key,
@@ -93,13 +107,17 @@ def ask_candidate(
     except AIBudgetExceeded as exc:
         raise AILimitExceeded(str(exc)) from exc
     try:
-        response = invoke_candidate_chat(facts=facts, question=question)
-    except AIServiceError as exc:
-        _mark_usage_failed(usage, type(exc).__name__)
-        raise
-    except Exception as exc:
-        _mark_usage_failed(usage, "unexpected_provider_error")
-        raise AIUnavailable("The Candidate Agent is temporarily unavailable.") from exc
+        try:
+            response = invoke_candidate_chat(facts=facts, question=question)
+        except AIServiceError as exc:
+            _mark_usage_failed(usage, type(exc).__name__)
+            raise
+        except Exception as exc:
+            _mark_usage_failed(usage, "unexpected_provider_error")
+            raise AIUnavailable("The Candidate Agent is temporarily unavailable.") from exc
+    finally:
+        if guest_session is not None:
+            release_guest_operation(session_id=guest_session.pk, usage_id=usage.pk)
 
     usage.status = AIUsageEvent.Status.SUCCEEDED
     usage.input_tokens = response.input_tokens
@@ -126,6 +144,14 @@ def ask_candidate(
     return response
 
 
+def build_candidate_payload(*, facts: list[str], question: str) -> str:
+    """Serialize untrusted professional information as JSON data."""
+    return json.dumps(
+        {"verified_candidate_facts": facts, "recruiter_question": question},
+        ensure_ascii=False,
+    )
+
+
 def invoke_candidate_chat(*, facts: list[str], question: str) -> AIResponse:
     """The only OpenAI call site for candidate chat."""
     if not settings.OPENAI_API_KEY:
@@ -136,15 +162,12 @@ def invoke_candidate_chat(*, facts: list[str], question: str) -> AIResponse:
         timeout=settings.OPENAI_TIMEOUT_SECONDS,
         max_retries=1,
     )
-    payload = json.dumps(
-        {"verified_candidate_facts": facts, "recruiter_question": question},
-        ensure_ascii=False,
-    )
+    payload = build_candidate_payload(facts=facts, question=question)
     try:
         completion = client.chat.completions.create(
             model=settings.OPENAI_MODEL,
             temperature=0.2,
-            max_tokens=500,
+            max_tokens=settings.AI_MAX_OUTPUT_TOKENS,
             messages=[
                 {
                     "role": "system",

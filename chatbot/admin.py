@@ -7,6 +7,8 @@ from .models import (
     CandidateFact,
     CandidateProfile,
     Conversation,
+    GuestChatSession,
+    GuestOrigin,
     Message,
 )
 
@@ -56,7 +58,7 @@ class CandidateFactAdmin(admin.ModelAdmin):
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ("candidate", "recruiter", "updated_at")
+    list_display = ("candidate", "recruiter", "guest_session", "updated_at")
     search_fields = ("candidate__name", "recruiter__username")
 
 
@@ -82,6 +84,8 @@ class AIUsageEventAdmin(admin.ModelAdmin):
     list_filter = ("operation", "status", "provider", "model")
     readonly_fields = (
         "initiated_by",
+        "guest_session",
+        "guest_origin",
         "candidate",
         "operation",
         "provider",
@@ -118,6 +122,36 @@ class AIProjectBudgetAdmin(admin.ModelAdmin):
         "monthly_reserved_micro_usd",
     )
     readonly_fields = list_display
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(GuestChatSession)
+class GuestChatSessionAdmin(admin.ModelAdmin):
+    list_display = ("id", "candidate", "created_at", "expires_at")
+    readonly_fields = ("id", "candidate", "origin", "created_at", "expires_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(GuestOrigin)
+class GuestOriginAdmin(admin.ModelAdmin):
+    list_display = ("created_at",)
+    readonly_fields = ("digest", "created_at")
 
     def has_add_permission(self, request):
         return False
