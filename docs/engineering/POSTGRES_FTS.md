@@ -34,6 +34,22 @@ are passed as ORM parameters, never interpolated as SQL or raw `tsquery`.
 The `english` text-search dictionary is intentional because the synthetic
 candidate corpus and demonstration are in English.
 
+## Measured synthetic baseline
+
+The 30-case synthetic fixture produced the following deterministic retrieval
+results on PostgreSQL CI:
+
+| Metric | Full context | PostgreSQL FTS |
+| --- | ---: | ---: |
+| Retrieval recall | 1.0000 | 0.7143 |
+| Retrieval precision | 0.0538 | 0.4545 |
+| Over-budget prompts | 0 | 0 |
+
+PostgreSQL FTS returns a more focused subset but misses some relevant facts.
+Do not change the production strategy on the basis of this synthetic
+comparison alone. This is a **retrieval** result, not model-answer accuracy
+or a measurement of monetary savings.
+
 ## Interpretation and limitations
 
 Use these measures to compare retrieval, not answer generation:
