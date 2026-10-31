@@ -137,7 +137,11 @@ STATICFILES_DIRS = [BASE_DIR / "mychatbot" / "static"]
 if IS_PRODUCTION:
     STORAGES = {
         "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "BACKEND": (
+                "django.core.files.storage.FileSystemStorage"
+                if CANDIDATE_UPLOADS_ENABLED
+                else "chatbot.storage.DisabledPublicUploadStorage"
+            ),
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -234,6 +238,12 @@ GUEST_ORIGIN_PER_MINUTE = 2
 GUEST_ORIGIN_PER_DAY = 20
 GUEST_GLOBAL_PER_DAY = 50
 GUEST_CONVERSATION_RETENTION_DAYS = 7
+
+GUEST_CLEANUP_SCHEDULED = env_bool("GUEST_CLEANUP_SCHEDULED", default=False)
+if IS_PRODUCTION and GUEST_CHAT_ENABLED and not GUEST_CLEANUP_SCHEDULED:
+    raise ImproperlyConfigured(
+        "Guest chat requires an active guest session cleanup schedule."
+    )
 
 if GUEST_CHAT_ENABLED and (
     not GUEST_TURNSTILE_SITE_KEY
