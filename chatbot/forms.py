@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 
 from .models import CandidateFact, CandidateProfile
 from .validators import validate_candidate_document
@@ -12,6 +13,15 @@ class CandidateProfileForm(forms.ModelForm):
         required=False,
         validators=[validate_candidate_document],
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not settings.CANDIDATE_UPLOADS_ENABLED:
+            for name in ("image", "document"):
+                self.fields[name].disabled = True
+                self.fields[name].help_text = (
+                    "Uploads are unavailable until durable storage is configured."
+                )
 
     class Meta:
         model = CandidateProfile
