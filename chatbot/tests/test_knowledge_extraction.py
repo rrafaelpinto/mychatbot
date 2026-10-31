@@ -1,4 +1,5 @@
 import json
+import hashlib
 from datetime import timedelta
 from io import StringIO
 from types import SimpleNamespace
@@ -8,7 +9,7 @@ import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.utils import timezone
-from pydantic import ValidationError
+from langchain_core.exceptions import OutputParserException
 
 from chatbot.models import (
     AIProjectBudget,
@@ -269,7 +270,7 @@ def test_recent_running_extraction_is_exclusive(
 ):
     CandidateExtractionRun.objects.create(
         document=processed_document,
-        source_sha256=__import__("hashlib").sha256(SOURCE.encode()).hexdigest(),
+        source_sha256=hashlib.sha256(SOURCE.encode()).hexdigest(),
     )
     with patch("chatbot.services.knowledge_extraction.invoke_fact_extraction") as ai:
         with pytest.raises(KnowledgeExtractionError, match="in progress"):
@@ -282,8 +283,6 @@ def test_recent_running_extraction_is_exclusive(
 def test_stale_run_can_be_retried(
     extraction_settings, published_candidate, processed_document
 ):
-    import hashlib
-
     run = CandidateExtractionRun.objects.create(
         document=processed_document,
         source_sha256=hashlib.sha256(SOURCE.encode()).hexdigest(),
@@ -399,5 +398,5 @@ def test_langchain_rejects_invalid_provider_response(settings):
     )
     with patch("chatbot.services.ai.OpenAI") as openai:
         openai.return_value.chat.completions.create.return_value = completion
-        with pytest.raises((ValidationError, Exception)):
+        with pytest.raises(OutputParserException):
             invoke_fact_extraction(source_text=SOURCE)

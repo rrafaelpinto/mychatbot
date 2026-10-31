@@ -4,10 +4,10 @@ from dataclasses import dataclass, replace
 
 from django.conf import settings
 from django.utils import timezone
-from openai import OpenAI, OpenAIError
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
+from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, ConfigDict
 
 from chatbot.models import (
