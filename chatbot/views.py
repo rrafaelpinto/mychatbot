@@ -3,11 +3,19 @@ from django.contrib import messages as django_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.db import transaction
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CandidateProfileForm, ChatQuestionForm
-from .models import AIUsageEvent, CandidateProfile, Conversation, Message
+from .forms import CandidateFactReviewForm, CandidateProfileForm, ChatQuestionForm
+from .models import (
+    AIUsageEvent,
+    CandidateFact,
+    CandidateFactReviewEvent,
+    CandidateProfile,
+    Conversation,
+    Message,
+)
 from .policies import can_read_conversation
 from .services.ai import (
     AILimitExceeded,
@@ -30,6 +38,181 @@ from .services.guest_chat import (
     origin_digest,
     verify_turnstile,
 )
+
+
+@login_required
+def candidate_fact_review_list(request):
+    candidate = get_object_or_404(CandidateProfile, user=request.user)
+    statuses = {
+        "pending": CandidateFact.VerificationStatus.PENDING,
+        "verified": CandidateFact.VerificationStatus.VERIFIED,
+        "rejected": CandidateFact.VerificationStatus.REJECTED,
+    }
+    selected = request.GET.get("status", "pending")
+    if selected not in {*statuses, "all"}:
+        raise Http404("Unknown review status.")
+
+    facts = CandidateFact.objects.filter(candidate=candidate).select_related(
+        "source_document"
+    )
+    if selected != "all":
+        facts = facts.filter(verification_status=statuses[selected])
+    return render(
+        request,
+        "fact_review_list.html",
+        {
+            "candidate": candidate,
+            "facts": facts.order_by("-updated_at", "-pk"),
+            "selected_status": selected,
+            "pending_count": CandidateFact.objects.filter(
+                candidate=candidate,
+                verification_status=CandidateFact.VerificationStatus.PENDING,
+            ).count(),
+        },
+    )
+
+
+@login_required
+def candidate_fact_review_detail(request, fact_id):
+    candidate = get_object_or_404(CandidateProfile, user=request.user)
+    fact = get_object_or_404(
+        CandidateFact.objects.select_related("source_document"),
+        pk=fact_id,
+        candidate=candidate,
+    )
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action not in {
+            "save",
+            "approve",
+            "reject",
+            "reopen",
+            "publish",
+            "unpublish",
+        }:
+            raise Http404("Unknown review action.")
+
+        with transaction.atomic():
+            fact = get_object_or_404(
+                CandidateFact.objects.select_for_update(),
+                pk=fact_id,
+                candidate=candidate,
+            )
+            previous_type = fact.fact_type
+            previous_content = fact.content
+            previous_status = fact.verification_status
+            previous_public = fact.is_public
+            original_version = fact.updated_at.isoformat()
+            form = CandidateFactReviewForm(request.POST, instance=fact)
+
+            if form.is_valid():
+                if form.cleaned_data["version"] != original_version:
+                    form.add_error(
+                        None,
+                        "This fact was modified elsewhere. Reload before reviewing.",
+                    )
+                else:
+                    changed = (
+                        form.cleaned_data["fact_type"] != previous_type
+                        or form.cleaned_data["content"] != previous_content
+                    )
+                    error = _fact_review_action_error(
+                        action=action,
+                        changed=changed,
+                        status=previous_status,
+                        is_public=previous_public,
+                    )
+                    if error:
+                        form.add_error(None, error)
+                    else:
+                        if action == "save" and changed:
+                            fact.verification_status = (
+                                CandidateFact.VerificationStatus.PENDING
+                            )
+                            fact.is_public = False
+                        elif action == "approve":
+                            fact.verification_status = (
+                                CandidateFact.VerificationStatus.VERIFIED
+                            )
+                            fact.is_public = False
+                        elif action == "reject":
+                            fact.verification_status = (
+                                CandidateFact.VerificationStatus.REJECTED
+                            )
+                            fact.is_public = False
+                        elif action == "reopen":
+                            fact.verification_status = (
+                                CandidateFact.VerificationStatus.PENDING
+                            )
+                            fact.is_public = False
+                        elif action == "publish":
+                            fact.is_public = True
+                        elif action == "unpublish":
+                            fact.is_public = False
+
+                        if action != "save" or changed:
+                            fact.full_clean()
+                            fact.save(
+                                update_fields=[
+                                    "fact_type",
+                                    "content",
+                                    "verification_status",
+                                    "is_public",
+                                    "updated_at",
+                                ]
+                            )
+                            CandidateFactReviewEvent.objects.create(
+                                fact=fact,
+                                reviewed_by=request.user,
+                                action={
+                                    "save": CandidateFactReviewEvent.Action.EDITED,
+                                    "approve": CandidateFactReviewEvent.Action.APPROVED,
+                                    "reject": CandidateFactReviewEvent.Action.REJECTED,
+                                    "reopen": CandidateFactReviewEvent.Action.REOPENED,
+                                    "publish": CandidateFactReviewEvent.Action.PUBLISHED,
+                                    "unpublish": CandidateFactReviewEvent.Action.UNPUBLISHED,
+                                }[action],
+                                previous_status=previous_status,
+                                new_status=fact.verification_status,
+                                previous_public=previous_public,
+                                new_public=fact.is_public,
+                            )
+                        django_messages.success(request, "Fact review saved.")
+                        return redirect("candidate_fact_review_detail", fact_id=fact.pk)
+    else:
+        form = CandidateFactReviewForm(instance=fact)
+
+    return render(
+        request,
+        "fact_review_detail.html",
+        {
+            "candidate": candidate,
+            "fact": fact,
+            "form": form,
+            "events": fact.review_events.select_related("reviewed_by")[:20],
+        },
+    )
+
+
+def _fact_review_action_error(*, action, changed, status, is_public):
+    if action != "save" and changed:
+        return "Save your text changes before choosing a review decision."
+    if action == "save":
+        return None
+    if action == "approve" and status != CandidateFact.VerificationStatus.PENDING:
+        return "Only pending facts can be approved."
+    if action == "reject" and status == CandidateFact.VerificationStatus.REJECTED:
+        return "This fact has already been rejected."
+    if action == "reopen" and status != CandidateFact.VerificationStatus.REJECTED:
+        return "Only rejected facts can be reopened."
+    if action == "publish" and (
+        status != CandidateFact.VerificationStatus.VERIFIED or is_public
+    ):
+        return "Only verified private facts can be published."
+    if action == "unpublish" and not is_public:
+        return "Only public facts can be unpublished."
+    return None
 
 
 def about(request):

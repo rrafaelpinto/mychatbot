@@ -64,8 +64,12 @@ by the public Candidate Agent.
 Successful execution is idempotent per document, while failed attempts
 are recoverable subject to quotas and budgets. The extraction workflow does
 not decide whether the source claim is truthful or suitable for publication.
-That decision belongs to a human reviewer. The dedicated review interface
-will be delivered separately.
+That decision belongs to a human reviewer. Use the private
+`/candidate/facts/` interface to review proposals, edit claims, approve their
+accuracy, and separately authorize public visibility. Editing an approved
+claim revokes its verification and public visibility until it is reviewed again.
+Only the candidate account owner can access this interface. The review record
+stores decisions and timestamps, not copies of private documents or fact text.
 
 ## Import and review
 
@@ -86,11 +90,13 @@ The command validates the entire manifest before writing, imports facts as
 entry with an existing import key causes the transaction to roll back rather
 than overwriting a reviewed fact. It does not send data to an AI provider.
 
-Review the imported records in Django Admin under **Candidate facts**. Verify
-each claim against its source, confirm that it is appropriate for public
-disclosure, then set **Verification status = Verified** and **Is public = True**.
-Both settings are required for the fact to reach the Candidate Agent.
-Publication of the candidate profile is a separate administrative decision.
+Review the imported records through **Profile → Review professional facts**.
+For every entry, inspect the source reference, correct the claim if necessary,
+approve it as verified, and independently publish it only if disclosure is
+appropriate. Rejected facts remain private. Changes to verified text
+automatically revoke verification and publication until explicitly reapproved.
+Only facts that are both verified and public reach the Candidate Agent.
+Publishing the candidate profile is a separate administrative decision.
 
 Do not publish facts containing private contact details, third-party personal
 information, or confidential employer material. If a published fact must be
