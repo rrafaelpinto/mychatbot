@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 
 import dj_database_url
-
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -150,24 +149,29 @@ if IS_PRODUCTION:
     WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = Path(os.environ.get("PUBLIC_MEDIA_ROOT", BASE_DIR / "deploy" / "media"))
+MEDIA_ROOT = Path(os.environ.get("PUBLIC_MEDIA_ROOT") or BASE_DIR / "deploy" / "media")
 CANDIDATE_UPLOADS_ENABLED = env_bool(
     "CANDIDATE_UPLOADS_ENABLED", default=not IS_PRODUCTION
 )
 PUBLIC_REGISTRATION_ENABLED = env_bool(
     "PUBLIC_REGISTRATION_ENABLED", default=not IS_PRODUCTION
 )
+PASSWORD_RESET_ENABLED = env_bool(
+    "PASSWORD_RESET_ENABLED", default=not IS_PRODUCTION
+)
 if IS_PRODUCTION and CANDIDATE_UPLOADS_ENABLED and (
     not os.environ.get("PRIVATE_MEDIA_ROOT")
     or not os.environ.get("PUBLIC_MEDIA_ROOT")
-    or Path(os.environ["PRIVATE_MEDIA_ROOT"]).resolve()
-    == Path(os.environ["PUBLIC_MEDIA_ROOT"]).resolve()
+    or (
+        Path(os.environ["PRIVATE_MEDIA_ROOT"]).resolve()
+        == Path(os.environ["PUBLIC_MEDIA_ROOT"]).resolve()
+    )
 ):
     raise ImproperlyConfigured(
         "Production uploads require distinct persistent public/private media roots."
     )
 PRIVATE_MEDIA_ROOT = Path(
-    os.environ.get("PRIVATE_MEDIA_ROOT", BASE_DIR / "private_media")
+    os.environ.get("PRIVATE_MEDIA_ROOT") or BASE_DIR / "private_media"
 )
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

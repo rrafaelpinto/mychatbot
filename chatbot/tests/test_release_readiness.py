@@ -59,6 +59,8 @@ def test_closed_signup_is_not_shown_in_public_navigation(client, settings):
     response = client.get(reverse("about"))
     assert response.status_code == 200
     assert b"Sign up</a>" not in response.content
+    login = client.get(reverse("login"))
+    assert b"Sign Up</a>" not in login.content
 
 
 def production_settings_subprocess(extra_env, code):
@@ -75,6 +77,7 @@ def production_settings_subprocess(extra_env, code):
     env.pop("DATABASE_URL", None)
     env.pop("CANDIDATE_UPLOADS_ENABLED", None)
     env.pop("PUBLIC_REGISTRATION_ENABLED", None)
+    env.pop("PASSWORD_RESET_ENABLED", None)
     env.pop("GUEST_CHAT_ENABLED", None)
     env.update(extra_env)
     return subprocess.run(
@@ -99,9 +102,22 @@ def test_production_defaults_are_closed_and_registration_route_absent():
             "assert not settings.AI_ENABLED; "
             "assert settings.STORAGES['default']['BACKEND'] == "
             "'chatbot.storage.DisabledPublicUploadStorage'; "
+            "assert 'registration' not in str(settings.STORAGES['default'])"
+        ),
+    )
+    assert result.returncode == 0, result.stderr
+
+    closed = production_settings_subprocess(
+        {},
+        (
+            "import django; django.setup(); "
+            "from django.urls import reverse; "
+            "from django.urls.exceptions import NoReverseMatch; "
+            "assert reverse('login') == '/accounts/login/'; "
+            "assert reverse('password_reset') == '/accounts/password_reset/'; "
             "try:\n reverse('django_registration_register')\n"
             "except NoReverseMatch:\n pass\n"
-            "else:\n raise AssertionError('signup route unexpectedly active')"
+            "else:\n raise AssertionError('signup unexpectedly enabled')"
         ),
     )
     assert result.returncode == 0, result.stderr
