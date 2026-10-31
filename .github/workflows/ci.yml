@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_DB: resumebot_ci
           POSTGRES_USER: postgres
@@ -47,6 +47,13 @@ jobs:
         with:
           version: "0.12.8"
           enable-cache: true
+
+      - name: Generate dependency lock
+        run: |
+          uv lock
+          echo "LOCK_MARKER_START"
+          cat uv.lock
+          echo "LOCK_MARKER_END"
 
       - name: Install locked dependencies
         run: uv sync --locked --group dev
