@@ -105,9 +105,10 @@ def test_fts_ignores_unsafe_query_syntax_and_bounds_terms(
     )
     assert isinstance(result, list)
     assert CandidateFact.objects.filter(pk=verified_fact.pk).exists()
-    assert retriever.retrieve(
-        candidate=published_candidate, question="a ! ?", history=[]
-    ) == []
+    assert (
+        retriever.retrieve(candidate=published_candidate, question="a ! ?", history=[])
+        == []
+    )
 
 
 @requires_postgres
@@ -179,9 +180,7 @@ def test_fts_response_dataset_stable_ids_and_query_history():
 
 
 @pytest.mark.django_db
-def test_full_context_remains_production_default(
-    published_candidate, verified_fact
-):
+def test_full_context_remains_production_default(published_candidate, verified_fact):
     selected = retrieve_candidate_facts(
         candidate=published_candidate,
         question="Which Django work?",

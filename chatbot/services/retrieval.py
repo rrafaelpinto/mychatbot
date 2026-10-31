@@ -6,9 +6,30 @@ from operator import or_
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
 STOP_WORDS = {
-    "about", "also", "candidate", "could", "does", "have", "has", "how",
-    "into", "their", "them", "there", "this", "those", "used", "using",
-    "what", "when", "where", "which", "with", "work", "worked", "would",
+    "about",
+    "also",
+    "candidate",
+    "could",
+    "does",
+    "have",
+    "has",
+    "how",
+    "into",
+    "their",
+    "them",
+    "there",
+    "this",
+    "those",
+    "used",
+    "using",
+    "what",
+    "when",
+    "where",
+    "which",
+    "with",
+    "work",
+    "worked",
+    "would",
 }
 TERM_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9]{2,}")
 

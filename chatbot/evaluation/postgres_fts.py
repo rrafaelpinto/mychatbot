@@ -26,10 +26,7 @@ class SyntheticPostgresFTSRetriever:
         result = self.retriever.retrieve(
             candidate=self.candidate, question=question, history=history
         )
-        return [
-            {**item, "id": self.id_map[item["id"]]}
-            for item in result
-        ]
+        return [{**item, "id": self.id_map[item["id"]]} for item in result]
 
 
 @contextmanager
@@ -59,8 +56,6 @@ def synthetic_postgres_fts(dataset):
             id_map[saved.pk] = fact["id"]
 
         try:
-            yield SyntheticPostgresFTSRetriever(
-                candidate=candidate, id_map=id_map
-            )
+            yield SyntheticPostgresFTSRetriever(candidate=candidate, id_map=id_map)
         finally:
             transaction.set_rollback(True)
