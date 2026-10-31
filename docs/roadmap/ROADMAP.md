@@ -125,3 +125,58 @@ selection beyond full-context, production performance measurements, object
 storage, self-service registration, a verified outbound email provider, and
 expanded observability. These are not release blockers for an owner-controlled
 portfolio demo with uploads and registration disabled.
+
+## Phase 4 — API and Frontend Modernization
+
+**Status:** Approved. Incremental implementation starting with the DRF API.
+
+**Objective:** Demonstrate professional backend/API contracts, JWT security and
+a distinctive, responsive React frontend with independent deployment.
+
+### Architecture decision
+
+- Keep one Git repository but **two independently deployable applications**:
+  existing root Django backend and future `frontend/` React/TypeScript/Vite
+  application. Do not relocate the mature Django project in the first PR.
+- Serve React separately as a static build from an independent host or reverse
+  proxy. Django/WhiteNoise continues serving only its own admin/static assets.
+- PostgreSQL/pgvector remains backend-only. Continue running the existing
+  Django pages until their React replacements are verified; no big-bang rewrite.
+- Use API-first DRF serializers/viewsets, stable `/api/v1/` routes,
+  drf-spectacular/OpenAPI and schema-based TypeScript client generation.
+- JWT applies only to authenticated API use; keep short-lived bearer access
+  tokens in JavaScript memory and rotate/revoke HttpOnly refresh cookies with
+  CSRF protection. Keep Django Admin session authentication. Anonymous chat
+  remains an isolated, rate-limited Turnstile + session flow, not JWT.
+- Preserve `full_context` and all privacy, candidate ownership, AI budgets,
+  quota, idempotency and evidence authorization policy as backend invariants.
+- Frontend and backend CI, build outputs, secrets and release cycles are
+  independently managed. No CORS wildcard with credentialed requests.
+
+### Delivery sequence
+
+1. **API foundation** ([#29](https://github.com/rrafaelpinto/mychatbot/issues/29)):
+   DRF, OpenAPI Swagger, public candidate read API, authenticated owner
+   read API, isolation tests, no breaking HTML changes.
+2. **Authentication and API mutations**
+   ([#30](https://github.com/rrafaelpinto/mychatbot/issues/30)):
+   SimpleJWT secure refresh design, logout/revocation, CORS, CSRF and authenticated
+   mutations/chat contracts reusing existing Django services.
+3. **Visual system and prototypes**
+   ([#31](https://github.com/rrafaelpinto/mychatbot/issues/31)):
+   deliberate recruiter-facing branding and responsive, accessible designs
+   with review before implementation.
+4. **Independent frontend**
+   ([#32](https://github.com/rrafaelpinto/mychatbot/issues/32)):
+   React/TypeScript/Vite, approved design system, typed API client, tests
+   and standalone build/deployment (not embedded in Django's static assets).
+
+**Scope controls:** no third backend service, no new paid vendor, no database
+duplication, no framework replatforming, no production JWT rollout before
+security tests, and no user document exposure. Live-model benchmark remains
+deferred. Production deployment/guest access retain their existing safeguards.
+
+**Definition of done:** API schema and negative authorization tests pass,
+existing Python CI remains green; frontend builds/tests independently and
+uses the versioned contract; visual prototypes approved; backend and frontend
+can deploy independently. No cloud services are provisioned automatically.
