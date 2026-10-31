@@ -165,11 +165,14 @@ def candidate_fact_review_detail(request, fact_id):
                             CandidateFactReviewEvent.objects.create(
                                 fact=fact,
                                 reviewed_by=request.user,
-                                action=(
-                                    CandidateFactReviewEvent.Action.EDITED
-                                    if action == "save"
-                                    else action
-                                ),
+                                action={
+                                    "save": CandidateFactReviewEvent.Action.EDITED,
+                                    "approve": CandidateFactReviewEvent.Action.APPROVED,
+                                    "reject": CandidateFactReviewEvent.Action.REJECTED,
+                                    "reopen": CandidateFactReviewEvent.Action.REOPENED,
+                                    "publish": CandidateFactReviewEvent.Action.PUBLISHED,
+                                    "unpublish": CandidateFactReviewEvent.Action.UNPUBLISHED,
+                                }[action],
                                 previous_status=previous_status,
                                 new_status=fact.verification_status,
                                 previous_public=previous_public,
