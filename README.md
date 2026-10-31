@@ -159,3 +159,11 @@ Use `uv run python manage.py evaluate_candidate_agent --fail-on-overflow` to
 run the offline, deterministic synthetic full-context baseline. See
 [AI evaluation methodology](docs/engineering/AI_EVALUATION.md) for dataset
 coverage, metrics, response replay and limitations. CI never calls the AI provider.
+
+## Controlled real-model evaluation
+
+The offline retrieval benchmark remains the CI default. An optional, explicitly
+budget-capped experiment can evaluate real embeddings, model answers, citations,
+latencies, tokens and cost using synthetic facts only. See
+[paid Candidate Agent evaluation](docs/engineering/PAID_AI_EVALUATION.md).
+No paid evaluation runs automatically or changes production retrieval.

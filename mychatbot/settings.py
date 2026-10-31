@@ -210,6 +210,7 @@ if GUEST_CHAT_ENABLED and (
     )
 
 AI_ENABLED = env_bool("AI_ENABLED", default=not IS_PRODUCTION)
+AI_EVALUATION_PAID_ENABLED = env_bool("AI_EVALUATION_PAID_ENABLED", default=False)
 AI_USAGE_LIMITS = {
     "candidate_chat": {
         "identity_per_minute": int(os.environ.get("AI_CHAT_IDENTITY_PER_MINUTE", "5")),
