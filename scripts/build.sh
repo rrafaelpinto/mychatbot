@@ -2,4 +2,4 @@
 set -euo pipefail
 
 uv sync --locked --no-dev
-uv run python manage.py collectstatic --noinput
+uv run --no-sync python manage.py collectstatic --noinput

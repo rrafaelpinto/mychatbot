@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exec uv run gunicorn mychatbot.wsgi:application \
+exec uv run --no-sync gunicorn mychatbot.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \
   --workers "${WEB_CONCURRENCY:-1}" \
   --threads "${WEB_THREADS:-2}" \
