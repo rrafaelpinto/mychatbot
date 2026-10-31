@@ -157,7 +157,7 @@ def test_owner_fact_list_never_exposes_other_candidates(
     payload = client.get(reverse("api-me-facts")).json()
     assert payload["count"] == 1
     assert payload["results"][0]["id"] == verified_fact.id
-    assert str(other_fact.id) not in json.dumps(payload["results"])
+    assert other_fact.id not in {row["id"] for row in payload["results"]}
     assert "Private other account work" not in json.dumps(payload)
 
 
