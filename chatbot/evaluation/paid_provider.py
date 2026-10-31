@@ -50,9 +50,9 @@ class ExperimentBudget:
 
     def _cost(self, kind, input_tokens, output_tokens):
         input_price, output_price = self.rates[kind]
-        return (
-            input_price * input_tokens + output_price * output_tokens
-        ) / Decimal("1000000")
+        return (input_price * input_tokens + output_price * output_tokens) / Decimal(
+            "1000000"
+        )
 
     def call(self, *, kind, prompt, max_output, execute):
         """Reserve a worst-case bound, invoke once, then reconcile actual usage."""
@@ -63,9 +63,7 @@ class ExperimentBudget:
         else:
             import json
 
-            byte_count = len(
-                json.dumps(prompt, ensure_ascii=False).encode("utf-8")
-            )
+            byte_count = len(json.dumps(prompt, ensure_ascii=False).encode("utf-8"))
         if byte_count > 16000:
             raise ExperimentLimitError("Input payload is too large.")
         reserved = self._cost(kind, byte_count + 1024, max_output)
@@ -100,7 +98,9 @@ class ExperimentBudget:
         actual = self._cost(kind, input_tokens, output_tokens)
         self.spent += actual - reserved
         if self.spent > self.limit:
-            raise ExperimentLimitError("Provider usage exceeded reserved experiment cap.")
+            raise ExperimentLimitError(
+                "Provider usage exceeded reserved experiment cap."
+            )
         self.records.append(
             UsageRecord(kind, input_tokens, output_tokens, actual, elapsed)
         )
@@ -118,8 +118,10 @@ class ExperimentBudget:
                 kind: {
                     "calls": sum(x.kind == kind for x in self.records),
                     "estimated_usd": str(
-                        sum((x.cost_usd for x in self.records if x.kind == kind), Decimal("0"))
-                        .quantize(Decimal("0.000001"))
+                        sum(
+                            (x.cost_usd for x in self.records if x.kind == kind),
+                            Decimal("0"),
+                        ).quantize(Decimal("0.000001"))
                     ),
                 }
                 for kind in ("embedding", "chat", "judge")
@@ -140,7 +142,10 @@ class ExperimentProvider:
 
     def embed(self, text):
         """Return a 256-dimension embedding with tracked usage."""
-        if not text.strip() or len(text.encode("utf-8")) > settings.AI_EMBEDDING_MAX_INPUT_BYTES:
+        if (
+            not text.strip()
+            or len(text.encode("utf-8")) > settings.AI_EMBEDDING_MAX_INPUT_BYTES
+        ):
             raise ExperimentLimitError("Embedding input limit exceeded.")
         result = self.budget.call(
             kind="embedding",

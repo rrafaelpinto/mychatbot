@@ -19,7 +19,9 @@ from chatbot.models import CandidateFact, CandidateFactEmbedding, CandidateProfi
 from chatbot.services.ai import candidate_chat_messages
 from chatbot.services.embeddings import DeterministicTestEmbeddings
 
-DATASET = Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"
+DATASET = (
+    Path(__file__).resolve().parents[1] / "evaluation" / "data" / "synthetic_v1.json"
+)
 
 
 def budget(limit="1.00"):
@@ -99,8 +101,7 @@ def test_unknown_provider_error_keeps_the_spending_reservation():
 
     with pytest.raises(RuntimeError, match="timeout"):
         guard.call(
-            kind="embedding", prompt="Some synthetic fact", max_output=0,
-            execute=fail
+            kind="embedding", prompt="Some synthetic fact", max_output=0, execute=fail
         )
     assert guard.spent > Decimal("0")
     assert guard.records == []
@@ -163,9 +164,7 @@ def test_judge_schema_rejects_non_boolean_outputs():
     completion = SimpleNamespace(
         choices=[
             SimpleNamespace(
-                message=SimpleNamespace(
-                    content='{"supported":"yes","relevant":true}'
-                )
+                message=SimpleNamespace(content='{"supported":"yes","relevant":true}')
             )
         ],
         usage=usage(),
@@ -176,9 +175,7 @@ def test_judge_schema_rejects_non_boolean_outputs():
         )
     )
     provider = ExperimentProvider(key="fake-key", budget=budget(), client=client)
-    result = provider.judge(
-        question="What work?", answer="I built APIs.", evidence=[]
-    )
+    result = provider.judge(question="What work?", answer="I built APIs.", evidence=[])
     assert result is None
     assert provider.budget.summary()["by_operation"]["judge"]["calls"] == 1
 
@@ -195,7 +192,9 @@ def test_mocked_three_way_live_pipeline_uses_pgvector_and_leaks_nothing():
     report = evaluate_live(dataset=dataset, provider=provider, include_judge=True)
     assert report["run_type"] == "paid_openai"
     assert set(report["strategies"]) == {
-        "full_context", "postgres_fts", "semantic_pgvector"
+        "full_context",
+        "postgres_fts",
+        "semantic_pgvector",
     }
     assert provider.answer_count > 0
     assert provider.judge_count == provider.answer_count

@@ -11,7 +11,9 @@ from chatbot.evaluation.paid_provider import ExperimentLimitError
 class Command(BaseCommand):
     """Run an opt-in, capped paid evaluation on synthetic candidate facts."""
 
-    help = "Evaluate three retrieval strategies with real model calls (explicit opt-in)."
+    help = (
+        "Evaluate three retrieval strategies with real model calls (explicit opt-in)."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -60,6 +62,5 @@ class Command(BaseCommand):
 
         spent = report["provider_usage"]["estimated_spend_usd"]
         self.stdout.write(
-            f"Paid evaluation completed; estimated USD {spent}; "
-            f"report: {output}"
+            f"Paid evaluation completed; estimated USD {spent}; report: {output}"
         )

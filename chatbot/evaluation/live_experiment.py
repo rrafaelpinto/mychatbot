@@ -168,9 +168,7 @@ def evaluate_live(*, dataset, provider, include_judge=True):
             for name, retrieve in retrievers.items():
                 started = time.perf_counter()
                 result = retrieve(case)
-                retrieval_latencies[name].append(
-                    (time.perf_counter() - started) * 1000
-                )
+                retrieval_latencies[name].append((time.perf_counter() - started) * 1000)
                 if any(
                     row["id"] not in approved
                     or row["content"] != approved[row["id"]]["content"]
@@ -205,7 +203,9 @@ def evaluate_live(*, dataset, provider, include_judge=True):
                     payload_bytes + settings.AI_CHAT_INPUT_OVERHEAD_BYTES
                     > settings.AI_MAX_INPUT_TOKENS
                 ):
-                    raise ExperimentLimitError("Production prompt context limit exceeded.")
+                    raise ExperimentLimitError(
+                        "Production prompt context limit exceeded."
+                    )
                 try:
                     answer, cited = provider.answer(
                         facts=facts,
