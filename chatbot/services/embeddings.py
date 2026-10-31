@@ -2,7 +2,6 @@ import hashlib
 import logging
 import math
 import re
-from collections.abc import Sequence
 
 from django.conf import settings
 from django.utils import timezone

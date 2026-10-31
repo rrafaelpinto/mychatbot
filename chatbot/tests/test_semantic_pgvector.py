@@ -7,7 +7,6 @@ from unittest.mock import patch
 import pytest
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.base import CommandError
 
 from chatbot.evaluation.baseline import evaluate_baseline, load_dataset
 from chatbot.evaluation.semantic_pgvector import synthetic_semantic_pgvector
@@ -106,9 +105,10 @@ def test_semantic_revocation_and_text_edit_fail_closed(
     retriever = SemanticPgvectorRetriever(
         embeddings=embedder, model=settings.AI_EMBEDDING_MODEL
     )
-    query = lambda: retriever.retrieve(
-        candidate=published_candidate, question="Django work", history=[]
-    )
+    def query():
+        return retriever.retrieve(
+            candidate=published_candidate, question="Django work", history=[]
+        )
     assert any(x["id"] == verified_fact.pk for x in query())
     verified_fact.content = "Different approved project entirely."
     verified_fact.save(update_fields=["content"])

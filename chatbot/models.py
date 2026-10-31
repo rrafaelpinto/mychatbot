@@ -7,8 +7,8 @@ from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from pgvector.django import VectorField
 from django.utils.text import slugify
+from pgvector.django import VectorField
 
 from .storage import PrivateDocumentStorage
 from .validators import validate_candidate_document
