@@ -26,6 +26,7 @@ from chatbot.services.ai_limits import (
     admit_ai_operation,
 )
 from chatbot.services.guest_chat import release_guest_operation
+from chatbot.services.retrieval import retrieve_candidate_facts
 
 
 class AIServiceError(Exception):
@@ -141,18 +142,14 @@ def ask_candidate(
     if not policy.enabled:
         raise AIOperationDisabled("This AI operation is disabled.")
 
-    facts = list(
-        candidate.facts.filter(
-            verification_status=CandidateFact.VerificationStatus.VERIFIED,
-            is_public=True,
-        ).values("id", "fact_type", "content")
-    )
-    if not facts:
-        raise NoVerifiedFacts("This candidate has no verified facts available yet.")
-
     history = conversation_questions(
         candidate=candidate, initiated_by=initiated_by, guest_session=guest_session
     )
+    facts = retrieve_candidate_facts(
+        candidate=candidate, question=question, history=history
+    )
+    if not facts:
+        raise NoVerifiedFacts("This candidate has no verified facts available yet.")
     payload = build_candidate_payload(facts=facts, question=question, history=history)
     if len(payload.encode("utf-8")) > max(
         0, settings.AI_MAX_INPUT_TOKENS - settings.AI_CHAT_INPUT_OVERHEAD_BYTES
