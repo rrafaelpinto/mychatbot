@@ -119,7 +119,6 @@
 
         errorBox.textContent = "";
         sendButton.disabled = true;
-        appendMessage("You", question, "user");
         try {
             const response = await fetch(form.action || window.location.href, {
                 method: "POST",
@@ -128,6 +127,7 @@
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "The request failed.");
+            appendMessage("You", question, "user");
             appendMessage(candidateName, data.response, "bot", data.evidence);
             if (remainingLabel && Number.isInteger(data.remaining)) {
                 remainingLabel.textContent = data.remaining + " questions remaining in this session.";

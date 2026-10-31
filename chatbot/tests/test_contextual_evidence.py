@@ -7,9 +7,9 @@ from django.urls import reverse
 
 from chatbot.models import AIUsageEvent, CandidateFact, Conversation, Message
 from chatbot.services.ai import (
+    UNSUPPORTED_ANSWER,
     AIResponse,
     AIUnavailable,
-    UNSUPPORTED_ANSWER,
     ask_candidate,
     build_candidate_payload,
     conversation_questions,

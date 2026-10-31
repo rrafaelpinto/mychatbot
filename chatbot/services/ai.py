@@ -209,7 +209,12 @@ def ask_candidate(
             "AI usage settlement failed for event %s", usage.pk
         )
     if response.cited_fact_ids:
-        evidence = public_evidence(candidate, response.cited_fact_ids)
+        supplied_fact_ids = {fact["id"] for fact in facts}
+        evidence = (
+            public_evidence(candidate, response.cited_fact_ids)
+            if set(response.cited_fact_ids).issubset(supplied_fact_ids)
+            else None
+        )
         if evidence is None:
             return replace(
                 response, content=UNSUPPORTED_ANSWER, cited_fact_ids=(), evidence=()
@@ -285,7 +290,8 @@ def invoke_candidate_chat(*, facts: list[dict], question: str, history: list[str
                         "Cite only IDs present in verified_candidate_facts and only when "
                         "they support your answer. For unsupported requests return "
                         '{"answer":"I do not have verified information on that topic.",'
-                        '"fact_ids":[]}. Never reveal private document references."
+                        '"fact_ids":[]}. '
+                        "Never reveal private document references."
                     ),
                 },
                 {"role": "user", "content": payload},
