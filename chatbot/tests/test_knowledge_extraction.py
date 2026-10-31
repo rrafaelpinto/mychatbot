@@ -63,8 +63,7 @@ def processed_document(published_candidate):
         document_type=CandidateDocument.DocumentType.RESUME,
         original_filename="synthetic.docx",
         detected_content_type=(
-            "application/vnd.openxmlformats-officedocument."
-            "wordprocessingml.document"
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ),
         size_bytes=512,
         processing_status=CandidateDocument.ProcessingStatus.PROCESSED,
@@ -392,7 +391,9 @@ def test_langchain_extraction_pipeline_validates_pydantic_and_usage(settings):
 def test_langchain_rejects_invalid_provider_response(settings):
     settings.OPENAI_API_KEY = "synthetic-key"
     completion = SimpleNamespace(
-        choices=[SimpleNamespace(message=SimpleNamespace(content='{"facts":"not a list"}'))],
+        choices=[
+            SimpleNamespace(message=SimpleNamespace(content='{"facts":"not a list"}'))
+        ],
         usage=None,
         id="bad-response",
     )

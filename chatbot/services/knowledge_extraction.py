@@ -83,7 +83,11 @@ def _begin_run(document, fingerprint):
             run.error_code = ""
             run.save(
                 update_fields=[
-                    "attempts", "status", "started_at", "completed_at", "error_code"
+                    "attempts",
+                    "status",
+                    "started_at",
+                    "completed_at",
+                    "error_code",
                 ]
             )
         return run, False
@@ -131,9 +135,12 @@ def extract_candidate_facts(*, document, candidate, initiated_by):
     source = _validate_document(
         document=document, candidate=candidate, initiated_by=initiated_by
     )
-    if not settings.AI_ENABLED or not get_ai_operation_policy(
-        AIUsageEvent.Operation.KNOWLEDGE_EXTRACTION
-    ).enabled:
+    if (
+        not settings.AI_ENABLED
+        or not get_ai_operation_policy(
+            AIUsageEvent.Operation.KNOWLEDGE_EXTRACTION
+        ).enabled
+    ):
         raise ExtractionUnavailable("Knowledge extraction is disabled.")
     if not settings.OPENAI_API_KEY:
         raise ExtractionUnavailable("Knowledge extraction provider is unconfigured.")
@@ -141,7 +148,9 @@ def extract_candidate_facts(*, document, candidate, initiated_by):
     fingerprint = hashlib.sha256(source.encode("utf-8")).hexdigest()
     run, completed = _begin_run(document, fingerprint)
     if completed:
-        return ExtractionOutcome(proposed_count=run.proposed_count, already_completed=True)
+        return ExtractionOutcome(
+            proposed_count=run.proposed_count, already_completed=True
+        )
 
     usage = None
     try:
@@ -150,9 +159,7 @@ def extract_candidate_facts(*, document, candidate, initiated_by):
             candidate_id=candidate.pk,
             operation=AIUsageEvent.Operation.KNOWLEDGE_EXTRACTION,
         )
-        CandidateExtractionRun.objects.filter(pk=run.pk).update(
-            last_usage_event=usage
-        )
+        CandidateExtractionRun.objects.filter(pk=run.pk).update(last_usage_event=usage)
         result = invoke_fact_extraction(source_text=source)
         facts = _validate_suggestions(result.facts, source)
 
@@ -179,9 +186,7 @@ def extract_candidate_facts(*, document, candidate, initiated_by):
             run.completed_at = timezone.now()
             run.error_code = ""
             run.save(
-                update_fields=[
-                    "status", "proposed_count", "completed_at", "error_code"
-                ]
+                update_fields=["status", "proposed_count", "completed_at", "error_code"]
             )
 
         usage.status = AIUsageEvent.Status.SUCCEEDED
@@ -218,5 +223,7 @@ def extract_candidate_facts(*, document, candidate, initiated_by):
         if isinstance(exc, KnowledgeExtractionError):
             raise
         if isinstance(exc, AIUnavailable):
-            raise ExtractionUnavailable("Knowledge extraction provider unavailable.") from exc
+            raise ExtractionUnavailable(
+                "Knowledge extraction provider unavailable."
+            ) from exc
         raise KnowledgeExtractionError("Knowledge extraction failed.") from exc

@@ -329,7 +329,6 @@ def _mark_usage_failed(usage: AIUsageEvent, error_code: str) -> None:
     usage.save(update_fields=["status", "error_code", "completed_at"])
 
 
-
 class ExtractedFactSchema(BaseModel):
     """Structured extraction output, independently checked against the source."""
 

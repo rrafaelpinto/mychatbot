@@ -13,7 +13,9 @@ class Command(BaseCommand):
     help = "Extract pending and private candidate facts with explicit AI opt-in."
 
     def add_arguments(self, parser):
-        parser.add_argument("--candidate", required=True, help="Existing candidate slug")
+        parser.add_argument(
+            "--candidate", required=True, help="Existing candidate slug"
+        )
         parser.add_argument("--document", required=True, type=int, help="Document ID")
 
     def handle(self, *args, **options):
