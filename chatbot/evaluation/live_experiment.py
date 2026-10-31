@@ -4,6 +4,7 @@ import math
 import time
 from collections import defaultdict
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 from django.conf import settings
@@ -180,9 +181,11 @@ def evaluate_live(*, dataset, provider, include_judge=True):
                 selected[name][key] = result
 
     reports = {}
+    embedding_spend = provider.budget.spent
     for name, retrieved in selected.items():
         answers = {}
         results = []
+        strategy_spend_before = provider.budget.spent
         for case in dataset["cases"]:
             key = case["question"], tuple(case.get("history", []))
             facts = retrieved[key]
@@ -258,6 +261,12 @@ def evaluate_live(*, dataset, provider, include_judge=True):
             "p95": _p95(retrieval_latencies[name]),
         }
         scored["answer_details"] = results
+        scored["responses"] = answers
+        scored["estimated_answer_and_judge_cost_usd"] = str(
+            (provider.budget.spent - strategy_spend_before).quantize(
+                Decimal("0.000001")
+            )
+        )
         reports[name] = scored
 
     return {
@@ -273,6 +282,9 @@ def evaluate_live(*, dataset, provider, include_judge=True):
         "embedding_dimensions": settings.AI_EMBEDDING_DIMENSIONS,
         "automated_judge_enabled": include_judge,
         "provider_usage": provider.budget.summary(),
+        "embedding_index_and_query_cost_usd": str(
+            embedding_spend.quantize(Decimal("0.000001"))
+        ),
         "strategies": reports,
         "production_strategy": "full_context",
         "limitations": [
