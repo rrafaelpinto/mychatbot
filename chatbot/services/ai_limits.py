@@ -5,7 +5,13 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from chatbot.models import AIProjectBudget, AIUsageEvent, CandidateProfile, GuestChatSession, GuestOrigin
+from chatbot.models import (
+    AIProjectBudget,
+    AIUsageEvent,
+    CandidateProfile,
+    GuestChatSession,
+    GuestOrigin,
+)
 from chatbot.services.ai_budget import reserve_project_budget
 
 

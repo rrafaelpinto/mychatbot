@@ -16,6 +16,11 @@ from .services.ai import (
     AIUnavailable,
     ask_candidate,
 )
+from .services.documents import (
+    DocumentProcessingError,
+    create_candidate_document,
+    process_candidate_document,
+)
 from .services.guest_chat import (
     GuestAccessDenied,
     GuestVerificationUnavailable,
@@ -23,11 +28,6 @@ from .services.guest_chat import (
     current_guest_session,
     origin_digest,
     verify_turnstile,
-)
-from .services.documents import (
-    DocumentProcessingError,
-    create_candidate_document,
-    process_candidate_document,
 )
 
 

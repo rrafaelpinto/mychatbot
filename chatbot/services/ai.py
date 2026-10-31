@@ -6,15 +6,20 @@ from django.conf import settings
 from django.utils import timezone
 from openai import OpenAI, OpenAIError
 
-from chatbot.models import AIUsageEvent, CandidateFact, CandidateProfile, GuestChatSession
+from chatbot.models import (
+    AIUsageEvent,
+    CandidateFact,
+    CandidateProfile,
+    GuestChatSession,
+)
 from chatbot.policies import can_interact_with_candidate, get_ai_operation_policy
 from chatbot.services.ai_budget import AIBudgetExceeded, settle_usage
-from chatbot.services.guest_chat import release_guest_operation
 from chatbot.services.ai_limits import (
     AIDuplicateRequest,
     AIQuotaExceeded,
     admit_ai_operation,
 )
+from chatbot.services.guest_chat import release_guest_operation
 
 
 class AIServiceError(Exception):

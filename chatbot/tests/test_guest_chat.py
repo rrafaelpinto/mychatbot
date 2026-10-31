@@ -140,9 +140,8 @@ def test_new_cookie_does_not_bypass_origin_limits(
 def test_global_guest_limit_is_independent_of_ip(
     guest_settings, published_candidate, verified_fact
 ):
-    from django.test import Client
-
     from django.conf import settings
+    from django.test import Client
 
     settings.GUEST_GLOBAL_PER_DAY = 1
     with patch("chatbot.views.verify_turnstile", return_value=True):
@@ -288,8 +287,6 @@ def test_siteverify_rejects_mismatched_metadata(guest_settings):
 def test_concurrent_requests_share_single_guest_lease(
     guest_settings, published_candidate, verified_fact
 ):
-    import threading
-
     origin = GuestOrigin.objects.create(digest="z" * 64)
     guest = GuestChatSession.objects.create(
         candidate=published_candidate,
