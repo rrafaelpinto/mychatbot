@@ -188,3 +188,16 @@ budget-capped experiment can evaluate real embeddings, model answers, citations,
 latencies, tokens and cost using synthetic facts only. See
 [paid Candidate Agent evaluation](docs/engineering/PAID_AI_EVALUATION.md).
 No paid evaluation runs automatically or changes production retrieval.
+
+## Versioned REST API and frontend roadmap
+
+Django REST Framework provides a versioned, read-only candidate API with
+OpenAPI documentation at `/api/schema/` and Swagger UI at `/api/docs/`.
+This API deliberately preserves existing Django pages and the guest-chat
+protection boundary while JWT and React are built separately.
+See [API v1](docs/engineering/REST_API.md) and the
+[Phase 4 architecture plan](docs/engineering/PHASE4_API_FRONTEND.md).
+
+The future `frontend/` React/TypeScript/Vite app will build and deploy
+independently of Django. WhiteNoise serves **only** Django's own static
+assets, not the separate React application.
