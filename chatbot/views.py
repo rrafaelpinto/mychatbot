@@ -3,8 +3,8 @@ from django.contrib import messages as django_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.http import Http404, JsonResponse
+from django.db import DatabaseError, connection, transaction
+from django.http import Http404, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CandidateFactReviewForm, CandidateProfileForm, ChatQuestionForm
@@ -38,6 +38,22 @@ from .services.guest_chat import (
     origin_digest,
     verify_turnstile,
 )
+
+
+def healthz(request):
+    """Report database availability without disclosing operational details."""
+    if request.method not in ("GET", "HEAD"):
+        return HttpResponseNotAllowed(["GET", "HEAD"])
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except DatabaseError:
+        response = HttpResponse("unavailable", status=503, content_type="text/plain")
+    else:
+        response = HttpResponse("ok", content_type="text/plain")
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @login_required

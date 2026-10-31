@@ -4,7 +4,19 @@ ResumeBot is a Django application for candidate-owned professional profiles and 
 
 > The language model is never the source of candidate truth. Only candidate-verified facts may support an AI answer.
 
-Phase 1 provides the backend, domain, security, test, and developer-tooling foundation. React, RAG, vector search, Job Description analysis, tailored resumes, and advanced agent orchestration are intentionally deferred.
+The implementation demonstrates Python 3.12, Django, PostgreSQL, scoped access
+policies, bounded anonymous LLM chat, LangChain-assisted knowledge extraction,
+human-reviewed citations, budget governance, PostgreSQL full-text search,
+pgvector experiments, and reproducible evaluations. The intended audience
+is recruiters and technical reviewers, not a high-traffic SaaS service.
+
+**Production uses full-context retrieval.** FTS and semantic pgvector retrieval
+remain benchmarked alternatives; paid live-model comparison is deferred.
+No candidate document or AI-generated fact is published automatically.
+
+For production prerequisites and operations, see the
+[deployment runbook](docs/engineering/DEPLOYMENT.md) and
+[architecture overview](docs/engineering/ARCHITECTURE.md).
 
 ## Architecture
 
@@ -23,7 +35,7 @@ Candidates start in `PENDING_APPROVAL` with a private `DRAFT`. Only an `ACTIVE` 
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- PostgreSQL 16 or another supported modern PostgreSQL release
+- PostgreSQL 16 or another supported modern PostgreSQL release with pgvector
 
 ## Setup
 
@@ -71,7 +83,10 @@ Apply formatting locally with:
 uv run ruff format .
 ```
 
-Tests use SQLite by default for speed and hermetic local execution. CI sets `TEST_WITH_POSTGRES=true` and runs the same suite against PostgreSQL. PostgreSQL remains authoritative for database behavior; add PostgreSQL-specific tests whenever constraints, locking, JSON, indexing, or query semantics matter.
+CI uses PostgreSQL with pgvector as the authoritative database environment.
+Some tests can use SQLite locally, but pgvector migrations, concurrency and
+retrieval integration require PostgreSQL. Use `TEST_WITH_POSTGRES=true`
+with a local PostgreSQL instance for complete coverage.
 
 ## Configuration
 
@@ -113,10 +128,16 @@ The main variables are documented in `.env.example`.
   current project budget counters. Monetary figures are stored in micro-USD.
   Other models fail closed until pricing/reservation support is added.
 
-Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
+Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS.
+Public registration, password reset and filesystem uploads are disabled by
+default in production. Static assets are served through WhiteNoise; user media
+requires separately configured durable storage and safe delivery. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
 HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it only after HTTPS and subdomain coverage are intentionally permanent.
 
-Public candidate images use normal media storage during development. Candidate source documents use a separate storage backend with no public URL. Production static/media delivery is a deployment concern and is not provided by Django.
+Public candidate images use normal media storage during development. Candidate
+source documents use a separate storage backend with no public URL.
+Production uses WhiteNoise for immutable static assets, **not** for user media.
+See the deployment runbook before enabling uploads.
 
 ## Candidate knowledge
 
@@ -140,7 +161,7 @@ types, and content, and must return JSON with a factual answer and supporting
 fact IDs. The backend validates every cited ID against currently approved
 facts before exposing evidence; invalid citations result in a refusal.
 This provides reference authorization, not proof of semantic faithfulness.
-The AI evaluation milestone will measure claim-level support.
+Claim-level support remains a separate evaluation limitation.
 
 Only the fact content and type are shown as evidence; source documents and
 private provenance labels remain inaccessible. Previously cited answers are

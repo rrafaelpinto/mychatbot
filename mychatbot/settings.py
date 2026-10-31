@@ -7,6 +7,7 @@ secrets or hosts are absent and enable HTTPS protections without breaking local 
 import os
 from pathlib import Path
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +72,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if IS_PRODUCTION:
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 ROOT_URLCONF = "mychatbot.urls"
 
@@ -83,6 +86,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "chatbot.context_processors.release_flags",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -104,6 +108,12 @@ DATABASES = {
         "CONN_MAX_AGE": int(os.environ.get("POSTGRES_CONN_MAX_AGE", "0")),
     }
 }
+if os.environ.get("DATABASE_URL"):
+    DATABASES["default"] = dj_database_url.parse(
+        os.environ["DATABASE_URL"],
+        conn_max_age=int(os.environ.get("POSTGRES_CONN_MAX_AGE", "0")),
+        conn_health_checks=True,
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -121,14 +131,51 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+CANDIDATE_UPLOADS_ENABLED = env_bool(
+    "CANDIDATE_UPLOADS_ENABLED", default=not IS_PRODUCTION
+)
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "deploy" / "static"
 STATICFILES_DIRS = [BASE_DIR / "mychatbot" / "static"]
+if IS_PRODUCTION:
+    STORAGES = {
+        "default": {
+            "BACKEND": (
+                "django.core.files.storage.FileSystemStorage"
+                if CANDIDATE_UPLOADS_ENABLED
+                else "chatbot.storage.DisabledPublicUploadStorage"
+            ),
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "deploy" / "media"
+MEDIA_ROOT = Path(os.environ.get("PUBLIC_MEDIA_ROOT") or BASE_DIR / "deploy" / "media")
+PUBLIC_REGISTRATION_ENABLED = env_bool(
+    "PUBLIC_REGISTRATION_ENABLED", default=not IS_PRODUCTION
+)
+PASSWORD_RESET_ENABLED = env_bool("PASSWORD_RESET_ENABLED", default=not IS_PRODUCTION)
+if (
+    IS_PRODUCTION
+    and CANDIDATE_UPLOADS_ENABLED
+    and (
+        not os.environ.get("PRIVATE_MEDIA_ROOT")
+        or not os.environ.get("PUBLIC_MEDIA_ROOT")
+        or (
+            Path(os.environ["PRIVATE_MEDIA_ROOT"]).resolve()
+            == Path(os.environ["PUBLIC_MEDIA_ROOT"]).resolve()
+        )
+    )
+):
+    raise ImproperlyConfigured(
+        "Production uploads require distinct persistent public/private media roots."
+    )
 PRIVATE_MEDIA_ROOT = Path(
-    os.environ.get("PRIVATE_MEDIA_ROOT", BASE_DIR / "private_media")
+    os.environ.get("PRIVATE_MEDIA_ROOT") or BASE_DIR / "private_media"
 )
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -199,6 +246,12 @@ GUEST_ORIGIN_PER_MINUTE = 2
 GUEST_ORIGIN_PER_DAY = 20
 GUEST_GLOBAL_PER_DAY = 50
 GUEST_CONVERSATION_RETENTION_DAYS = 7
+
+GUEST_CLEANUP_SCHEDULED = env_bool("GUEST_CLEANUP_SCHEDULED", default=False)
+if IS_PRODUCTION and GUEST_CHAT_ENABLED and not GUEST_CLEANUP_SCHEDULED:
+    raise ImproperlyConfigured(
+        "Guest chat requires an active guest session cleanup schedule."
+    )
 
 if GUEST_CHAT_ENABLED and (
     not GUEST_TURNSTILE_SITE_KEY

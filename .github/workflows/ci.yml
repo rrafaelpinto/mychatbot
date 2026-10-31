@@ -51,6 +51,9 @@ jobs:
       - name: Install locked dependencies
         run: uv sync --locked --group dev
 
+      - name: Check deploy script syntax
+        run: bash -n scripts/build.sh scripts/start.sh
+
       - name: Ruff lint
         run: uv run ruff check .
 
@@ -73,6 +76,13 @@ jobs:
 
       - name: Django system check
         run: uv run python manage.py check --settings=mychatbot.test_settings
+
+      - name: Collect production static assets
+        run: uv run python manage.py collectstatic --noinput --settings=mychatbot.settings
+        env:
+          RESUMEBOT_ENV: production
+          DJANGO_SECRET_KEY: ci-only-long-random-looking-secret-key-not-used-outside-checks-83d2a
+          DJANGO_ALLOWED_HOSTS: example.com
 
       - name: Django deployment check
         run: uv run python manage.py check --deploy --settings=mychatbot.settings

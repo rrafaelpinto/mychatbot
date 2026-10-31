@@ -102,7 +102,7 @@ class CandidateProfile(models.Model):
 
     @property
     def image_url(self) -> str:
-        if self.image:
+        if self.image and settings.CANDIDATE_UPLOADS_ENABLED:
             return self.image.url
         return "/static/img/DefaultAvatar.png"
 
