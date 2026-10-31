@@ -19,9 +19,7 @@ class CandidateProfileForm(forms.ModelForm):
         if not settings.CANDIDATE_UPLOADS_ENABLED:
             for name in ("image", "document"):
                 self.fields[name].disabled = True
-                self.fields[name].help_text = (
-                    "Uploads are unavailable until durable storage is configured."
-                )
+                self.fields[name].help_text = "Uploads require persistent storage."
 
     class Meta:
         model = CandidateProfile

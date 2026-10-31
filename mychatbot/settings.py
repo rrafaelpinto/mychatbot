@@ -157,15 +157,17 @@ MEDIA_ROOT = Path(os.environ.get("PUBLIC_MEDIA_ROOT") or BASE_DIR / "deploy" / "
 PUBLIC_REGISTRATION_ENABLED = env_bool(
     "PUBLIC_REGISTRATION_ENABLED", default=not IS_PRODUCTION
 )
-PASSWORD_RESET_ENABLED = env_bool(
-    "PASSWORD_RESET_ENABLED", default=not IS_PRODUCTION
-)
-if IS_PRODUCTION and CANDIDATE_UPLOADS_ENABLED and (
-    not os.environ.get("PRIVATE_MEDIA_ROOT")
-    or not os.environ.get("PUBLIC_MEDIA_ROOT")
-    or (
-        Path(os.environ["PRIVATE_MEDIA_ROOT"]).resolve()
-        == Path(os.environ["PUBLIC_MEDIA_ROOT"]).resolve()
+PASSWORD_RESET_ENABLED = env_bool("PASSWORD_RESET_ENABLED", default=not IS_PRODUCTION)
+if (
+    IS_PRODUCTION
+    and CANDIDATE_UPLOADS_ENABLED
+    and (
+        not os.environ.get("PRIVATE_MEDIA_ROOT")
+        or not os.environ.get("PUBLIC_MEDIA_ROOT")
+        or (
+            Path(os.environ["PRIVATE_MEDIA_ROOT"]).resolve()
+            == Path(os.environ["PUBLIC_MEDIA_ROOT"]).resolve()
+        )
     )
 ):
     raise ImproperlyConfigured(

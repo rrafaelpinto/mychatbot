@@ -17,9 +17,7 @@ urlpatterns = [
 ]
 
 if not settings.PASSWORD_RESET_ENABLED:
-    urlpatterns.insert(
-        1, path("accounts/password_reset/", disabled_password_reset)
-    )
+    urlpatterns.insert(1, path("accounts/password_reset/", disabled_password_reset))
 
 if settings.PUBLIC_REGISTRATION_ENABLED:
     urlpatterns.insert(

@@ -28,4 +28,3 @@ class DisabledPublicUploadStorage(FileSystemStorage):
 
     def _save(self, name, content):
         raise PermissionDenied("Public media uploads are disabled.")
-
