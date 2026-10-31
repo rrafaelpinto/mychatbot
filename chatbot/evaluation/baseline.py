@@ -10,7 +10,7 @@ from chatbot.services.ai import (
 )
 from chatbot.services.retrieval import FullContextRetriever
 
-KEY_RE = re.compile(r"[a-z][a-z0-9_-]{1,63}\\Z")
+KEY_RE = re.compile(r"[a-z][a-z0-9_-]{1,63}\Z")
 CASE_TYPES = {"answerable", "unanswerable", "adversarial"}
 FACT_TYPES = {"summary", "experience", "education", "skill", "project", "other"}
 STATUSES = {"pending", "verified", "rejected"}
