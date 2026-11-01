@@ -40,3 +40,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser tests without live API or AI calls
         run: npm run test:e2e
+      - name: Export documentation screenshots for review
+        run: |
+          for file in ../docs/assets/resumebot-*.jpg; do
+            echo "SCREENSHOT_START $(basename "$file")"
+            base64 "$file"
+            echo "SCREENSHOT_END"
+          done

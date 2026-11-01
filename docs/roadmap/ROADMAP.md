@@ -129,11 +129,12 @@ portfolio demo with uploads and registration disabled.
 
 ## Phase 4 — API and Frontend Modernization
 
-**Status:** In progress. API, JWT, visual prototypes, owner review,
-typed React client and protected guest chat are merged. Optional independent
-Render service configuration, production build guards and read-only deployment
-smoke checks are being added. No DNS, TLS, persistent database, Turnstile
-widget, or real-browser production flow has been provisioned or verified.
+**Status:** Application architecture and independent deployment preparation are
+implemented. API, JWT, visual foundation, owner review, typed React client,
+guest chat protections, Render Blueprint, production build guards, and read-only
+deployment checks are merged. Public portfolio presentation and representative
+professional screenshots are documented. DNS, TLS, persistent production database,
+Turnstile operation, and real-browser release validation remain unverified.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.
