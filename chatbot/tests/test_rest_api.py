@@ -167,14 +167,11 @@ def test_read_only_api_rejects_mutations_without_changing_data(
 ):
     client.force_login(published_candidate.user)
     for route in ("api-me-profile", "api-me-facts"):
-        assert (
-            client.patch(
-                reverse(route),
-                data=json.dumps({"content": "Unapproved update"}),
-                content_type="application/json",
-            ).status_code
-            == 405
-        )
+        assert client.patch(
+            reverse(route),
+            data=json.dumps({"content": "Unapproved update"}),
+            content_type="application/json",
+        ).status_code == (400 if route == "api-me-profile" else 405)
     url = reverse("api-candidate-detail", kwargs={"slug": published_candidate.slug})
     assert client.delete(url).status_code == 405
     verified_fact.refresh_from_db()

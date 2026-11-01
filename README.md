@@ -201,3 +201,15 @@ See [API v1](docs/engineering/REST_API.md) and the
 The future `frontend/` React/TypeScript/Vite app will build and deploy
 independently of Django. WhiteNoise serves **only** Django's own static
 assets, not the separate React application.
+
+## JWT API and independent frontend authentication
+
+The API supports 5-minute bearer access tokens and a rotating, revocable
+`HttpOnly` refresh cookie with CSRF protection. Django Admin continues to
+use sessions, and guest Candidate Agent access retains its Turnstile session
+and cost limits. Owner profile PATCH, fact review and authenticated chat
+reuse existing backend authorization and audit rules.
+
+For frontend integration, deployment origins, token lifecycle and the
+security threat model, see [JWT API Security](docs/engineering/JWT_API_SECURITY.md).
+No React build is bundled into Django.
