@@ -25,12 +25,12 @@ from .services.ai import (
     ask_candidate,
     public_evidence,
 )
-from .services.fact_review import fact_review_action_error
 from .services.documents import (
     DocumentProcessingError,
     create_candidate_document,
     process_candidate_document,
 )
+from .services.fact_review import fact_review_action_error
 from .services.guest_chat import (
     GuestAccessDenied,
     GuestVerificationUnavailable,

@@ -104,7 +104,9 @@ class TokenLoginView(PublicTokenView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "auth_login"
 
-    @extend_schema(request=CredentialsSerializer, responses={200: AccessTokenSerializer})
+    @extend_schema(
+        request=CredentialsSerializer, responses={200: AccessTokenSerializer}
+    )
     def post(self, request):
         serializer = CredentialsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -140,9 +142,11 @@ class TokenRefreshView(PublicTokenView):
         try:
             with transaction.atomic():
                 old = RefreshToken(raw)
-                outstanding = OutstandingToken.objects.select_for_update().filter(
-                    jti=old["jti"]
-                ).first()
+                outstanding = (
+                    OutstandingToken.objects.select_for_update()
+                    .filter(jti=old["jti"])
+                    .first()
+                )
                 if outstanding is None:
                     raise AuthenticationFailed("Refresh token is invalid.")
                 serializer = TokenRefreshSerializer(data={"refresh": raw})

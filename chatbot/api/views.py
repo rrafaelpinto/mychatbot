@@ -4,11 +4,12 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, views
 from rest_framework.exceptions import ValidationError as APIValidationError
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from chatbot.api.serializers import (
     AccountSerializer,
+    CandidateChatHistorySerializer,
     CandidateChatInputSerializer,
     CandidateChatOutputSerializer,
     FactReviewInputSerializer,
@@ -19,11 +20,20 @@ from chatbot.api.serializers import (
     PublicCandidateSerializer,
 )
 from chatbot.models import (
-    CandidateFact, CandidateFactReviewEvent, CandidateProfile, Conversation, Message,
+    CandidateFact,
+    CandidateFactReviewEvent,
+    CandidateProfile,
+    Conversation,
+    Message,
 )
 from chatbot.services.ai import (
-    AILimitExceeded, AINotAuthorized, AIRequestAlreadySubmitted,
-    AIServiceError, AIUnavailable, ask_candidate, public_evidence,
+    AILimitExceeded,
+    AINotAuthorized,
+    AIRequestAlreadySubmitted,
+    AIServiceError,
+    AIUnavailable,
+    ask_candidate,
+    public_evidence,
 )
 from chatbot.services.fact_review import fact_review_action_error
 
@@ -111,14 +121,19 @@ class OwnerFactReviewView(views.APIView):
         with transaction.atomic():
             fact = get_object_or_404(
                 CandidateFact.objects.select_for_update(),
-                pk=fact_id, candidate__user=request.user,
+                pk=fact_id,
+                candidate__user=request.user,
             )
             if fact.updated_at != serializer.validated_data["version"]:
-                return Response({"detail": "Fact changed. Reload before reviewing."}, status=409)
+                return Response(
+                    {"detail": "Fact changed. Reload before reviewing."}, status=409
+                )
             previous_status = fact.verification_status
             previous_public = fact.is_public
             error = fact_review_action_error(
-                action=action, changed=False, status=previous_status,
+                action=action,
+                changed=False,
+                status=previous_status,
                 is_public=previous_public,
             )
             if error:
@@ -172,7 +187,7 @@ class AuthenticatedCandidateChatView(views.APIView):
             CandidateProfile.objects.publicly_viewable(), slug=slug
         )
 
-    @extend_schema(responses=CandidateChatOutputSerializer(many=True))
+    @extend_schema(responses=CandidateChatHistorySerializer(many=True))
     def get(self, request, slug):
         """Return only this recruiter's messages with still-valid public evidence."""
         candidate = self._candidate(slug)
@@ -187,13 +202,15 @@ class AuthenticatedCandidateChatView(views.APIView):
                 if message.role == Message.Role.ASSISTANT and message.evidence_fact_ids:
                     evidence = public_evidence(candidate, message.evidence_fact_ids)
                     if evidence is None:
-                        content = (
-                            "This answer is no longer available because its evidence changed."
-                        )
+                        content = "This answer is no longer available because its evidence changed."
                         evidence = ()
-                history.append({
-                    "role": message.role, "content": content, "evidence": evidence,
-                })
+                history.append(
+                    {
+                        "role": message.role,
+                        "content": content,
+                        "evidence": evidence,
+                    }
+                )
         return Response(history)
 
     @extend_schema(
@@ -207,16 +224,16 @@ class AuthenticatedCandidateChatView(views.APIView):
         serializer.is_valid(raise_exception=True)
         key = request.headers.get("Idempotency-Key")
         if key is not None and (
-            not 1 <= len(key) <= 128
-            or not key.isascii()
-            or not key.isprintable()
+            not 1 <= len(key) <= 128 or not key.isascii() or not key.isprintable()
         ):
             raise APIValidationError({"idempotency_key": "Invalid idempotency key."})
         question = serializer.validated_data["question"]
         try:
             answer = ask_candidate(
-                candidate=candidate, initiated_by=request.user,
-                question=question, idempotency_key=key,
+                candidate=candidate,
+                initiated_by=request.user,
+                question=question,
+                idempotency_key=key,
             )
         except AINotAuthorized:
             return Response({"detail": "Not found."}, status=404)
@@ -234,12 +251,18 @@ class AuthenticatedCandidateChatView(views.APIView):
         conversation, _ = Conversation.objects.get_or_create(
             candidate=candidate, recruiter=request.user
         )
-        Message.objects.bulk_create([
-            Message(conversation=conversation, role=Message.Role.USER, content=question),
-            Message(
-                conversation=conversation, role=Message.Role.ASSISTANT,
-                content=answer.content, evidence_fact_ids=list(answer.cited_fact_ids),
-            ),
-        ])
+        Message.objects.bulk_create(
+            [
+                Message(
+                    conversation=conversation, role=Message.Role.USER, content=question
+                ),
+                Message(
+                    conversation=conversation,
+                    role=Message.Role.ASSISTANT,
+                    content=answer.content,
+                    evidence_fact_ids=list(answer.cited_fact_ids),
+                ),
+            ]
+        )
         conversation.save(update_fields=["updated_at"])
         return Response({"response": answer.content, "evidence": answer.evidence})
