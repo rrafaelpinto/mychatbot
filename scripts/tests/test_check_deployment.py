@@ -96,21 +96,31 @@ def fake_responses(allowed_headers="content-type,x-csrftoken,idempotency-key"):
                 },
             )
         if request.get_method() == "OPTIONS":
-            return Reply(request, status=204, headers={
-                "Access-Control-Allow-Origin": "https://app.example.test",
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Allow-Headers": allowed_headers,
-            })
+            return Reply(
+                request,
+                status=204,
+                headers={
+                    "Access-Control-Allow-Origin": "https://app.example.test",
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Allow-Headers": allowed_headers,
+                },
+            )
         if url.endswith("/api/v1/candidates/"):
             return Reply(
                 request, content=b'{"count":0,"results":[],"next":null,"previous":null}'
             )
         if url.endswith("/alex/guest-chat/"):
-            return Reply(request, content=json.dumps({
-                "enabled": False,
-                "guest_verified": False,
-                "history": [],
-            }).encode(), headers={"Cache-Control": "no-store"})
+            return Reply(
+                request,
+                content=json.dumps(
+                    {
+                        "enabled": False,
+                        "guest_verified": False,
+                        "history": [],
+                    }
+                ).encode(),
+                headers={"Cache-Control": "no-store"},
+            )
         raise AssertionError(f"Unexpected request: {request.get_method()} {url}")
 
     return respond, calls

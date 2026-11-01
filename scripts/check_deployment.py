@@ -67,11 +67,11 @@ def read_json(url, *, headers=None):
         raise DeploymentCheckError(f"{urlsplit(url).path}: invalid JSON.") from exc
 
 
-def check_deployment(*, api_origin, frontend_origin, candidate=None, allow_local_http=False):
+def check_deployment(
+    *, api_origin, frontend_origin, candidate=None, allow_local_http=False
+):
     api = validate_origin(api_origin, allow_local_http=allow_local_http)
-    frontend = validate_origin(
-        frontend_origin, allow_local_http=allow_local_http
-    )
+    frontend = validate_origin(frontend_origin, allow_local_http=allow_local_http)
     if api == frontend:
         raise DeploymentCheckError("Frontend and API must use distinct origins.")
 
@@ -83,9 +83,7 @@ def check_deployment(*, api_origin, frontend_origin, candidate=None, allow_local
         raise DeploymentCheckError("Backend database health check did not return ok.")
 
     origin_headers = {"Origin": frontend}
-    csrf, csrf_headers = read_json(
-        api + "/api/v1/auth/csrf/", headers=origin_headers
-    )
+    csrf, csrf_headers = read_json(api + "/api/v1/auth/csrf/", headers=origin_headers)
     if not isinstance(csrf, dict) or not csrf.get("csrf_token"):
         raise DeploymentCheckError("CSRF bootstrap did not return a token.")
     if csrf_headers.get("Cache-Control") != "no-store":
@@ -121,15 +119,17 @@ def check_deployment(*, api_origin, frontend_origin, candidate=None, allow_local
         for header in cors.get("Access-Control-Allow-Headers", "").split(",")
     }
     if not {"content-type", "x-csrftoken", "idempotency-key"} <= allowed:
-        raise DeploymentCheckError("Guest POST preflight does not allow required headers.")
+        raise DeploymentCheckError(
+            "Guest POST preflight does not allow required headers."
+        )
 
-    candidates, _ = read_json(
-        api + "/api/v1/candidates/", headers=origin_headers
-    )
+    candidates, _ = read_json(api + "/api/v1/candidates/", headers=origin_headers)
     if not isinstance(candidates, dict) or not isinstance(
         candidates.get("results"), list
     ):
-        raise DeploymentCheckError("Public candidates endpoint returned an invalid page.")
+        raise DeploymentCheckError(
+            "Public candidates endpoint returned an invalid page."
+        )
 
     if candidate:
         if not candidate.isascii() or not all(
@@ -140,9 +140,7 @@ def check_deployment(*, api_origin, frontend_origin, candidate=None, allow_local
             api + "/api/v1/candidates/" + quote(candidate) + "/guest-chat/",
             headers=origin_headers,
         )
-        if not isinstance(status, dict) or not isinstance(
-            status.get("enabled"), bool
-        ):
+        if not isinstance(status, dict) or not isinstance(status.get("enabled"), bool):
             raise DeploymentCheckError("Guest status contract is invalid.")
         if status.get("guest_verified") or status.get("history") != []:
             raise DeploymentCheckError(
