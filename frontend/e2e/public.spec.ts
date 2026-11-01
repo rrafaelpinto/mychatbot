@@ -34,17 +34,68 @@ test("lists only API-provided profiles and displays public evidence", async ({ p
   await expect(page.getByText("private-documents-test-marker")).toHaveCount(0);
 });
 
-test("keeps guest chat separate from authenticated REST chat", async ({ page }) => {
-  const paidRequests: string[] = [];
-  page.on("request", request => {
-    if (request.url().includes("/chat/") && request.method() === "POST") paidRequests.push(request.url());
+test("guest chat uses CSRF, Turnstile and the existing session without JWT", async ({ page }) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Headers": "Content-Type, X-CSRFToken, Authorization, Idempotency-Key",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  };
+  let verified = false;
+  let remaining = 2;
+  let submits = 0;
+  await page.route("https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit", route =>
+    route.fulfill({ contentType: "application/javascript", body:
+      'window.turnstile = { render: (_node, options) => { options.callback("verified-token"); return "widget"; }, remove: () => {} };' }));
+  await page.route("http://127.0.0.1:8000/api/v1/candidates/alex/guest-chat/", route => {
+    if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    if (route.request().method() === "GET") return route.fulfill({ headers, json: {
+      enabled: true, guest_verified: verified, turnstile_site_key: verified ? "" : "site-test",
+      remaining: verified ? remaining : null, history: [],
+    } });
+    const request = route.request();
+    const body = request.postDataJSON();
+    expect(request.headers()["x-csrftoken"]).toBe("test");
+    expect(request.headers()["idempotency-key"]).toBeTruthy();
+    expect(request.headers().authorization).toBeUndefined();
+    expect(body.turnstile_token).toBe(verified ? "" : "verified-token");
+    expect(body.question).toBeTruthy();
+    submits += 1;
+    verified = true;
+    remaining -= 1;
+    return route.fulfill({ headers, json: {
+      response: "Published skills only",
+      evidence: [{ id: 3, fact_type: "skill", content: "Approved Python experience" }],
+      guest_verified: true, remaining,
+    } });
   });
   await page.goto("/#/agent/alex");
-  await expect(page.getByText("Sign in to ask a question")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open limited guest demo" })).toHaveAttribute("href", "http://127.0.0.1:8000/chat/alex/");
-  expect(paidRequests).toEqual([]);
+  await expect(page.getByText("Verify once to begin a limited guest session.")).toBeVisible();
+  await page.getByLabel("Professional question").fill("What experience does Alex have?");
+  expect(submits).toBe(0);
+  await page.getByRole("button", { name: "Send guest question" }).click();
+  await expect(page.getByText("Published skills only")).toBeVisible();
+  await expect(page.getByText("1 guest questions remaining")).toBeVisible();
+  await page.getByLabel("Professional question").fill("Which skills are verified?");
+  await page.getByRole("button", { name: "Send guest question" }).click();
+  await expect(page.getByText("0 guest questions remaining")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Send guest question" })).toBeDisabled();
+  expect(submits).toBe(2);
 });
 
+test("does not render a paid guest composer when backend disables guest chat", async ({ page }) => {
+  await page.route("http://127.0.0.1:8000/api/v1/candidates/alex/guest-chat/", route =>
+    route.fulfill({ headers: {
+      "Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+      "Access-Control-Allow-Credentials": "true",
+    }, json: {
+      enabled: false, guest_verified: false, turnstile_site_key: "", remaining: null, history: [],
+    } }));
+  await page.goto("/#/agent/alex");
+  await expect(page.getByText("Guest conversation is unavailable")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Send guest question" })).toHaveCount(0);
+  await expect(page.getByText("Sign in to use your account")).toBeVisible();
+});
 
 test("authenticates with JWT and displays evidence-backed API chat", async ({ page }) => {
   const headers = {
