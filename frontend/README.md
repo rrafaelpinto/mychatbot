@@ -42,7 +42,8 @@ types to the application in the next integration slice.
 
 ## Scope of this slice
 
-The public profile, discovery and JWT-authenticated chat UI are API-backed.
-Owner editing/review UI, schema-generated type consumption, full deployment
+The public profile, discovery, JWT-authenticated chat, owner profile editor
+and fact review/visibility controls are API-backed.
+Schema-generated type consumption, full deployment
 acceptance, and the anonymous API guest migration remain follow-up work under
 issue #32. This is **not** a production launch.

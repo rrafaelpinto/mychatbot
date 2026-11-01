@@ -1,4 +1,4 @@
-import type { CandidateDetail, CandidateSummary, ChatAnswer, ChatMessage, Page, TokenResponse } from "./types";
+import type { CandidateDetail, CandidateSummary, ChatAnswer, ChatMessage, OwnerFact, OwnerProfile, OwnerProfileUpdate, Page, ReviewAction, TokenResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -120,6 +120,24 @@ export class ApiClient {
   ask(slug: string, question: string, key: string): Promise<ChatAnswer> {
     return this.send("/api/v1/candidates/" + encodeURIComponent(slug) + "/chat/", {
       method: "POST", auth: true, key, body: { question },
+    });
+  }
+
+  ownerProfile(): Promise<OwnerProfile> {
+    return this.send("/api/v1/me/profile/", { auth: true });
+  }
+
+  updateOwnerProfile(changes: OwnerProfileUpdate): Promise<OwnerProfile> {
+    return this.send("/api/v1/me/profile/", { auth: true, method: "PATCH", body: changes });
+  }
+
+  ownerFacts(page = 1): Promise<Page<OwnerFact>> {
+    return this.send("/api/v1/me/facts/?page=" + page, { auth: true });
+  }
+
+  reviewFact(id: number, action: ReviewAction, version: string): Promise<OwnerFact> {
+    return this.send("/api/v1/me/facts/" + id + "/review/", {
+      auth: true, method: "POST", body: { action, version },
     });
   }
 
