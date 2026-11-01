@@ -37,6 +37,8 @@ jobs:
           git add docs/assets/resumebot-*.jpg
           if ! git diff --cached --quiet; then
             git commit -m "Refresh README screenshots"
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Upload visual review files
