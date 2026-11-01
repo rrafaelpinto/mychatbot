@@ -83,6 +83,14 @@ test("capture the public profile and evidence-backed Candidate Agent for documen
   const outputDir = join(process.cwd(), "..", "docs", "assets");
   mkdirSync(outputDir, { recursive: true });
 
+  await page.goto("/#/");
+  await expect(page.getByRole("heading", { name: /engineer behind the code/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ask about my experience/i })).toBeVisible();
+  await page.screenshot({
+    path: join(outputDir, "resumebot-home.jpg"),
+    type: "jpeg", quality: 85, fullPage: true, animations: "disabled",
+  });
+
   await page.goto(`/#/profile/${slug}`);
   await expect(page.getByRole("heading", { name: "Rafael Pinto." })).toBeVisible();
   await expect(page.getByText("I work with Django ORM and PostgreSQL access patterns")).toBeVisible();
@@ -99,6 +107,16 @@ test("capture the public profile and evidence-backed Candidate Agent for documen
   await page.addStyleTag({ content: ".conversation-scroll { max-height: none !important; overflow: visible !important; }" });
   await page.screenshot({
     path: join(outputDir, "resumebot-candidate-agent.jpg"),
+    type: "jpeg", quality: 85, fullPage: true, animations: "disabled",
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/#/agent/${slug}`);
+  await expect(page.getByText(questions[2].answer)).toBeVisible();
+  await page.addStyleTag({ content: ".conversation-scroll { max-height: none !important; overflow: visible !important; }" });
+  const width = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(width).toBeLessThanOrEqual(390);
+  await page.screenshot({
+    path: join(outputDir, "resumebot-candidate-agent-mobile.jpg"),
     type: "jpeg", quality: 85, fullPage: true, animations: "disabled",
   });
 });

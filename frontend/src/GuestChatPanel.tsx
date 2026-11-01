@@ -102,6 +102,11 @@ export function GuestChatPanel({ slug, onLogin }: { slug: string; onLogin: () =>
         <p className="guest-counter" role="status">
           {status.guest_verified ? String(status.remaining ?? 0) + " guest questions remaining" : "Verify once to begin a limited guest session."}
         </p>
+        <div className="guest-prompts" aria-label="Suggested questions">
+          {["How do you use Django and DRF?", "What is your PostgreSQL experience?", "How do you use AI in development?"].map(suggestion =>
+            <button type="button" key={suggestion} disabled={busy || status.remaining === 0}
+              onClick={() => { setQuestion(suggestion); document.getElementById("guest-question")?.focus(); }}>{suggestion}</button>)}
+        </div>
         <form className="guest-composer" onSubmit={submit}>
           <label htmlFor="guest-question">Professional question</label>
           <input id="guest-question" required maxLength={1000} value={question} disabled={busy || status.remaining === 0}
@@ -118,7 +123,7 @@ export function GuestChatPanel({ slug, onLogin }: { slug: string; onLogin: () =>
       <div className="guest-footer">
         <p>Do not share sensitive personal information. Guest conversations and usage are limited by the backend.</p>
         <button type="button" onClick={() => void reload()} disabled={busy}>Reload conversation</button>
-        <a href={api.getBackendUrl("/chat/" + encodeURIComponent(slug) + "/")}>Django guest demo</a>
+
       </div>
       <details className="guest-signin"><summary>Sign in to use your account</summary>
         <AuthLogin onLogin={onLogin} />

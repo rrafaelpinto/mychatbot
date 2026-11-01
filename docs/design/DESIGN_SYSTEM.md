@@ -4,6 +4,16 @@
 The original review artifact remains a **standalone fictional prototype**,
 not a live product feature or deployed frontend.
 
+## Current React direction (November 2026)
+
+The deployed frontend code under `frontend/src/` now uses a **recruiter-first engineering portfolio** composition. The historical Phase 4 prototype and its token table below remain design references, not the current React color values.
+
+The current public landing foregrounds the featured professional, their published summary, and a direct Candidate Agent action. Profile and Agent pages prioritize readable professional information and actual API-backed conversations instead of a product brochure. All answer evidence and publishing rules remain server-controlled.
+
+The React CSS applies current light/dark semantic tokens in `frontend/src/styles.css`: a neutral blue-gray canvas, deep ink typography, restrained blue primary actions, 16px base body text, and consistent focus affordances. It retains the original spacing and reusable component semantics. This is a design refinement, not a new component library.
+
+Reviews follow `docs/engineering/UI_UX_WORKFLOW.md`. Generated README images are real Playwright captures of React routes at desktop and mobile widths. The candidate answers used for documentation are deterministic representations of approved professional experience, not live paid API calls.
+
 ## Direction and rationale
 
 **Professional Minimal:** warm neutral canvas, deep ink typography and

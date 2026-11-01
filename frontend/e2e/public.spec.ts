@@ -27,8 +27,9 @@ test.beforeEach(async ({ page }) => {
 
 test("lists only API-provided profiles and displays public evidence", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Meet the candidates." })).toBeVisible();
-  await page.getByRole("link", { name: "View profile" }).click();
+  await expect(page.getByRole("heading", { name: /engineer behind the code/i })).toBeVisible();
+  await expect(page.getByText("Alex Example")).toBeVisible();
+  await page.getByRole("link", { name: "View professional profile", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Alex Example." })).toBeVisible();
   await expect(page.getByText("Approved Python experience")).toBeVisible();
   await expect(page.getByText("private-documents-test-marker")).toHaveCount(0);
