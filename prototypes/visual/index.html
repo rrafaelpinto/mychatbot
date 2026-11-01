@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ResumeBot visual prototype. Fictional professional profiles with evidence-led answers.">
+  <meta name="color-scheme" content="light dark">
+  <title>ResumeBot | Evidence-led professional profiles</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./prototype.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="preview-ribbon"><span class="preview-dot" aria-hidden="true"></span> Design preview <span class="ribbon-divider" aria-hidden="true"></span> Fictional content, no live AI</div>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="ResumeBot, homepage">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" fill="none"><rect x="5" y="5" width="26" height="26" rx="9" stroke="currentColor" stroke-width="1.7"/><path d="m11 18 5 5 9-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>resumebot<span class="brand-period">.</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Prototype pages">
+        <a href="#home" data-nav="home" aria-current="page">Overview</a>
+        <a href="#profile" data-nav="profile">Sample profile</a>
+        <a href="#agent" data-nav="agent">Candidate Agent</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch to dark theme" title="Switch theme">
+          <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.5 14a8.6 8.6 0 0 1-10.4-10.4 8.6 8.6 0 1 0 10.4 10.4Z"/></svg>
+        </button>
+        <a class="header-cta" href="#agent">Explore agent <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="view-home" class="view" aria-labelledby="home-title">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> A more trustworthy way to tell your story</div>
+            <h1 id="home-title">Your experience.<br><em>Nothing invented.</em></h1>
+            <p class="hero-description">A professional profile you control, paired with an AI assistant that answers from facts you have actually approved.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#profile">Explore a profile <span aria-hidden="true">↗</span></a>
+              <a class="button button-secondary" href="#agent">See the agent in action <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="hero-caption"><span class="small-check" aria-hidden="true">✓</span> Candidate-approved facts only <span class="caption-separator" aria-hidden="true"></span> Visible evidence, not guesswork</div>
+          </div>
+          <div class="hero-art" aria-label="Illustration of a fictional candidate profile and verified AI answer">
+            <div class="art-pattern" aria-hidden="true"></div>
+            <div class="art-profile">
+              <div class="art-profile-top">
+                <span class="tiny-label">PROFILE / 001</span>
+                <span class="mini-status"><span class="status-dot" aria-hidden="true"></span> Published</span>
+              </div>
+              <div class="art-person">
+                <div class="portrait portrait-mini" aria-hidden="true">AM</div>
+                <div><strong>Alex Morgan</strong><span>Senior Backend Engineer</span></div>
+              </div>
+              <div class="art-divider"></div>
+              <div class="art-tags"><span>Python</span><span>Django</span><span>PostgreSQL</span></div>
+              <div class="art-profile-bottom"><span>Professional facts</span><strong>Verified for sharing <span aria-hidden="true">↗</span></strong></div>
+            </div>
+            <div class="art-answer">
+              <div class="art-answer-title"><span class="answer-glyph" aria-hidden="true">✦</span><strong>Candidate Agent</strong><span class="tiny-label">ANSWER / 001</span></div>
+              <p>“Alex builds reliable backend systems with Python and Django, with a focus on API design and data integrity.”</p>
+              <div class="art-evidence"><span class="small-check" aria-hidden="true">✓</span> Supported by 2 verified facts</div>
+            </div>
+            <div class="art-floating-tag"><span class="floating-symbol" aria-hidden="true">✓</span> Evidence first</div>
+          </div>
+        </div>
+
+        <div class="trust-strip" aria-label="Product principles">
+          <div><span class="trust-number">01</span><strong>Candidate owned</strong><span>Control what is published</span></div>
+          <div><span class="trust-number">02</span><strong>Evidence grounded</strong><span>Answers link back to facts</span></div>
+          <div><span class="trust-number">03</span><strong>Privacy by design</strong><span>Private documents stay private</span></div>
+        </div>
+
+        <section class="section-block" aria-labelledby="how-heading">
+          <div class="section-heading"><div><div class="eyebrow">HOW IT WORKS</div><h2 id="how-heading">A clearer picture of what you bring.</h2></div><p>Make the signal easier to find, without losing control of the source.</p></div>
+          <div class="feature-grid">
+            <article class="feature-card"><span class="feature-icon" aria-hidden="true">01</span><h3>Build your profile</h3><p>A focused overview of your work, skills and experience. Nothing is public by accident.</p><span class="feature-foot">PROFILE & PRIVACY</span></article>
+            <article class="feature-card"><span class="feature-icon" aria-hidden="true">02</span><h3>Review your facts</h3><p>Choose which professional claims can support answers. Keep raw documents private.</p><span class="feature-foot">VERIFIED KNOWLEDGE</span></article>
+            <article class="feature-card"><span class="feature-icon" aria-hidden="true">03</span><h3>Start a conversation</h3><p>Recruiters ask questions and see the evidence behind the responses.</p><span class="feature-foot">CANDIDATE AGENT</span></article>
+          </div>
+        </section>
+
+        <section class="bottom-banner"><div><span class="banner-label">A DIFFERENT KIND OF AI PROFILE</span><h2>Less hype. More signal.</h2><p>Take a closer look at a fictional candidate and explore the experience.</p></div><a href="#profile" class="button button-light">View sample profile <span aria-hidden="true">↗</span></a></section>
+      </section>
+
+      <section id="view-profile" class="view" aria-labelledby="profile-title" hidden>
+        <div class="page-topline"><div class="breadcrumbs"><a href="#home">Overview</a><span aria-hidden="true">/</span> Sample profile</div><span class="sample-label">FICTIONAL SAMPLE</span></div>
+        <div class="profile-hero">
+          <div class="profile-hero-main">
+            <div class="portrait portrait-large" aria-hidden="true">AM</div>
+            <div class="profile-heading"><div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Published professional profile</div><h1 id="profile-title">Alex Morgan<span class="name-period">.</span></h1><p>Senior Backend Engineer</p><div class="profile-tags"><span>Python</span><span>Django</span><span>PostgreSQL</span><span>API Design</span></div></div>
+          </div>
+          <div class="profile-hero-cta"><div class="small-note">Curious about this experience?</div><a class="button button-primary" href="#agent">Ask Candidate Agent <span aria-hidden="true">↗</span></a><span>Answers use published facts only.</span></div>
+        </div>
+        <div class="profile-layout">
+          <div class="profile-content">
+            <section class="profile-section" aria-labelledby="about-title"><div class="section-kicker">01 / ABOUT</div><h2 id="about-title">Thoughtful systems.<br>Reliable foundations.</h2><p>Alex is a fictional backend engineer focused on building maintainable Python services, dependable APIs and data-driven applications. This sample illustrates how approved professional information could be presented.</p><p>The emphasis is on the work, the engineering decisions and the evidence that supports each claim.</p></section>
+            <section class="profile-section evidence-section" aria-labelledby="experience-title"><div class="section-kicker">02 / VERIFIED EXPERIENCE</div><div class="title-with-status"><h2 id="experience-title">Experience that speaks for itself.</h2><span class="evidence-pill"><span class="small-check" aria-hidden="true">✓</span> Sample verified facts</span></div>
+              <div class="experience-item"><div class="experience-index">01</div><div><h3>Backend architecture & API design</h3><p>Designed REST APIs in Django, with attention to maintainability, authorization and predictable behavior.</p><div class="fact-meta"><span class="small-check" aria-hidden="true">✓</span> Fictional approved fact</div></div></div>
+              <div class="experience-item"><div class="experience-index">02</div><div><h3>Data integrity & performance</h3><p>Worked with PostgreSQL data models, query optimization and reliable transactional workflows.</p><div class="fact-meta"><span class="small-check" aria-hidden="true">✓</span> Fictional approved fact</div></div></div>
+              <div class="experience-item"><div class="experience-index">03</div><div><h3>Engineering practices</h3><p>Used automated tests, code review and CI pipelines to support safer releases.</p><div class="fact-meta"><span class="small-check" aria-hidden="true">✓</span> Fictional approved fact</div></div></div>
+            </section>
+          </div>
+          <aside class="profile-aside" aria-label="Profile facts and privacy">
+            <div class="aside-card"><div class="aside-title">At a glance <span aria-hidden="true">↗</span></div><div class="aside-stat"><span>Primary focus</span><strong>Backend development</strong></div><div class="aside-stat"><span>Core stack</span><strong>Python / Django / SQL</strong></div><div class="aside-stat"><span>Interests</span><strong>Architecture, reliability</strong></div></div>
+            <div class="aside-trust"><span class="aside-trust-icon" aria-hidden="true">✓</span><h3>Information you can trust.</h3><p>Only candidate-approved facts can appear in responses. Private documents and unreviewed content never appear here.</p><a href="#agent">See how the Agent works <span aria-hidden="true">↗</span></a></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="view-agent" class="view" aria-labelledby="agent-title" hidden>
+        <div class="page-topline"><div class="breadcrumbs"><a href="#home">Overview</a><span aria-hidden="true">/</span><a href="#profile">Alex Morgan</a><span aria-hidden="true">/</span> Candidate Agent</div><span class="sample-label">INTERACTIVE PROTOTYPE</span></div>
+        <div class="agent-page-title"><div><div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> EVIDENCE-LED CONVERSATIONS</div><h1 id="agent-title">Ask better questions.<br><em>Get grounded answers.</em></h1><p>Explore what a recruiter conversation feels like when the evidence stays visible.</p></div><div class="agent-intro-person"><div class="portrait portrait-small" aria-hidden="true">AM</div><div><strong>Alex Morgan</strong><span>Senior Backend Engineer</span></div></div></div>
+        <div class="agent-layout">
+          <section class="conversation" aria-label="Conversation preview">
+            <div class="conversation-top"><div class="conversation-icon"><span aria-hidden="true">✦</span></div><div><strong>Candidate Agent</strong><span>Grounded in Alex's approved facts</span></div><span class="demo-badge">DEMO MODE</span></div>
+            <div id="conversation-scroll" class="conversation-scroll" aria-live="polite" aria-relevant="additions text">
+              <div class="conversation-day"><span>Example conversation</span></div>
+              <div class="welcome-message"><span class="welcome-icon" aria-hidden="true">✦</span><div><strong>What would you like to know?</strong><p>Ask about experience, technical skills or engineering approach. Answers in this preview are predetermined and use fictional facts.</p></div></div>
+              <div id="conversation-messages"></div>
+              <div id="chat-status" class="chat-status" role="status" aria-live="polite"></div>
+            </div>
+            <div class="composer-area">
+              <div id="suggested-questions" class="suggested-questions" aria-label="Suggested questions">
+                <button type="button" data-question="What is Alex's backend experience?">Backend experience <span aria-hidden="true">↗</span></button>
+                <button type="button" data-question="How does Alex approach reliability?">Reliability <span aria-hidden="true">↗</span></button>
+                <button type="button" data-question="Which technologies does Alex use?">Technical stack <span aria-hidden="true">↗</span></button>
+              </div>
+              <form id="chat-form" class="composer" autocomplete="off">
+                <label class="sr-only" for="chat-input">Ask a professional question</label>
+                <input id="chat-input" type="text" maxlength="1000" placeholder="Ask about Alex's experience..." required>
+                <button id="send-message" type="submit" aria-label="Send question"><span aria-hidden="true">↑</span></button>
+              </form>
+              <div class="composer-foot"><span>Fictional preview. No live model or personal data.</span><span id="preview-remaining">3 example questions available</span></div>
+            </div>
+          </section>
+          <aside class="agent-sidebar" aria-label="Evidence and preview controls">
+            <div class="sidebar-card"><div class="sidebar-card-title"><span class="sidebar-icon" aria-hidden="true">✓</span><strong>Evidence you can inspect</strong></div><p>Every supported answer can show the candidate-approved facts behind it.</p><div class="sidebar-divider"></div><div class="sidebar-fact"><span class="small-check" aria-hidden="true">✓</span> Approved facts only</div><div class="sidebar-fact"><span class="small-check" aria-hidden="true">✓</span> No private source documents</div><div class="sidebar-fact"><span class="small-check" aria-hidden="true">✓</span> Clear unsupported-answer states</div></div>
+            <div class="sidebar-card states-card"><div class="sidebar-card-title"><strong>Preview UI states</strong><span class="mini-caption">DESIGN TOOL</span></div><label for="state-select">Simulate an interface state</label><select id="state-select"><option value="ready">Ready / normal</option><option value="loading">Loading response</option><option value="empty">No approved facts</option><option value="quota">Question limit reached</option><option value="denied">Access restricted</option><option value="unavailable">Agent unavailable</option></select><p class="sidebar-disclaimer">State previews never call an API.</p></div>
+            <a class="sidebar-profile-link" href="#profile"><span class="portrait portrait-tiny" aria-hidden="true">AM</span><span><strong>View Alex's profile</strong><small>Experience and approved facts</small></span><span aria-hidden="true">↗</span></a>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="footer-logo">resumebot<span>.</span></div><p>Professional stories, grounded in approved information.</p><span>Design prototype · Phase 4</span></footer>
+  </div>
+</body>
+</html>
