@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Phase 4 visual prototype. Tokens are implementation candidates, not live Django styles. */
+/* Approved Phase 4 design tokens adapted to the independent React frontend. */
 :root {
   color-scheme: light;
   --canvas: #faf9f6;
