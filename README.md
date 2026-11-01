@@ -1,80 +1,98 @@
 # ResumeBot
 
-ResumeBot is a Django application for candidate-owned professional profiles and a focused Candidate Agent. The core trust rule is simple:
+ResumeBot is a full-stack application for publishing candidate-controlled professional profiles and answering recruiter questions through a focused, evidence-backed Candidate Agent. Instead of improvising a biography, the agent speaks in the candidate's **first-person voice** and builds answers from professional facts the candidate has verified and explicitly made public. Each cited fact is checked again before an answer is returned.
 
-> The language model is never the source of candidate truth. Only candidate-verified facts may support an AI answer.
+The application combines a **Python/Django REST Framework backend**, **PostgreSQL**, and a separately built **React/TypeScript** frontend. It demonstrates API design, domain modeling, LLM integration, privacy boundaries, and the operational constraints of serving AI features to occasional anonymous visitors.
 
-The implementation demonstrates Python 3.12, Django, PostgreSQL, scoped access
-policies, bounded anonymous LLM chat, LangChain-assisted knowledge extraction,
-human-reviewed citations, budget governance, PostgreSQL full-text search,
-pgvector experiments, and reproducible evaluations. The intended audience
-is recruiters and technical reviewers, not a high-traffic SaaS service.
+## What it does
 
-**Production uses full-context retrieval.** FTS and semantic pgvector retrieval
-remain benchmarked alternatives; paid live-model comparison is deferred.
-No candidate document or AI-generated fact is published automatically.
+- **Public professional profiles:** published summaries and individually approved experience, skills, and project facts.
+- **Candidate Agent:** contextual recruiter Q&A, with first-person answers and inspectable supporting evidence.
+- **Owner workspace:** profile editing, fact verification, publication, withdrawal, and private provenance.
+- **Controlled AI access:** authenticated and optional Turnstile-protected guest conversations, server-side quotas, idempotency, and daily/monthly cost limits.
+- **Evidence-based retrieval:** a full-context production path with independent PostgreSQL full-text and pgvector/LangChain comparison tooling.
 
-For production prerequisites and operations, see the
-[deployment runbook](docs/engineering/DEPLOYMENT.md) for the optional
-manual two-service Render rollout and read-only smoke verification, and
-[architecture overview](docs/engineering/ARCHITECTURE.md).
+## Product walkthrough
+
+### Published professional profile
+
+A candidate's public profile exposes approved experience without revealing source documents or unpublished information.
+
+![ResumeBot public profile](docs/assets/resumebot-public-profile.jpg)
+
+### Candidate Agent
+
+Recruiters can ask about backend engineering, Django REST Framework, PostgreSQL, and applied AI. Answers use the candidate's voice and display the professional facts behind them.
+
+![ResumeBot Candidate Agent answering professional questions](docs/assets/resumebot-candidate-agent.jpg)
 
 ## Architecture
 
-The backend is a modular Django monolith backed by PostgreSQL. A separately
-built React/TypeScript application lives in [`frontend/`](frontend/) and uses
-versioned DRF/OpenAPI endpoints. It is deployed independently; Django and
-WhiteNoise do not serve the React bundle. The frontend includes public
-profiles, authenticated candidate chat and an owner-only review workspace.
+```text
+React + TypeScript + Vite (independent static frontend)
+             |
+             | Versioned REST API / OpenAPI types
+             v
+Django + Django REST Framework
+  |-- Candidate profiles, publication and authorization
+  |-- Owner-only fact review and audit
+  |-- JWT login / refresh and CSRF-protected guest sessions
+  |-- Candidate Agent and AI usage policies
+  |      |-- Fact retrieval: verified + published only
+  |      |-- Structured LLM response and evidence validation
+  |      `-- Quota, budget reservation and usage reconciliation
+  |
+  +-- PostgreSQL (profiles, facts, conversation history, AI ledger)
+            |-- Full-text search comparison
+            `-- pgvector experimental retrieval
+```
 
-The backend domain includes:
+The backend is a modular Django monolith rather than a collection of distributed services. React is deployed separately and consumes versioned DRF endpoints; **drf-spectacular/OpenAPI** generates the TypeScript API contract. Django's WhiteNoise serves its own static assets, not the React bundle.
 
-- `CandidateProfile` owns candidate lifecycle, publication, and privacy-controlled profile data.
-- `CandidateDocument` stores private raw source documents and unverified extracted text.
-- `CandidateFact` stores reviewable facts and optional source provenance.
-- `Conversation` and `Message` represent recruiter interaction history.
-- `chatbot.policies` contains reusable server-side authorization decisions.
-- `chatbot.services.ai` is the only paid provider boundary and records minimal usage metadata.
+**Python 3.12, Django, Django ORM, Django REST Framework, PostgreSQL, React, TypeScript, Vite, OpenAI APIs, LangChain, pgvector, pytest, Vitest, Playwright, and GitHub Actions** are used where they serve concrete application or engineering requirements. Celery and Redis are not required for this small deployment.
 
-Candidates start in `PENDING_APPROVAL` with a private `DRAFT`. Only an `ACTIVE` and `PUBLISHED` profile can be viewed publicly or receive Candidate Agent interactions. Platform approval/publication is currently manual through Django admin.
+## Engineering decisions
 
-## Requirements
+| Concern | Implementation |
+| --- | --- |
+| Source of truth | Candidate facts are separately verified and published; source files and extracted text remain private. |
+| Model boundary | The LLM receives only approved facts and prior questions; it returns structured answers with fact IDs that Django reauthorizes. |
+| Answer behavior | The Candidate Agent answers in the candidate's first person, with an explicit refusal when verified evidence is unavailable. |
+| Authorization | Owner actions and private records are guarded server-side; guest access has its own session and Turnstile policy. |
+| AI cost control | Quotas, request idempotency, budget reservation, token-usage reconciliation, and a global AI kill switch. |
+| Retrieval trade-offs | Full context remains the production choice; PostgreSQL FTS and LangChain/pgvector are evaluated independently. |
+| Contract quality | OpenAPI-generated TypeScript types are checked for drift in CI. |
+| Release safety | Independently buildable apps, Django deployment checks, read-only HTTP smoke checks, and deliberately disabled paid features by default. |
 
-- Python 3.12
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- PostgreSQL 16 or another supported modern PostgreSQL release with pgvector
+These controls are intentionally conservative for a portfolio application. An evidence reference is validated for access, but a citation alone is not proof that every generated sentence follows logically from its source. The evaluation process measures that limitation rather than claiming it is solved.
 
-## Setup
+## Run locally
 
-Install locked runtime and development dependencies:
+Requires Python 3.12, [uv](https://docs.astral.sh/uv/), Node.js 22+, and PostgreSQL with pgvector support.
 
 ```sh
 uv sync
-```
-
-Create a local PostgreSQL database, copy the placeholder environment file, and replace local values:
-
-```sh
-createdb resumebot
 cp .env.example .env
-set -a
-source .env
-set +a
-```
-
-The application deliberately does not auto-load `.env`; environment injection remains explicit and works the same way in deployment. Never commit `.env` or reuse credentials from repository history.
-
-Initialize the clean schema and run the server:
-
-```sh
+# Set local database credentials in .env and export the variables.
 uv run python manage.py migrate
 uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
 
-Account registration uses email activation. Development defaults to Django's console email backend, so activation links are printed to the terminal. Candidate approval and publication are separate admin-controlled states.
+In a separate terminal:
 
-## Quality commands
+```sh
+cd frontend
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Django runs at `http://localhost:8000`; the standalone frontend runs at `http://localhost:4173`. Django does not automatically read `.env`, so load those variables into the backend process before migrating or starting the server. Public registration is not required to create the initial owner account.
+
+Live AI interactions require an explicit provider key, approved public facts, enabled operation policy, and sufficient configured budgets. Public pages and the test suite work without paid API calls.
+
+## Test and validate
 
 ```sh
 uv run pytest
@@ -82,151 +100,27 @@ uv run ruff check .
 uv run ruff format --check .
 uv run python manage.py check
 uv run python manage.py makemigrations --check --dry-run
+
+npm --prefix frontend run build
+npm --prefix frontend test
+npm --prefix frontend run test:e2e
+npm --prefix frontend run test:deploy
 ```
 
-Apply formatting locally with:
+CI runs Django tests with PostgreSQL/pgvector, offline Candidate Agent evaluations, migration/deployment checks, frontend unit and browser tests, and generated OpenAPI type-drift checks. The release smoke checker uses read-only HTTP requests; it never calls a paid LLM.
 
-```sh
-uv run ruff format .
-```
+## Deployment status
 
-CI uses PostgreSQL with pgvector as the authoritative database environment.
-Some tests can use SQLite locally, but pgvector migrations, concurrency and
-retrieval integration require PostgreSQL. Use `TEST_WITH_POSTGRES=true`
-with a local PostgreSQL instance for complete coverage.
+The repository includes an **opt-in Render Blueprint** for separate Django and React services, HTTPS/cookie/CORS safeguards, and deployment instructions. It is **not a claim of a live production deployment**. A persistent PostgreSQL database, real DNS/TLS, a verified backup policy, and browser checks are still required before public release.
 
-## Configuration
+AI, guest chat, public registration, and file uploads are disabled by default in production until their operational prerequisites are met. See the [production runbook](docs/engineering/DEPLOYMENT.md) before enabling them.
 
-The main variables are documented in `.env.example`.
+## Technical documentation
 
-- `RESUMEBOT_ENV=development|production` controls environment hardening.
-- `DJANGO_SECRET_KEY` and `DJANGO_ALLOWED_HOSTS` are mandatory in production.
-- PostgreSQL uses the `POSTGRES_*` variables.
-- `PRIVATE_MEDIA_ROOT` may point to a non-public document location.
-- `OPENAI_API_KEY` enables the Candidate Agent; tests never require it.
-- `OPENAI_MODEL` and `OPENAI_TIMEOUT_SECONDS` control the current provider call.
-- `AI_ENABLED` is the global switch for paid AI operations. It defaults to true in
-  development and false in production, where it must be explicitly enabled.
-- `AI_CANDIDATE_CHAT_ENABLED` controls the named `candidate_chat` operation.
-  These switches only gate AI and do not disable public profile pages.
-- `AI_CHAT_IDENTITY_PER_MINUTE`, `AI_CHAT_IDENTITY_PER_DAY`, and
-  `AI_CHAT_CANDIDATE_PER_DAY` set admitted-request limits for the chat operation.
-  Day limits use rolling 24-hour windows. Admitted attempts count even on provider failure.
-  PostgreSQL row locks enforce limits across concurrent workers; no cache is required.
-- `AI_DAILY_BUDGET_USD` and `AI_MONTHLY_BUDGET_USD` cap reservations in UTC
-  calendar windows; both default to zero in production until explicitly configured.
-- `AI_INPUT_USD_PER_MILLION` and `AI_OUTPUT_USD_PER_MILLION` supply the
-  configured `gpt-4o-mini` price assumptions. Update them when pricing changes.
-- Each admitted operation reserves the full configured maximum token cost before
-  the provider call. Reservations are not released or adjusted in this slice;
-  confirmed provider token usage is now settled after success. Unused funds are
-  credited back to the matching UTC calendar windows; missing usage data,
-  provider failures and ambiguous outcomes retain the full reservation.
-  Reconciliation is idempotent for settled operations. Token prices are
-  snapshotted at admission, preventing later configuration changes from
-  repricing previously admitted calls. If settlement fails after a successful
-  provider response, the response remains available and the event remains
-  unsettled for operational recovery; no second provider request is made.
-- Clients may send an `Idempotency-Key` header (1–128 printable ASCII characters)
-  with chat POST requests. Reusing a key for the same identity, candidate, and
-  operation returns HTTP 409 without another paid provider call. Clients should
-  use a fresh key for each intentional request; omitted keys preserve legacy behavior.
-- Django admin exposes read-only AI usage, reserved and settled costs, and the
-  current project budget counters. Monetary figures are stored in micro-USD.
-  Other models fail closed until pricing/reservation support is added.
-
-Production mode rejects debug and enables HTTPS redirect, secure cookies, and HSTS.
-Public registration, password reset and filesystem uploads are disabled by
-default in production. Static assets are served through WhiteNoise; user media
-requires separately configured durable storage and safe delivery. Set `DJANGO_TRUST_X_FORWARDED_PROTO=true` only behind a trusted proxy that overwrites the forwarded-protocol header.
-HSTS preload remains opt-in through `DJANGO_SECURE_HSTS_PRELOAD=true`; enable it only after HTTPS and subdomain coverage are intentionally permanent.
-
-Public candidate images use normal media storage during development. Candidate
-source documents use a separate storage backend with no public URL.
-Production uses WhiteNoise for immutable static assets, **not** for user media.
-See the deployment runbook before enabling uploads.
-
-## Candidate knowledge
-
-Candidate facts are private by default, even after verification. The Candidate Agent
-uses only facts that are both verified and explicitly marked public. Source resumes
-and extracted text remain private. To prepare a candidate knowledge corpus, see
-[Safe fact import](docs/engineering/FACT_IMPORT.md). No real resume or candidate
-fact pack is committed to the repository.
-
-## Development guidance
-
-Engineering conventions and the definition of done are in [`AGENTS.md`](AGENTS.md). Product direction and phase status are in [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md), and accepted architecture decisions are under [`docs/adr/`](docs/adr/).
-
-## Contextual answers and public evidence
-
-The Candidate Agent sends a bounded list of previous recruiter questions, not
-previous model responses. Conversations are fetched from the server-side
-authenticated user or the verified guest session, never from client-supplied
-history. The model receives only verified and explicitly public fact IDs,
-types, and content, and must return JSON with a factual answer and supporting
-fact IDs. The backend validates every cited ID against currently approved
-facts before exposing evidence; invalid citations result in a refusal.
-This provides reference authorization, not proof of semantic faithfulness.
-Claim-level support remains a separate evaluation limitation.
-
-Only the fact content and type are shown as evidence; source documents and
-private provenance labels remain inaccessible. Previously cited answers are
-hidden from the rendered history if their supporting facts are withdrawn.
-
-## Anonymous demonstration access
-
-Guest chat is disabled by default. See
-[Anonymous chat operation](docs/engineering/GUEST_CHAT.md) for Turnstile setup,
-proxy trust, quotas, data retention, and the cleanup command. Existing
-registered-user conversations keep their original authorization and quotas.
-
-## AI evaluation baseline
-
-Use `uv run python manage.py evaluate_candidate_agent --fail-on-overflow` to
-run the offline, deterministic synthetic full-context baseline. See
-[AI evaluation methodology](docs/engineering/AI_EVALUATION.md) for dataset
-coverage, metrics, response replay and limitations. CI never calls the AI provider.
-
-## Controlled real-model evaluation
-
-The offline retrieval benchmark remains the CI default. An optional, explicitly
-budget-capped experiment can evaluate real embeddings, model answers, citations,
-latencies, tokens and cost using synthetic facts only. See
-[paid Candidate Agent evaluation](docs/engineering/PAID_AI_EVALUATION.md).
-No paid evaluation runs automatically or changes production retrieval.
-
-## Versioned REST API and frontend roadmap
-
-Django REST Framework provides a versioned, read-only candidate API with
-OpenAPI documentation at `/api/schema/` and Swagger UI at `/api/docs/`.
-This API deliberately preserves existing Django pages and the guest-chat
-protection boundary while JWT and React are built separately.
-See [API v1](docs/engineering/REST_API.md) and the
-[Phase 4 architecture plan](docs/engineering/PHASE4_API_FRONTEND.md).
-
-The future `frontend/` React/TypeScript/Vite app will build and deploy
-independently of Django. WhiteNoise serves **only** Django's own static
-assets, not the separate React application.
-
-## JWT API and independent frontend authentication
-
-The API supports 5-minute bearer access tokens and a rotating, revocable
-`HttpOnly` refresh cookie with CSRF protection. Django Admin continues to
-use sessions, and guest Candidate Agent access retains its Turnstile session
-and cost limits. Owner profile PATCH, fact review and authenticated chat
-reuse existing backend authorization and audit rules.
-
-For frontend integration, deployment origins, token lifecycle and the
-security threat model, see [JWT API Security](docs/engineering/JWT_API_SECURITY.md).
-No React build is bundled into Django.
-
-## Phase 4 visual prototype
-
-A standalone, responsive **fictional** design preview is available under
-[`prototypes/visual/`](prototypes/visual/). It proposes ResumeBot's
-professional identity, public profile, evidence-led Agent and UI states,
-with light/dark mode. It makes no API calls and does not replace the
-existing Django pages. See [Design system](docs/design/DESIGN_SYSTEM.md)
-and [Visual review](docs/design/VISUAL_REVIEW.md). The independently
-deployable React implementation remains a separate reviewed PR.
+- [System architecture and trust boundaries](docs/engineering/ARCHITECTURE.md)
+- [Versioned REST API](docs/engineering/REST_API.md) and [JWT API security](docs/engineering/JWT_API_SECURITY.md)
+- [Frontend development](frontend/README.md) and [UI design system](docs/design/DESIGN_SYSTEM.md)
+- [Candidate knowledge import](docs/engineering/FACT_IMPORT.md) and [anonymous chat policy](docs/engineering/GUEST_CHAT.md)
+- [Offline evaluation](docs/engineering/AI_EVALUATION.md) and [retrieval experiments](docs/engineering/PAID_AI_EVALUATION.md)
+- [Deployment and rollback](docs/engineering/DEPLOYMENT.md)
+- [Engineering roadmap](docs/roadmap/ROADMAP.md) and [architecture decisions](docs/adr/)
