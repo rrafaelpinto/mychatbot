@@ -9,7 +9,7 @@ Requires Node.js 22 or later and a running Django API on port 8000.
 
 ```sh
 cd frontend
-npm install
+npm ci
 cp .env.example .env.local
 npm run dev
 npm run build
