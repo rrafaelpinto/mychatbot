@@ -1,4 +1,4 @@
-import type { CandidateDetail, ChatAnswer, ChatMessage, OwnerFact, OwnerFactList, OwnerProfile, OwnerProfileUpdate, CandidateList, ReviewAction, TokenResponse } from "./types";
+import type { CandidateDetail, ChatAnswer, ChatMessage, GuestReply, GuestStatus, OwnerFact, OwnerFactList, OwnerProfile, OwnerProfileUpdate, CandidateList, ReviewAction, TokenResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -121,6 +121,17 @@ export class ApiClient {
     return this.send("/api/v1/candidates/" + encodeURIComponent(slug) + "/chat/", {
       method: "POST", auth: true, key, body: { question },
     });
+  }
+
+  guestStatus(slug: string): Promise<GuestStatus> {
+    return this.send("/api/v1/candidates/" + encodeURIComponent(slug) + "/guest-chat/");
+  }
+
+  async guestAsk(slug: string, question: string, turnstileToken: string, key: string): Promise<GuestReply> {
+    if (!this.csrf) await this.csrfToken();
+    return this.send("/api/v1/candidates/" + encodeURIComponent(slug) + "/guest-chat/", {
+      method: "POST", csrf: true, key, body: { question, turnstile_token: turnstileToken },
+    }, false);
   }
 
   ownerProfile(): Promise<OwnerProfile> {

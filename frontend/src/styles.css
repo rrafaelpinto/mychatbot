@@ -440,3 +440,20 @@ button:disabled { cursor: not-allowed; }
 .owner-success { color: var(--brand-ink); background: var(--brand-quiet); border-color: var(--brand); }
 @media (max-width: 850px) { .owner-grid { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .owner-card { padding: 20px; } .owner-heading { flex-direction: column; align-items: flex-start; } .owner-page { padding-top: 20px; } }
+
+/* Anonymous recruiter chat with explicit Turnstile */
+.guest-composer { display: flex; flex-direction: column; gap: 12px; }
+.guest-composer label { font-size: 12px; font-weight: 650; }
+.guest-composer input { min-height: 46px; border: 1px solid var(--line-strong); background: var(--canvas); color: var(--ink); border-radius: 9px; padding: 10px 12px; font: inherit; font-size: 14px; }
+.guest-composer button { border: 0; align-self: flex-start; }
+.guest-turnstile { min-height: 68px; }
+.guest-counter, .guest-footer { color: var(--ink-soft); font-size: 12px; }
+.guest-error { color: var(--ink); background: var(--danger-bg); padding: 12px 14px; border-radius: 8px; font-size: 13px; }
+.guest-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
+.guest-footer p { flex-basis: 100%; }
+.guest-footer button { color: var(--brand-ink); border: 0; background: transparent; padding: 0; text-decoration: underline; cursor: pointer; }
+.guest-footer a { color: var(--brand-ink); }
+.guest-signin { padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--line); }
+.guest-signin summary { color: var(--brand-ink); cursor: pointer; font-size: 13px; }
+.guest-signin .login-form { margin-top: 18px; }
+@media (max-width: 620px) { .guest-composer input { font-size: 16px; } }

@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { AuthLogin } from "./AuthLogin";
 import { OwnerDashboard } from "./OwnerDashboard";
+import { GuestChatPanel } from "./GuestChatPanel";
+import { MessageBubble } from "./MessageBubble";
 import { ApiError, api } from "./api/client";
-import type { CandidateDetail, CandidateSummary, ChatMessage, PublicFact } from "./api/types";
+import type { CandidateDetail, CandidateSummary, ChatMessage } from "./api/types";
 
 type Session = "checking" | "guest" | "authenticated";
 type Route = { page: "home" | "owner" } | { page: "profile" | "agent"; slug: string };
@@ -105,13 +106,6 @@ function PublicProfile({ slug }: { slug: string }) {
   </section>;
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
-  return <div className={"message message-" + (message.role === "user" ? "user" : "assistant")}><div className="message-body">
-    <strong className="message-label">{message.role === "user" ? "You" : "Candidate Agent"}</strong><p>{message.content}</p>
-    {message.evidence.length > 0 && <details className="evidence-details"><summary>{message.evidence.length} supporting fact(s)</summary><ul>{message.evidence.map((fact: PublicFact) => <li key={fact.id}>{fact.content}</li>)}</ul></details>}
-  </div></div>;
-}
-
 function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Session; onLogin: () => void; onLogout: () => void }) {
   const [profile, setProfile] = useState<CandidateDetail | null>(null);
   const [history, setHistory] = useState<ChatMessage[]>([]);
@@ -158,9 +152,10 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
     <div className="agent-page-title"><div><div className="eyebrow">EVIDENCE-LED CONVERSATIONS</div><h1 id="agent-title">Ask better questions.<br /><em>Get grounded answers.</em></h1><p>Answers use only currently published, verified facts, subject to backend policies.</p></div><div className="agent-intro-person"><Initials name={profile.name} /><div><strong>{profile.name}</strong><span>Published profile</span></div></div></div>
     <div className="agent-layout"><section className="conversation" aria-label="Candidate conversation">
       <div className="conversation-top"><div className="conversation-icon">✓</div><div><strong>Candidate Agent</strong><span>{profile.name}'s approved facts</span></div><span className="demo-badge">LIMITED ACCESS</span></div>
+      {session === "guest" ? <GuestChatPanel slug={slug} onLogin={onLogin} /> : <>
       <div className="conversation-scroll" aria-live="polite" aria-relevant="additions text">
         {session === "checking" && <p>Checking your session…</p>}
-        {session === "guest" && <div className="welcome-message"><div><strong>Sign in to ask a question</strong><p>This API currently supports authenticated conversations. Anonymous recruiter chat remains available on the existing Django demonstration.</p><a href={api.getBackendUrl("/chat/" + encodeURIComponent(slug) + "/")} rel="noopener noreferrer">Open limited guest demo</a></div></div>}
+
         {session === "authenticated" && <><div className="conversation-day">Your conversation</div>{history.length ? history.map((message, i) => <MessageBubble message={message} key={i} />) : <div className="welcome-message"><div><strong>What would you like to know?</strong><p>Ask about this candidate's published professional experience.</p></div></div>}</>}
         {error && <Notice kind="error">{error}</Notice>}
       </div>
@@ -168,7 +163,8 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
         <div className="suggested-questions">{["What is this candidate's experience?", "Which technical skills are verified?", "What projects are documented?"].map(question => <button key={question} disabled={busy} onClick={() => setInput(question)} type="button">{question}</button>)}</div>
         <form className="composer" onSubmit={submit}><label className="sr-only" htmlFor="chat-input">Ask a professional question</label><input id="chat-input" maxLength={1000} required disabled={busy} value={input} onChange={e => setInput(e.target.value)} placeholder="Ask about professional experience…" /><button type="submit" disabled={busy || !input.trim()} aria-label="Send question">↑</button></form>
         <div className="composer-foot"><span>No guarantee of availability; backend quotas and budget apply.</span><button className="text-action" type="button" onClick={onLogout}>Sign out</button></div>
-      </div> : session === "guest" ? <div className="composer-area"><AuthLogin onLogin={onLogin} /></div> : null}
+      </div> : null}
+      </>}
     </section>
       <aside className="agent-sidebar" aria-label="Conversation evidence"><div className="sidebar-card"><div className="sidebar-card-title"><strong>Evidence you can inspect</strong></div><p>Supported answers may disclose the approved professional facts behind them.</p><div className="sidebar-divider" /><div className="sidebar-fact">Candidate-approved facts only</div><div className="sidebar-fact">No private source documents</div><div className="sidebar-fact">Server-enforced cost and access limits</div></div><a className="sidebar-profile-link" href={profileLink(slug)}>View published profile</a></aside>
     </div>

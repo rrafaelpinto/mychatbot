@@ -13,3 +13,5 @@ export type OwnerProfile = components["schemas"]["OwnerCandidate"];
 export type OwnerProfileUpdate = Required<components["schemas"]["PatchedOwnerProfileUpdateRequest"]>;
 export type OwnerFact = components["schemas"]["OwnerFact"];
 export type ReviewAction = components["schemas"]["ActionEnum"];
+export type GuestStatus = components["schemas"]["GuestStatus"];
+export type GuestReply = components["schemas"]["GuestAnswer"];
