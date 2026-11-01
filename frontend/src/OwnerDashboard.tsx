@@ -23,11 +23,7 @@ function FactActions({ fact, busy, onReview }: {
     <button key={action} type="button" disabled={busy} onClick={() => onReview(fact, action)}>{label}</button>)}</div>;
 }
 
-export function OwnerDashboard({ session, onLogin, onLogout }: {
-  session: Session;
-  onLogin: () => void;
-  onLogout: () => void;
-}) {
+function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
   const [profile, setProfile] = useState<OwnerProfile | null>(null);
   const [draft, setDraft] = useState<OwnerProfileUpdate | null>(null);
   const [facts, setFacts] = useState<OwnerFact[]>([]);
@@ -48,7 +44,6 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
     setError("");
     setMessage("");
     setPage(1);
-    if (session !== "authenticated") return () => { active = false; };
     setLoading(true);
     void Promise.all([api.ownerProfile(), api.ownerFacts(1)]).then(([owned, results]) => {
       if (!active) return;
@@ -66,10 +61,10 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
         ? "No candidate profile belongs to this account." : "Unable to load your private profile.");
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [session]);
+  }, []);
 
   useEffect(() => {
-    if (session !== "authenticated" || page === 1) return;
+    if (page === 1) return;
     let active = true;
     setLoading(true);
     void api.ownerFacts(page).then(results => {
@@ -81,7 +76,7 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
     }).catch(() => { if (active) setError("Unable to load this page of facts."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [page, session]);
+  }, [page]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,13 +117,6 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
       }
     } finally { setReviewing(null); }
   }
-
-  if (session === "checking") return <p role="status">Checking your session…</p>;
-  if (session === "guest") return <section className="owner-page">
-    <div className="eyebrow">PRIVATE WORKSPACE</div>
-    <AuthLogin heading="Manage your professional profile" onLogin={onLogin} />
-    <p>Only the profile owner can view or change unpublished facts.</p>
-  </section>;
 
   return <section className="owner-page" aria-labelledby="owner-title">
     <div className="page-topline"><div className="breadcrumbs"><a href="#/">Overview</a><span>/</span> My workspace</div><span className="sample-label">OWNER ONLY</span></div>
@@ -187,4 +175,19 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
       </section>
     </div>}
   </section>;
+}
+
+export function OwnerDashboard({ session, onLogin, onLogout }: {
+  session: Session;
+  onLogin: () => void;
+  onLogout: () => void;
+}) {
+  if (session === "checking") return <p role="status">Checking your session…</p>;
+  if (session === "guest") return <section className="owner-page">
+    <div className="eyebrow">PRIVATE WORKSPACE</div>
+    <AuthLogin heading="Manage your professional profile" onLogin={onLogin} />
+    <p>Only the profile owner can view or change unpublished facts.</p>
+  </section>;
+
+  return <OwnerWorkspace onLogout={onLogout} />;
 }
