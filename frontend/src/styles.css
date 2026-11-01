@@ -237,10 +237,10 @@ html[data-theme="dark"] .hero-art { background: #20443c; }
 .message { display: flex; margin: 19px 0; gap: 10px; max-width: 100%; }
 .message-user { justify-content: flex-end; }
 .message-body { max-width: 82%; padding: 13px 15px; border-radius: 13px; color: var(--ink); background: var(--surface-alt); }
-.message-user .message-body { background: #176b5e; color: #fff; border-radius: 13px 13px 3px 13px; }
+.message-user .message-body { background: #304f9e; color: #fff; border-radius: 13px 13px 3px 13px; }
 .message-assistant .message-body { border: 1px solid var(--line); background: var(--surface); border-radius: 13px 13px 13px 3px; }
 .message-label { font-size: 10px; font-weight: 770; opacity: .82; display: block; margin-bottom: 6px; }
-.message-body p { font-size: 12px; line-height: 1.8; margin: 0; }
+.message-body p { font-size: 14px; line-height: 1.7; margin: 0; }
 .evidence-details { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 11px; }
 .evidence-details summary { font-size: 11px; font-weight: 750; color: var(--brand-ink); cursor: pointer; list-style: none; }
 .evidence-details summary::before { content: "+ "; font-size: 16px; }
@@ -533,8 +533,8 @@ h1 em, h2 em { font-family: inherit; font-weight: inherit; font-style: normal; l
 .featured-bottom { border-top: 1px solid var(--line); padding-top: 19px; font-size: 12px; color: var(--ink-muted); }
 .featured-bottom a { color: var(--brand-ink); font-size: 13px; font-weight: 740; white-space: nowrap; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .portfolio-paths { padding: 38px 0 65px; border-top: 1px solid var(--line); }
-.path-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
-.path-heading h2 { font-size: clamp(26px, 3vw, 35px); margin: 0; }
+.path-heading { display: block; margin-bottom: 24px; }
+.path-heading h2 { font-size: clamp(26px, 3vw, 35px); margin: 10px 0 0; }
 .path-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .path-card { display: grid; align-content: start; min-width: 0; gap: 13px; padding: 28px 30px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); text-decoration: none; transition: box-shadow .15s, border-color .15s; }
 .path-card:hover, .path-card:focus-visible { border-color: var(--brand); box-shadow: var(--shadow); }
