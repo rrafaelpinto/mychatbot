@@ -337,9 +337,7 @@ export interface components {
             readonly image_url: string;
             readonly linkedin: string | null;
             readonly contact_email: string | null;
-            readonly facts: {
-                [key: string]: unknown;
-            }[];
+            readonly facts: components["schemas"]["PublicFact"][];
         };
         /** @description Expose public, verified professional claims without private provenance. */
         PublicFact: {
