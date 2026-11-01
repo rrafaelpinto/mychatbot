@@ -124,6 +124,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/candidates/{slug}/guest-chat/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Keep guest session, captcha, budget and evidence enforcement on Django. */
+        get: operations["v1_candidates_guest_chat_retrieve"];
+        put?: never;
+        /** @description Keep guest session, captcha, budget and evidence enforcement on Django. */
+        post: operations["v1_candidates_guest_chat_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/": {
         parameters: {
             query?: never;
@@ -256,6 +274,28 @@ export interface components {
          * @enum {string}
          */
         FactTypeEnum: "summary" | "experience" | "education" | "skill" | "project" | "other";
+        GuestAnswer: {
+            readonly response: string;
+            readonly evidence: components["schemas"]["PublicFact"][];
+            readonly guest_verified: boolean;
+            readonly remaining: number;
+        };
+        GuestChatInputRequest: {
+            question: string;
+            turnstile_token?: string;
+        };
+        GuestMessage: {
+            readonly role: string;
+            readonly content: string;
+            readonly evidence: components["schemas"]["PublicFact"][];
+        };
+        GuestStatus: {
+            readonly enabled: boolean;
+            readonly guest_verified: boolean;
+            readonly turnstile_site_key: string;
+            readonly remaining: number | null;
+            readonly history: components["schemas"]["GuestMessage"][];
+        };
         /** @description Expose owned profile controls without raw document data. */
         OwnerCandidate: {
             readonly slug: string;
@@ -542,6 +582,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CandidateChatOutput"];
+                };
+            };
+        };
+    };
+    v1_candidates_guest_chat_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestStatus"];
+                };
+            };
+        };
+    };
+    v1_candidates_guest_chat_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuestChatInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GuestChatInputRequest"];
+                "multipart/form-data": components["schemas"]["GuestChatInputRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestAnswer"];
                 };
             };
         };

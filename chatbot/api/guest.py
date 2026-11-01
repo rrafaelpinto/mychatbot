@@ -47,9 +47,7 @@ class GuestMessageSerializer(serializers.Serializer):
 class GuestStatusSerializer(serializers.Serializer):
     enabled = serializers.BooleanField(read_only=True)
     guest_verified = serializers.BooleanField(read_only=True)
-    turnstile_site_key = serializers.CharField(
-        allow_blank=True, read_only=True
-    )
+    turnstile_site_key = serializers.CharField(allow_blank=True, read_only=True)
     remaining = serializers.IntegerField(allow_null=True, read_only=True)
     history = GuestMessageSerializer(many=True, read_only=True)
 
@@ -126,7 +124,9 @@ class GuestCandidateChatView(views.APIView):
             return _no_store(Response({"detail": "Guest access denied."}, status=403))
         guest = current_guest_session(request._request, candidate, digest)
         conversation = (
-            Conversation.objects.filter(candidate=candidate, guest_session=guest).first()
+            Conversation.objects.filter(
+                candidate=candidate, guest_session=guest
+            ).first()
             if guest
             else None
         )
@@ -168,17 +168,23 @@ class GuestCandidateChatView(views.APIView):
     def post(self, request, slug):
         candidate = self._candidate(slug)
         if not settings.GUEST_CHAT_ENABLED:
-            return _no_store(Response({"detail": "Guest chat is disabled."}, status=503))
+            return _no_store(
+                Response({"detail": "Guest chat is disabled."}, status=503)
+            )
         serializer = GuestChatInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         key = request.headers.get("Idempotency-Key")
         if key is not None and (
             not 1 <= len(key) <= 128 or not key.isascii() or not key.isprintable()
         ):
-            return _no_store(Response({"detail": "Invalid idempotency key."}, status=400))
+            return _no_store(
+                Response({"detail": "Invalid idempotency key."}, status=400)
+            )
         hostname = _verified_hostname(request._request)
         if hostname is None:
-            return _no_store(Response({"detail": "Untrusted frontend origin."}, status=403))
+            return _no_store(
+                Response({"detail": "Untrusted frontend origin."}, status=403)
+            )
         try:
             digest = origin_digest(request._request)
         except GuestAccessDenied:
@@ -193,10 +199,15 @@ class GuestCandidateChatView(views.APIView):
                 )
             except GuestVerificationUnavailable:
                 return _no_store(
-                    Response({"detail": "Bot verification is temporarily unavailable."}, status=503)
+                    Response(
+                        {"detail": "Bot verification is temporarily unavailable."},
+                        status=503,
+                    )
                 )
             if not verified:
-                return _no_store(Response({"detail": "Bot verification failed."}, status=403))
+                return _no_store(
+                    Response({"detail": "Bot verification failed."}, status=403)
+                )
             try:
                 guest = create_guest_session(candidate=candidate, digest=digest)
             except GuestAccessDenied:
@@ -220,7 +231,10 @@ class GuestCandidateChatView(views.APIView):
             return _no_store(Response({"detail": str(exc)}, status=429))
         except AIUnavailable:
             return _no_store(
-                Response({"detail": "The Candidate Agent is temporarily unavailable."}, status=503)
+                Response(
+                    {"detail": "The Candidate Agent is temporarily unavailable."},
+                    status=503,
+                )
             )
         except AIServiceError as exc:
             return _no_store(Response({"detail": str(exc)}, status=409))

@@ -19,7 +19,11 @@ urlpatterns = [
         views.AuthenticatedCandidateChatView.as_view(),
         name="api-candidate-chat",
     ),
-    path("candidates/<slug:slug>/guest-chat/", GuestCandidateChatView.as_view(), name="api-candidate-guest-chat"),
+    path(
+        "candidates/<slug:slug>/guest-chat/",
+        GuestCandidateChatView.as_view(),
+        name="api-candidate-guest-chat",
+    ),
     path("candidates/", views.PublicCandidateListView.as_view(), name="api-candidates"),
     path(
         "candidates/<slug:slug>/",

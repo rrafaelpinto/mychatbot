@@ -31,7 +31,9 @@ def browser():
     return client, {"HTTP_X_CSRFTOKEN": token}
 
 
-def guest_post(client, candidate, csrf, *, token="challenge", key="request-key", origin=None):
+def guest_post(
+    client, candidate, csrf, *, token="challenge", key="request-key", origin=None
+):
     headers = {"HTTP_IDEMPOTENCY_KEY": key, **csrf}
     if origin:
         headers["HTTP_ORIGIN"] = origin
@@ -86,10 +88,16 @@ def test_guest_history_is_session_scoped_and_public_evidence_only(
                 ),
             ),
         ) as provider:
-            assert guest_post(client, published_candidate, csrf, key="one").status_code == 200
-            assert guest_post(
-                client, published_candidate, csrf, token="", key="two"
-            ).status_code == 200
+            assert (
+                guest_post(client, published_candidate, csrf, key="one").status_code
+                == 200
+            )
+            assert (
+                guest_post(
+                    client, published_candidate, csrf, token="", key="two"
+                ).status_code
+                == 200
+            )
     assert check.call_count == 1
     assert provider.call_count == 2
     assert provider.call_args.kwargs["guest_session"] is not None
@@ -130,7 +138,9 @@ def test_guest_api_uses_frontend_origin_for_turnstile_hostname(
     outsider, outsider_csrf = browser()
     with patch("chatbot.api.guest.verify_turnstile") as verify:
         rejected = guest_post(
-            outsider, published_candidate, outsider_csrf,
+            outsider,
+            published_candidate,
+            outsider_csrf,
             origin="https://attacker.example.test",
         )
     assert rejected.status_code == 403
