@@ -95,6 +95,8 @@ test("capture the public profile and evidence-backed Candidate Agent for documen
   await expect(page.getByText(questions[2].answer)).toBeVisible();
   await expect(page.getByText(questions[1].question)).toBeVisible();
   await expect(page.getByText("7 guest questions remaining")).toBeVisible();
+  // Expand the transcript for the documentation capture without changing app styles.
+  await page.addStyleTag({ content: ".conversation-scroll { max-height: none !important; overflow: visible !important; }" });
   await page.screenshot({
     path: join(outputDir, "resumebot-candidate-agent.jpg"),
     type: "jpeg", quality: 85, fullPage: true, animations: "disabled",
