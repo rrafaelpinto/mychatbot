@@ -17,7 +17,7 @@ export class ApiClient {
 
   constructor(
     private readonly base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
-    private readonly fetcher: Fetcher = fetch,
+    private readonly fetcher: Fetcher = (...args) => fetch(...args),
   ) {}
 
   private async send<T>(
