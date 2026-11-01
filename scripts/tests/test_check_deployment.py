@@ -7,8 +7,8 @@ from urllib.request import Request
 
 import pytest
 import yaml
-from scripts.check_deployment import DeploymentCheckError, check_deployment
 
+from scripts.check_deployment import DeploymentCheckError, check_deployment
 
 ROOT = Path(__file__).resolve().parents[2]
 
