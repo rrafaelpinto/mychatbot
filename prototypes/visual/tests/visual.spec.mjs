@@ -63,7 +63,7 @@ test.describe("Visual review", () => {
         await expect(page.getByText(/Alex has worked on backend services/)).toBeVisible();
         const evidence = page.getByText("2 verified sample facts");
         await evidence.click();
-        await expect(page.getByText(/Designed REST APIs in Django/)).toBeVisible();
+        await expect(page.locator("#conversation-messages").getByText(/Designed REST APIs in Django/)).toBeVisible();
         await page.screenshot({
           path: `screenshots/agent-evidence-${size.name}.png`,
           fullPage: true
@@ -94,6 +94,13 @@ test.describe("Visual review", () => {
         await expect(
           page.getByRole("button", { name: "Switch to light theme" })
         ).toHaveAttribute("aria-pressed", "true");
+        const darkAudit = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze();
+        expect(
+          darkAudit.violations,
+          JSON.stringify(darkAudit.violations, null, 2)
+        ).toEqual([]);
         await page.screenshot({
           path: `screenshots/overview-dark-${size.name}.png`,
           fullPage: true
