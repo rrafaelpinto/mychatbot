@@ -5,6 +5,7 @@ secrets or hosts are absent and enable HTTPS protections without breaking local 
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -49,6 +50,43 @@ if IS_PRODUCTION and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS is required in production")
 
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+CORS_ALLOWED_ORIGINS = env_list("API_CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+CORS_URLS_REGEX = r"^/(api/|chat/)"
+if any("*" in origin for origin in CORS_ALLOWED_ORIGINS):
+    raise ImproperlyConfigured("CORS origins must be explicit, never wildcard.")
+if IS_PRODUCTION and any(
+    not origin.startswith("https://") for origin in CORS_ALLOWED_ORIGINS
+):
+    raise ImproperlyConfigured("Production CORS origins must use HTTPS.")
+if IS_PRODUCTION and any(
+    origin not in CSRF_TRUSTED_ORIGINS for origin in CORS_ALLOWED_ORIGINS
+):
+    raise ImproperlyConfigured(
+        "Allowed frontend origins must also be in DJANGO_CSRF_TRUSTED_ORIGINS."
+    )
+
+JWT_REFRESH_COOKIE_NAME = "resumebot_refresh"
+JWT_REFRESH_COOKIE_PATH = "/api/v1/auth/"
+JWT_REFRESH_COOKIE_SECURE = IS_PRODUCTION
+JWT_REFRESH_COOKIE_SAMESITE = os.environ.get("JWT_REFRESH_COOKIE_SAMESITE", "Lax")
+if JWT_REFRESH_COOKIE_SAMESITE not in {"Lax", "Strict", "None"}:
+    raise ImproperlyConfigured("Invalid JWT refresh SameSite policy.")
+if JWT_REFRESH_COOKIE_SAMESITE == "None" and not IS_PRODUCTION:
+    raise ImproperlyConfigured("SameSite=None requires a secure production cookie.")
+CSRF_COOKIE_SAMESITE = JWT_REFRESH_COOKIE_SAMESITE
+if IS_PRODUCTION and JWT_REFRESH_COOKIE_SAMESITE == "None":
+    CSRF_COOKIE_SECURE = True
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "SIGNING_KEY": os.environ.get("JWT_SIGNING_KEY") or SECRET_KEY,
+    "UPDATE_LAST_LOGIN": False,
+}
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -58,6 +96,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
+    "corsheaders",
     "drf_spectacular",
     "django_registration",
     "crispy_forms",
@@ -66,6 +106,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -80,6 +121,7 @@ if IS_PRODUCTION:
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -90,6 +132,11 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_RATES": {
+        "auth_login": "5/min",
+        "auth_refresh": "20/min",
+        "auth_csrf": "60/min",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
