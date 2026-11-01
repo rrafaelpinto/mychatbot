@@ -7,7 +7,7 @@ design inherits the approved Phase 4 visual prototype and its semantic tokens.
 
 Requires Node.js 22 or later and a running Django API on port 8000.
 
-\`\`\`sh
+```sh
 cd frontend
 npm install
 cp .env.example .env.local
@@ -15,12 +15,12 @@ npm run dev
 npm run build
 npm test
 npm run test:e2e
-\`\`\`
+```
 
 The frontend is served on port 4173. No compiled assets are copied into Django
-or served by WhiteNoise. Deploy \`dist/\` to a static host with HTTPS. Set
-\`VITE_API_BASE_URL\` to the Django API origin at **build time** and configure
-\`API_CORS_ALLOWED_ORIGINS\` and \`DJANGO_CSRF_TRUSTED_ORIGINS\` on Django with
+or served by WhiteNoise. Deploy `dist/` to a static host with HTTPS. Set
+`VITE_API_BASE_URL` to the Django API origin at **build time** and configure
+`API_CORS_ALLOWED_ORIGINS` and `DJANGO_CSRF_TRUSTED_ORIGINS` on Django with
 that exact frontend origin. Prefer same-site subdomains so Secure host-only
 HttpOnly refresh cookies work with SameSite=Lax. Never use wildcard credentialed
 CORS and never put secrets in Vite environment variables.
@@ -35,9 +35,9 @@ Only public profile data is rendered to unauthenticated visitors. The UI treats
 all API text as plain text, without HTML injection. Public API errors,
 withdrawn evidence and model availability are backend-owned policies.
 
-\`npm run api:types\` generates an OpenAPI snapshot in
-\`src/api/schema.generated.d.ts\` from a running backend. The small typed public
-and chat contract currently lives in \`src/api/types.ts\`; wire generated
+`npm run api:types` generates an OpenAPI snapshot in
+`src/api/schema.generated.d.ts` from a running backend. The small typed public
+and chat contract currently lives in `src/api/types.ts`; wire generated
 types to the application in the next integration slice.
 
 ## Scope of this slice
