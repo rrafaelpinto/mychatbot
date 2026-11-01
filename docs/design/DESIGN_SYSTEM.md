@@ -1,8 +1,8 @@
-# ResumeBot visual identity: proposed design system
+# ResumeBot visual identity: approved design system
 
-**Status:** Proposed for visual review in Phase 4, issue #31. Not yet approved
-for the React implementation. This document describes a **standalone
-fictional prototype**, not an active product feature or deployed frontend.
+**Status:** Direction accepted in PR #35 for the Phase 4 React implementation.
+The original review artifact remains a **standalone fictional prototype**,
+not a live product feature or deployed frontend.
 
 ## Direction and rationale
 
@@ -18,7 +18,7 @@ not the fact that a model generated prose.
 
 The wordmark is lowercase "resumebot." with a check-inside-a-document
 monogram. Its current SVG is an inline prototype asset. Refine as an
-independent vector asset during React implementation if approved. Avoid
+independent vector asset during React implementation if necessary. Avoid
 brand trademarks or copyrighted illustration assets.
 
 ### Information architecture
@@ -133,7 +133,7 @@ tracking** appear in the prototype.
    mobile widths, including dark mode and the six UI state options.
 3. Run the visual browser tests, inspect their screenshots/artifacts and
    record any contrast or keyboard failures before approving the design.
-4. Only **after** explicit visual approval, implement
+4. After design approval in PR #35, implement
    [Phase 4 React frontend issue #32](https://github.com/rrafaelpinto/mychatbot/issues/32),
    using a separate `frontend/` build and standalone deployment.
 5. Reuse the versioned DRF API as data source. Replace all hardcoded

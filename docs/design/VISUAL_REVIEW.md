@@ -1,6 +1,7 @@
 # Visual prototype review checklist
 
-**Issue:** #31. **Status:** Needs visual approval before React implementation.
+**Issue:** #31. **Status:** Design direction accepted with PR #35. The
+checklist remains useful for ongoing responsive and accessibility review.
 
 ## Reviewable pages
 

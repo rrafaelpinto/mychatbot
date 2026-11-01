@@ -129,8 +129,9 @@ portfolio demo with uploads and registration disabled.
 
 ## Phase 4 — API and Frontend Modernization
 
-**Status:** In progress. API and JWT implementation merged; proposed visual
-prototypes await review. Independent React remains a separate milestone.
+**Status:** In progress. API, JWT and the approved visual prototypes are merged.
+The independently deployed React frontend is being implemented incrementally
+under issue #32; production integration remains pending.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.
