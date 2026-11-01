@@ -1,0 +1,41 @@
+name: Visual prototype review
+
+on:
+  pull_request:
+    paths:
+      - 'prototypes/visual/**'
+      - 'docs/design/**'
+      - '.github/workflows/visual.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'prototypes/visual/**'
+      - 'docs/design/**'
+      - '.github/workflows/visual.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install prototype test dependencies
+        run: npm ci --prefix prototypes/visual --no-fund --no-audit
+      - name: Install Chromium
+        run: cd prototypes/visual && npx playwright install --with-deps chromium
+      - name: Responsive and accessibility review
+        run: npm --prefix prototypes/visual test
+      - name: Upload visual review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: resumebot-visual-prototype
+          path: |
+            prototypes/visual/screenshots/
+            prototypes/visual/test-results/
+            prototypes/visual/report/
+          if-no-files-found: warn
+          retention-days: 14

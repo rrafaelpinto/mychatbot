@@ -1,0 +1,14 @@
+{
+  "name": "resumebot-visual-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:visual": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.56.0"
+  }
+}
