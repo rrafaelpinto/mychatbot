@@ -1,4 +1,4 @@
-import type { CandidateDetail, CandidateSummary, ChatAnswer, ChatMessage, OwnerFact, OwnerProfile, OwnerProfileUpdate, Page, ReviewAction, TokenResponse } from "./types";
+import type { CandidateDetail, ChatAnswer, ChatMessage, OwnerFact, OwnerFactList, OwnerProfile, OwnerProfileUpdate, CandidateList, ReviewAction, TokenResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -105,7 +105,7 @@ export class ApiClient {
     }
   }
 
-  candidates(): Promise<Page<CandidateSummary>> {
+  candidates(): Promise<CandidateList> {
     return this.send("/api/v1/candidates/");
   }
 
@@ -131,7 +131,7 @@ export class ApiClient {
     return this.send("/api/v1/me/profile/", { auth: true, method: "PATCH", body: changes });
   }
 
-  ownerFacts(page = 1): Promise<Page<OwnerFact>> {
+  ownerFacts(page = 1): Promise<OwnerFactList> {
     return this.send("/api/v1/me/facts/?page=" + page, { auth: true });
   }
 

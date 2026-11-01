@@ -35,15 +35,23 @@ Only public profile data is rendered to unauthenticated visitors. The UI treats
 all API text as plain text, without HTML injection. Public API errors,
 withdrawn evidence and model availability are backend-owned policies.
 
-`npm run api:types` generates an OpenAPI snapshot in
-`src/api/schema.generated.d.ts` from a running backend. The small typed public
-and chat contract currently lives in `src/api/types.ts`; wire generated
-types to the application in the next integration slice.
+Generate the TypeScript contract directly from Django's schema (no live backend needed):
+
+```sh
+mkdir -p .local
+uv run python manage.py spectacular --format openapi-json --file .local/openapi.json --settings=mychatbot.test_settings
+npm --prefix frontend run api:types
+```
+
+The generated `src/api/schema.generated.d.ts` file is committed, and the
+`OpenAPI Type Contract` CI job fails if it drifts from DRF. Application types
+in `src/api/types.ts` consume those schema declarations rather than
+duplicating API contracts.
 
 ## Scope of this slice
 
 The public profile, discovery, JWT-authenticated chat, owner profile editor
 and fact review/visibility controls are API-backed.
-Schema-generated type consumption, full deployment
+Full deployment
 acceptance, and the anonymous API guest migration remain follow-up work under
 issue #32. This is **not** a production launch.

@@ -1,10 +1,18 @@
-name: API Type Contract (temporary bootstrap)
+name: OpenAPI Type Contract
 
 on:
   pull_request:
     paths:
       - "frontend/**"
       - "chatbot/api/**"
+      - "mychatbot/settings.py"
+      - ".github/workflows/api-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "chatbot/api/**"
+      - "mychatbot/settings.py"
       - ".github/workflows/api-contract.yml"
 
 permissions:
@@ -28,10 +36,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: uv sync --locked --group dev
       - run: npm ci --prefix frontend --no-audit --no-fund
-      - name: Generate OpenAPI schema and TypeScript declarations
+      - name: Verify generated OpenAPI contract is up to date
         run: |
-          uv run python manage.py spectacular --format openapi-json --file /tmp/resumebot-schema.json --settings=mychatbot.test_settings
-          ./frontend/node_modules/.bin/openapi-typescript /tmp/resumebot-schema.json -o /tmp/resumebot-schema.d.ts
-          echo TYPES_BEGIN
-          base64 -w 120 /tmp/resumebot-schema.d.ts
-          echo TYPES_END
+          mkdir -p .local
+          uv run python manage.py spectacular --format openapi-json --file .local/openapi.json --settings=mychatbot.test_settings
+          npm --prefix frontend run api:types
+          git diff --exit-code -- frontend/src/api/schema.generated.d.ts
