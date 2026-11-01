@@ -52,3 +52,47 @@ it("reports backend errors without exposing internal objects", async () => {
   const client = new ApiClient("https://api.example.test", vi.fn().mockResolvedValue(json({ detail: "Not found." }, 404)));
   await expect(client.candidate("unknown")).rejects.toEqual(new ApiError(404, "Not found."));
 });
+
+
+it("uses the bearer token for owner reads and only sends safe profile fields", async () => {
+  const profile = {
+    slug: "alex", name: "Alex", professional_summary: "Backend developer",
+    linkedin: "", contact_email: "", show_linkedin: false, show_contact_email: false,
+    image_url: "", status: "active", publication_status: "published",
+  };
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(json({ csrf_token: "csrf" }))
+    .mockResolvedValueOnce(json({ access: "jwt", token_type: "Bearer", expires_in: 300 }))
+    .mockResolvedValueOnce(json(profile))
+    .mockResolvedValueOnce(json({ ...profile, professional_summary: "Updated" }));
+  const client = new ApiClient("https://api.example.test", fetcher);
+  await client.login("owner", "password");
+  expect((await client.ownerProfile()).name).toBe("Alex");
+  await client.updateOwnerProfile({
+    name: "Alex", professional_summary: "Updated", linkedin: "", contact_email: "",
+    show_linkedin: false, show_contact_email: false,
+  });
+  const patch = fetcher.mock.calls[3]![1] as RequestInit;
+  expect(patch.method).toBe("PATCH");
+  expect((patch.headers as Record<string, string>).Authorization).toBe("Bearer jwt");
+  expect(JSON.parse(patch.body as string)).toEqual({
+    name: "Alex", professional_summary: "Updated", linkedin: "", contact_email: "",
+    show_linkedin: false, show_contact_email: false,
+  });
+});
+
+it("does not retry stale review actions and sends the server-supplied version", async () => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(json({ csrf_token: "csrf" }))
+    .mockResolvedValueOnce(json({ access: "jwt", token_type: "Bearer", expires_in: 300 }))
+    .mockResolvedValueOnce(json({ detail: "Fact changed. Reload before reviewing." }, 409));
+  const client = new ApiClient("https://api.example.test", fetcher);
+  await client.login("owner", "password");
+  await expect(client.reviewFact(3, "publish", "2026-10-31T12:00:00Z")).rejects.toMatchObject({ status: 409 });
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  const options = fetcher.mock.calls[2]![1] as RequestInit;
+  expect(JSON.parse(options.body as string)).toEqual({
+    action: "publish", version: "2026-10-31T12:00:00Z",
+  });
+  expect(fetcher.mock.calls[2]![0].pathname).toBe("/api/v1/me/facts/3/review/");
+});
