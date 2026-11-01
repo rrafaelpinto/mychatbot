@@ -85,12 +85,12 @@ class CSRFTokenView(views.APIView):
 
 
 class PublicTokenView(views.APIView):
-    """Report an authentication challenge without requiring a bearer header."""
+    """Preserve HTTP 401 for auth requests with no bearer header."""
 
     authentication_classes = []
 
     def get_authenticate_header(self, request):
-        """Preserve HTTP 401 semantics for rejected cookie/credential requests."""
+        """Provide the API authentication challenge for invalid credentials."""
         return "Bearer"
 
 
@@ -104,16 +104,14 @@ class TokenLoginView(PublicTokenView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "auth_login"
 
-    @extend_schema(
-        request=CredentialsSerializer, responses={200: AccessTokenSerializer}
-    )
+    @extend_schema(request=CredentialsSerializer, responses={200: AccessTokenSerializer})
     def post(self, request):
         serializer = CredentialsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = authenticate(
             request=request._request,
             username=serializer.validated_data["username"],
-            ***"password"],
+            password=serializer.validated_data["password"],
         )
         if user is None or not user.is_active:
             raise AuthenticationFailed("Invalid credentials.")
@@ -142,11 +140,9 @@ class TokenRefreshView(PublicTokenView):
         try:
             with transaction.atomic():
                 old = RefreshToken(raw)
-                outstanding = (
-                    OutstandingToken.objects.select_for_update()
-                    .filter(jti=old["jti"])
-                    .first()
-                )
+                outstanding = OutstandingToken.objects.select_for_update().filter(
+                    jti=old["jti"]
+                ).first()
                 if outstanding is None:
                     raise AuthenticationFailed("Refresh token is invalid.")
                 serializer = TokenRefreshSerializer(data={"refresh": raw})
@@ -181,4 +177,3 @@ class TokenLogoutView(PublicTokenView):
             except TokenError:
                 pass
         return _clear_refresh_cookie(Response(status=status.HTTP_204_NO_CONTENT))
-2026-11-01T00:06:43.0546511

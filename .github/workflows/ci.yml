@@ -52,10 +52,11 @@ jobs:
         run: |
           uv run ruff check --fix .
           uv run ruff format .
-          for file in chatbot/api/auth.py chatbot/api/serializers.py chatbot/api/views.py chatbot/api/urls.py chatbot/views.py chatbot/services/fact_review.py chatbot/tests/test_api_jwt.py; do
-            echo "CODE_BEGIN:$file"
-            cat "$file"
-            echo "CODE_END:$file"
+          for file in chatbot/api/auth.py chatbot/api/serializers.py chatbot/api/views.py chatbot/api/urls.py chatbot/views.py chatbot/services/fact_review.py chatbot/tests/test_api_jwt.py chatbot/tests/test_rest_api.py; do
+            echo "CODE64_BEGIN:$file"
+            base64 -w0 "$file"
+            echo
+            echo "CODE64_END:$file"
           done
 
       - name: Install locked dependencies

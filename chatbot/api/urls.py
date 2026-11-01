@@ -10,13 +10,11 @@ urlpatterns = [
     path("auth/logout/", TokenLogoutView.as_view(), name="api-auth-logout"),
     path(
         "me/facts/<int:fact_id>/review/",
-        views.OwnerFactReviewView.as_view(),
-        name="api-me-fact-review",
+        views.OwnerFactReviewView.as_view(), name="api-me-fact-review",
     ),
     path(
         "candidates/<slug:slug>/chat/",
-        views.AuthenticatedCandidateChatView.as_view(),
-        name="api-candidate-chat",
+        views.AuthenticatedCandidateChatView.as_view(), name="api-candidate-chat",
     ),
     path("candidates/", views.PublicCandidateListView.as_view(), name="api-candidates"),
     path(
@@ -28,4 +26,3 @@ urlpatterns = [
     path("me/profile/", views.OwnerProfileView.as_view(), name="api-me-profile"),
     path("me/facts/", views.OwnerFactListView.as_view(), name="api-me-facts"),
 ]
-2026-11-01T00:06:43.0706873

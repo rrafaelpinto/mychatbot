@@ -7,7 +7,7 @@ from django.test import Client
 from django.urls import reverse
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 
-from chatbot.models import CandidateFactReviewEvent, Message
+from chatbot.models import CandidateFactReviewEvent, Conversation, Message
 from chatbot.services.ai import AIResponse
 
 
@@ -24,7 +24,7 @@ def browser():
     return client, {"HTTP_X_CSRFTOKEN": response.json()["csrf_token"]}
 
 
-def login(client, csrf, username="candidate-owner", ***):
+def login(client, csrf, username="candidate-owner", password="password"):
     return client.post(
         reverse("api-auth-token"),
         data=json.dumps({"username": username, "password": password}),
@@ -37,12 +37,9 @@ def login(client, csrf, username="candidate-owner", ***):
 def test_login_requires_csrf_and_returns_only_in_memory_access(user):
     client = Client(enforce_csrf_checks=True)
     payload = json.dumps({"username": user.username, "password": "password"})
-    assert (
-        client.post(
-            reverse("api-auth-token"), payload, content_type="application/json"
-        ).status_code
-        == 403
-    )
+    assert client.post(
+        reverse("api-auth-token"), payload, content_type="application/json"
+    ).status_code == 403
     client, csrf = browser()
     response = login(client, csrf)
     assert response.status_code == 200
@@ -54,13 +51,10 @@ def test_login_requires_csrf_and_returns_only_in_memory_access(user):
     assert cookie["path"] == "/api/v1/auth/"
     assert cookie["samesite"] == "Lax"
     assert response["Cache-Control"] == "no-store"
-    assert (
-        client.get(
-            reverse("api-me"),
-            HTTP_AUTHORIZATION=f"***'access']}",
-        ).status_code
-        == 200
-    )
+    assert client.get(
+        reverse("api-me"),
+        HTTP_AUTHORIZATION=f"Bearer {response.json()['access']}",
+    ).status_code == 200
 
 
 @pytest.mark.django_db
@@ -106,7 +100,7 @@ def test_logout_does_not_destroy_django_session(user):
 @pytest.mark.django_db
 def test_login_rejects_invalid_and_disabled_users(user):
     client, csrf = browser()
-    assert login(client, csrf, ***).status_code == 401
+    assert login(client, csrf, password="wrong").status_code == 401
     user.is_active = False
     user.save(update_fields=["is_active"])
     assert login(client, csrf).status_code == 401
@@ -117,8 +111,8 @@ def test_login_rejects_invalid_and_disabled_users(user):
 def test_login_throttle_limits_password_guessing(user):
     client, csrf = browser()
     for _ in range(5):
-        assert login(client, csrf, ***).status_code == 401
-    assert login(client, csrf, ***).status_code == 429
+        assert login(client, csrf, password="wrong").status_code == 401
+    assert login(client, csrf, password="wrong").status_code == 429
 
 
 @pytest.mark.django_db
@@ -138,42 +132,33 @@ def test_explicit_cors_allowlist_and_untrusted_origin_csrf(settings, user):
         HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
     )
     assert "Access-Control-Allow-Origin" not in blocked
-    assert (
-        client.post(
-            reverse("api-auth-token"),
-            data=json.dumps({"username": user.username, "password": "password"}),
-            content_type="application/json",
-            HTTP_ORIGIN="https://untrusted.example.test",
-            **csrf,
-        ).status_code
-        == 403
-    )
+    assert client.post(
+        reverse("api-auth-token"),
+        data=json.dumps({"username": user.username, "password": "password"}),
+        content_type="application/json",
+        HTTP_ORIGIN="https://untrusted.example.test",
+        **csrf,
+    ).status_code == 403
 
 
 @pytest.mark.django_db
 def test_profile_patch_rejects_approval_and_private_fields(published_candidate):
     client, csrf = browser()
     access = login(client, csrf).json()["access"]
-    auth = {"HTTP_AUTHORIZATION": f"***"}
+    auth = {"HTTP_AUTHORIZATION": f"Bearer {access}"}
     url = reverse("api-me-profile")
-    assert (
-        client.patch(
-            url,
-            data=json.dumps({"status": "active", "phone": "hidden"}),
-            content_type="application/json",
-            **auth,
-        ).status_code
-        == 400
-    )
-    assert (
-        client.patch(
-            url,
-            data=json.dumps({"professional_summary": "Verified portfolio"}),
-            content_type="application/json",
-            **auth,
-        ).status_code
-        == 200
-    )
+    assert client.patch(
+        url,
+        data=json.dumps({"status": "active", "phone": "hidden"}),
+        content_type="application/json",
+        **auth,
+    ).status_code == 400
+    assert client.patch(
+        url,
+        data=json.dumps({"professional_summary": "Verified portfolio"}),
+        content_type="application/json",
+        **auth,
+    ).status_code == 200
     published_candidate.refresh_from_db()
     assert published_candidate.professional_summary == "Verified portfolio"
 
@@ -185,50 +170,33 @@ def test_review_rejects_stale_version_and_other_account(
     client, csrf = browser()
     url = reverse("api-me-fact-review", kwargs={"fact_id": verified_fact.pk})
     version = verified_fact.updated_at.isoformat()
-    assert (
-        client.post(
-            url,
-            json.dumps({"action": "unpublish", "version": version}),
-            content_type="application/json",
-        ).status_code
-        == 401
-    )
+    assert client.post(
+        url, json.dumps({"action": "unpublish", "version": version}),
+        content_type="application/json",
+    ).status_code == 401
     token = login(client, csrf).json()["access"]
-    auth = {"HTTP_AUTHORIZATION": f"***"}
-    assert (
-        client.post(
-            url,
-            json.dumps({"action": "publish", "version": version}),
-            content_type="application/json",
-            **auth,
-        ).status_code
-        == 200
-    )
+    auth = {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+    assert client.post(
+        url, json.dumps({"action": "publish", "version": version}),
+        content_type="application/json", **auth,
+    ).status_code == 200
     verified_fact.refresh_from_db()
     assert not verified_fact.is_public
     assert CandidateFactReviewEvent.objects.filter(fact=verified_fact).count() == 1
-    assert (
-        client.post(
-            url,
-            json.dumps({"action": "unpublish", "version": version}),
-            content_type="application/json",
-            **auth,
-        ).status_code
-        == 409
-    )
+    assert client.post(
+        url, json.dumps({"action": "unpublish", "version": version}),
+        content_type="application/json", **auth,
+    ).status_code == 409
     client, csrf = browser()
     other_access = login(client, csrf, username=other_user.username).json()["access"]
-    assert (
-        client.post(
-            url,
-            json.dumps(
-                {"action": "unpublish", "version": verified_fact.updated_at.isoformat()}
-            ),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"***",
-        ).status_code
-        == 404
-    )
+    assert client.post(
+        url,
+        json.dumps({
+            "action": "unpublish", "version": verified_fact.updated_at.isoformat()
+        }),
+        content_type="application/json",
+        HTTP_AUTHORIZATION=f"Bearer {other_access}",
+    ).status_code == 404
 
 
 @pytest.mark.django_db
@@ -237,19 +205,19 @@ def test_authenticated_chat_preserves_provider_boundary_and_history(
 ):
     client, csrf = browser()
     url = reverse("api-candidate-chat", kwargs={"slug": published_candidate.slug})
-    assert client.post(url, "{}", content_type="application/json").status_code == 401
+    assert client.post(
+        url, "{}", content_type="application/json"
+    ).status_code == 401
     token = login(client, csrf).json()["access"]
-    headers = {"HTTP_AUTHORIZATION": f"***"}
+    headers = {"HTTP_AUTHORIZATION": f"Bearer {token}"}
     response = AIResponse(
         content="Verified Django experience.",
         cited_fact_ids=(verified_fact.pk,),
-        evidence=(
-            {
-                "id": verified_fact.pk,
-                "fact_type": verified_fact.fact_type,
-                "content": verified_fact.content,
-            },
-        ),
+        evidence=({
+            "id": verified_fact.pk,
+            "fact_type": verified_fact.fact_type,
+            "content": verified_fact.content,
+        },),
     )
     with patch("chatbot.api.views.ask_candidate", return_value=response) as provider:
         result = client.post(
@@ -263,29 +231,28 @@ def test_authenticated_chat_preserves_provider_boundary_and_history(
     assert result.json()["response"] == response.content
     assert provider.call_args.kwargs["initiated_by"] == published_candidate.user
     assert provider.call_args.kwargs["idempotency_key"] == "request-one"
-    assert (
-        Message.objects.filter(conversation__candidate=published_candidate).count() == 2
-    )
+    assert Message.objects.filter(
+        conversation__candidate=published_candidate
+    ).count() == 2
     assert len(client.get(url, **headers).json()) == 2
 
 
 @pytest.mark.django_db
-def test_chat_rejects_unpublished_candidate_before_provider(published_candidate):
+def test_chat_rejects_unpublished_candidate_before_provider(
+    published_candidate
+):
     client, csrf = browser()
     token = login(client, csrf).json()["access"]
     published_candidate.publication_status = "draft"
     published_candidate.save()
     url = reverse("api-candidate-chat", kwargs={"slug": published_candidate.slug})
     with patch("chatbot.api.views.ask_candidate") as provider:
-        assert (
-            client.post(
-                url,
-                json.dumps({"question": "Your projects?"}),
-                content_type="application/json",
-                HTTP_AUTHORIZATION=f"***",
-            ).status_code
-            == 404
-        )
+        assert client.post(
+            url,
+            json.dumps({"question": "Your projects?"}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        ).status_code == 404
         provider.assert_not_called()
 
 
@@ -301,4 +268,3 @@ def test_openapi_exposes_jwt_endpoints(client):
         "/api/v1/candidates/{slug}/chat/",
     ):
         assert path in schema["paths"]
-2026-11-01T00:06:43.0936588
