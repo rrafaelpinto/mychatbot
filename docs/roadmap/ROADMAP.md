@@ -129,7 +129,8 @@ portfolio demo with uploads and registration disabled.
 
 ## Phase 4 — API and Frontend Modernization
 
-**Status:** Approved. Incremental implementation starting with the DRF API.
+**Status:** In progress. API and JWT implementation merged; proposed visual
+prototypes await review. Independent React remains a separate milestone.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.

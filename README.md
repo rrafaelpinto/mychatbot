@@ -213,3 +213,13 @@ reuse existing backend authorization and audit rules.
 For frontend integration, deployment origins, token lifecycle and the
 security threat model, see [JWT API Security](docs/engineering/JWT_API_SECURITY.md).
 No React build is bundled into Django.
+
+## Phase 4 visual prototype
+
+A standalone, responsive **fictional** design preview is available under
+[`prototypes/visual/`](prototypes/visual/). It proposes ResumeBot's
+professional identity, public profile, evidence-led Agent and UI states,
+with light/dark mode. It makes no API calls and does not replace the
+existing Django pages. See [Design system](docs/design/DESIGN_SYSTEM.md)
+and [Visual review](docs/design/VISUAL_REVIEW.md). The independently
+deployable React implementation remains a separate reviewed PR.
