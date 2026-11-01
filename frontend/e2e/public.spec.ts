@@ -120,6 +120,7 @@ test("authenticates with JWT and displays evidence-backed API chat", async ({ pa
     } });
   });
   await page.goto("/#/agent/alex");
+  await page.getByText("Sign in to use your account").click();
   await page.getByLabel("Username").fill("recruiter");
   await page.getByLabel("Password").fill("sample-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
