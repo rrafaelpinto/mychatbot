@@ -15,3 +15,9 @@ __pycache__/
 .test-private-media/
 .test-public-media/
 private_media/
+
+# Standalone visual-prototype harness (screenshots published by CI)
+prototypes/visual/node_modules/
+prototypes/visual/screenshots/
+prototypes/visual/report/
+prototypes/visual/test-results/
