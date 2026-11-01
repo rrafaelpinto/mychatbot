@@ -9,6 +9,10 @@ on:
       - "frontend/e2e/readme-screenshots.spec.ts"
       - ".github/workflows/readme-screenshots.yml"
 
+concurrency:
+  group: readme-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
