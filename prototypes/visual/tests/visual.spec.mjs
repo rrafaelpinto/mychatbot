@@ -30,11 +30,9 @@ test.describe("Visual review", () => {
           await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
           await expect(page.locator(`[data-nav="${view.route}"]`))
             .toHaveAttribute("aria-current", "page");
-          await expect(page.locator("#view-home")).toBeHidden({
-            timeout: view.route === "home" ? 0 : 5000
-          }).catch(async (error) => {
-            if (view.route !== "home") throw error;
-          });
+          if (view.route !== "home") {
+            await expect(page.locator("#view-home")).toBeHidden();
+          }
 
           const noOverflow = await page.evaluate(
             () => document.documentElement.scrollWidth <= window.innerWidth
@@ -48,7 +46,7 @@ test.describe("Visual review", () => {
           expect(audit.violations, JSON.stringify(audit.violations, null, 2)).toEqual([]);
 
           await page.screenshot({
-            path: `prototypes/visual/screenshots/${view.filename}-${size.name}.png`,
+            path: `screenshots/${view.filename}-${size.name}.png`,
             fullPage: true,
             animations: "disabled"
           });
@@ -67,7 +65,7 @@ test.describe("Visual review", () => {
         await evidence.click();
         await expect(page.getByText(/Designed REST APIs in Django/)).toBeVisible();
         await page.screenshot({
-          path: `prototypes/visual/screenshots/agent-evidence-${size.name}.png`,
+          path: `screenshots/agent-evidence-${size.name}.png`,
           fullPage: true
         });
 
@@ -75,7 +73,7 @@ test.describe("Visual review", () => {
         await expect(page.getByText("Candidate Agent temporarily unavailable")).toBeVisible();
         await expect(page.getByLabel("Ask a professional question")).toBeDisabled();
         await page.screenshot({
-          path: `prototypes/visual/screenshots/agent-unavailable-${size.name}.png`,
+          path: `screenshots/agent-unavailable-${size.name}.png`,
           fullPage: true
         });
         for (const state of ["empty", "quota", "denied", "loading"]) {
@@ -85,7 +83,7 @@ test.describe("Visual review", () => {
         }
         await page.getByLabel("Simulate an interface state").selectOption("ready");
         await expect(page.getByLabel("Ask a professional question")).toBeEnabled();
-        await page.getByRole("button", { name: "Send question" }).count();
+
       });
 
       test("theme toggle and keyboard navigation", async ({ page }) => {
@@ -97,12 +95,12 @@ test.describe("Visual review", () => {
           page.getByRole("button", { name: "Switch to light theme" })
         ).toHaveAttribute("aria-pressed", "true");
         await page.screenshot({
-          path: `prototypes/visual/screenshots/overview-dark-${size.name}.png`,
+          path: `screenshots/overview-dark-${size.name}.png`,
           fullPage: true
         });
         await page.keyboard.press("Tab");
         expect(await page.locator(":focus").count()).toBe(1);
-        await page.getByRole("link", { name: "Sample profile" }).click();
+        await page.locator('.main-nav a[data-nav="profile"]').click();
         await expect(page.getByRole("heading", { name: /Alex Morgan/ })).toBeVisible();
       });
     });
@@ -129,7 +127,7 @@ test("quota is represented as disabled input without a provider call", async ({ 
     await field.fill("Which technologies does Alex use?");
     await page.getByRole("button", { name: "Send question" }).click();
   }
-  await expect(page.getByText("Question limit reached")).toBeVisible();
+  await expect(page.locator("#chat-status strong")).toHaveText("Question limit reached");
   await expect(field).toBeDisabled();
   await expect(page.getByRole("button", { name: "Send question" })).toBeDisabled();
 });
