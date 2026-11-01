@@ -59,12 +59,13 @@ and [Anonymous Candidate Agent](GUEST_CHAT.md).
 
 ```sh
 uv run python manage.py check
+mkdir -p .local
 uv run python manage.py spectacular --validate --file .local/openapi.yaml
 npm --prefix frontend run api:types
 uv run pytest chatbot/tests/test_rest_api.py
 ```
 
 Run `npm --prefix frontend run api:types` after generating
-`/.local/openapi.json` according to [frontend instructions](../../frontend/README.md).
+`.local/openapi.json` according to [frontend instructions](../../frontend/README.md).
 The OpenAPI contract CI workflow checks generated types without a live API
 or paid AI calls.
