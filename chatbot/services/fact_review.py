@@ -1,3 +1,6 @@
+from chatbot.models import CandidateFact
+
+
 def fact_review_action_error(*, action, changed, status, is_public):
     if action != "save" and changed:
         return "Save your text changes before choosing a review decision."

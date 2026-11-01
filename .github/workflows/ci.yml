@@ -48,12 +48,15 @@ jobs:
           version: "0.12.8"
           enable-cache: true
 
-      - name: Resolve JWT dependencies
+      - name: Capture formatted JWT sources
         run: |
-          uv lock
-          echo "JWT_LOCK_BEGIN"
-          cat uv.lock
-          echo "JWT_LOCK_END"
+          uv run ruff check --fix .
+          uv run ruff format .
+          for file in chatbot/api/auth.py chatbot/api/serializers.py chatbot/api/views.py chatbot/api/urls.py chatbot/views.py chatbot/services/fact_review.py chatbot/tests/test_api_jwt.py; do
+            echo "CODE_BEGIN:$file"
+            cat "$file"
+            echo "CODE_END:$file"
+          done
 
       - name: Install locked dependencies
         run: uv sync --locked --group dev
