@@ -1,53 +1,61 @@
 # Phase 4: API contract and independent frontend
 
-ResumeBot preserves Django as the backend and adds a versioned REST interface.
-The future React/TypeScript/Vite frontend is a separate deployable unit under
-`frontend/`, with its own lockfile, build and CI. It will **not** be compiled
-into Django, and its static files will not be delivered through WhiteNoise.
+The approved architecture preserves Django as a modular backend while
+deploying the React/TypeScript/Vite frontend as a separately built static
+application. Both live in one Git repository, with independent build steps,
+environment configuration and deployment targets. React assets are not
+compiled into Django or served through WhiteNoise.
 
-## Boundaries
+## Implemented boundaries
 
-- Backend: Django, DRF, drf-spectacular/OpenAPI, authorization policy,
-  AI governance, candidate/guest data and PostgreSQL.
-- Frontend: React and TypeScript, UI state, layout and API client only.
-- Admin and original HTML pages remain available during incremental migration.
-- The frontend may be hosted on a separate static-site service or served by
-  Nginx/Caddy from a shared VPS without a dedicated Node server process.
-- Deployment may expose separate origins, e.g. `app.example.test` and
-  `api.example.test`. Configure strict CORS origin allowlists, trusted CSRF
-  origins and Secure/SameSite cookie policy only when JWT integration lands.
+- **Django:** Django REST Framework, drf-spectacular/OpenAPI,
+  PostgreSQL, candidate authorization, owner-only review, fact publication,
+  JWT/CSRF authentication, guest sessions and AI usage policies.
+- **React:** typed HTTP client generated from OpenAPI, public profiles,
+  Candidate Agent chat, owner workspace, authentication lifecycle and
+  responsive layouts. No provider keys or privileged decisions live in React.
+- **Legacy interfaces:** Django Admin and original HTML views remain
+  available for administration and fallback usage.
+- **Deployment:** an opt-in Render Blueprint defines independent Django and
+  React services. Production DNS, TLS, persistent database and browser
+  acceptance still require manual provisioning.
 
-## API contract policy
+## Trust and implementation principles
 
-- All new APIs use `/api/v1/`, explicit serializers and object authorization
-  enforced through database querysets or shared service policies.
-- The public read contract exposes only approved and published candidate
-  information, and only explicitly verified/public facts. Never serialize
-  `phone`, private owner email, source documents, source references, guest
-  origin hashes or internal usage/event metadata.
-- Authenticated owner read endpoints will initially use existing Django
-  session authentication for migration/testing. JWT and separate-origin CORS
-  are **not introduced** in the initial API PR.
-- Existing HTML chat is retained until a new DRF chat route can reuse the
-  original service with equivalent Turnstile, sessions, idempotency, evidence
-  authorization, quotas and budget reservation.
-- Swagger UI is a schema explorer, not an invitation to bypass permissions.
-  The schema defines field allowlists; unauthenticated requests remain limited
-  to public resources.
-- OpenAPI is the source for TypeScript client types. Version-breaking changes
-  require a versioned contract and regression tests.
+- All API endpoints are versioned under `/api/v1/`; resource-specific
+  serializers expose only approved fields.
+- The public API returns only active, published profiles and separately
+  verified, public facts; source documents, private contacts and internal AI
+  usage records remain unavailable.
+- Owner-only operations enforce object authorization and review transition
+  policies on the backend, independent of frontend visibility.
+- Browser access uses short-lived JWT bearer tokens, a rotating Secure
+  HttpOnly refresh cookie and CSRF protection. CORS origins are explicit,
+  never wildcarded for credentialed requests.
+- Anonymous chat uses a separate server-side session, Turnstile verification,
+  quota/budget policies and idempotency. It never receives a user JWT.
+- The Candidate Agent answers as the candidate in first person using only
+  verified public facts, with structured evidence IDs revalidated by Django.
+- OpenAPI-generated TypeScript types are committed and checked for drift
+  in CI. Regression tests cover negative authorization and cost-control paths.
 
-## Incremental implementation
+## Delivered work
 
-1. DRF, public read-only candidate endpoints, owner read endpoints, schema
-   and privacy tests (issue #29).
-2. JWT with short bearer-token lifetime, HttpOnly refresh rotation/logout,
-   CSRF on cookie-authenticated state changes, explicit CORS and negative tests
-   (issue #30).
-3. Visual identity and mobile/desktop prototypes, reviewed before React
-   implementation (issue #31).
-4. Independent React application, typed contract client, Vitest/Playwright
-   and separate deployment (issue #32).
+1. DRF, public/owner read endpoints, OpenAPI schema and privacy tests
+   (issue #29).
+2. JWT token lifecycle, CSRF and CORS hardening, owner review and
+   authenticated chat (issue #30).
+3. Responsive design direction and visual prototypes (issue #31).
+4. Independent React app, typed API client, owner and public experiences,
+   guest chat, Vitest/Playwright and safe deployment preparation (issue #32).
 
-This architecture avoids a new service for each API function and avoids
-unnecessary Redis/Celery infrastructure for the low-traffic portfolio.
+## Release verification still outstanding
+
+A live release requires a persistent backed-up PostgreSQL instance, verified
+HTTPS site/subdomains, independent service deployment, login/refresh cookie
+checks in a real browser, and a controlled Turnstile/guest session
+acceptance test before enabling paid AI access. See
+[Production deployment](DEPLOYMENT.md).
+
+This design avoids unnecessary distributed application services, Redis/Celery
+workers and paid embedding infrastructure for occasional recruiter traffic.

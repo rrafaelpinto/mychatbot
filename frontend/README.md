@@ -71,10 +71,15 @@ The generated `src/api/schema.generated.d.ts` file is committed, and the
 in `src/api/types.ts` consume those schema declarations rather than
 duplicating API contracts.
 
-## Scope of this slice
+## Product and release state
 
-The public profile, discovery, JWT-authenticated chat, owner profile editor
-and fact review/visibility controls are API-backed.
-Full deployment acceptance and real Turnstile-hostname smoke tests remain
-follow-up work under issue #32. No external AI calls occur in CI. This is
-**not** a production launch.
+The public profile, discovery, JWT-authenticated chat, protected guest chat,
+owner profile editor, and fact review/visibility controls are API-backed.
+The Candidate Agent is instructed to answer recruiter questions in the
+candidate's first person, citing verified public facts.
+
+The repository provides an independent static-site Blueprint and read-only
+release checks. Actual DNS/TLS provisioning, browser cookie verification,
+persistent production database, and real Turnstile-hostname acceptance
+remain operational tasks under issue #32. No external AI calls occur in CI.
+This is **not** a production launch.

@@ -10,6 +10,7 @@ from chatbot.services.ai import (
     AIUnavailable,
     NoVerifiedFacts,
     ask_candidate,
+    candidate_chat_messages,
 )
 
 
@@ -194,3 +195,17 @@ def test_ai_authorization_precedes_disabled_operation(settings, recruiter, other
 
     provider.assert_not_called()
     assert not AIUsageEvent.objects.exists()
+
+
+def test_candidate_agent_prompt_requires_first_person_grounded_answers():
+    messages = candidate_chat_messages(
+        facts=[{"id": 1, "fact_type": "skill", "content": "I build Django APIs."}],
+        question="What backend technologies do you use?",
+        history=[],
+    )
+    instruction = messages[0]["content"]
+    assert "first-person voice" in instruction
+    assert "using I, my, and me" in instruction
+    assert "third person" in instruction
+    assert "verified candidate facts" in instruction
+    assert "fact_ids" in instruction
