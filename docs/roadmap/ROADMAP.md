@@ -130,9 +130,10 @@ portfolio demo with uploads and registration disabled.
 ## Phase 4 — API and Frontend Modernization
 
 **Status:** In progress. API, JWT, visual prototypes and the standalone React
-frontend foundation are merged. The owner-review workspace and schema-driven
-TypeScript client are the next increment under issue #32. Independent production
-deployment and browser verification with real infrastructure remain pending.
+frontend foundation are merged. Owner review and schema-driven
+TypeScript are implemented. Guest chat API/React parity is being completed under
+issue #32; independent production deployment and real Turnstile verification
+remain pending.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.
@@ -175,8 +176,9 @@ a distinctive, responsive React frontend with independent deployment.
    React/TypeScript/Vite, approved design system, typed OpenAPI contract,
    public profile/chat, private owner editing and fact decisions, tests and
    standalone build/deployment (not embedded in Django's static assets).
-   Turnstile-backed anonymous chat continues through Django until secure
-   independent API parity has been verified.
+   Anonymous chat uses Django's existing session/Turnstile/budget controls
+   through a dedicated CSRF-protected DRF endpoint. The original Django
+   HTML chat remains a fallback until real-hostname deployment verification.
 
 **Scope controls:** no third backend service, no new paid vendor, no database
 duplication, no framework replatforming, no production JWT rollout before

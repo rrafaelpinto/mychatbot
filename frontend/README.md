@@ -28,8 +28,23 @@ CORS and never put secrets in Vite environment variables.
 The access JWT exists only in JS memory; the backend owns the HttpOnly refresh
 cookie. The client bootstraps CSRF and handles refresh and logout. It does not
 persist tokens in browser storage. Signed-in chat reuses the DRF API and backend
-quotas/budgets; unauthenticated visitors are directed to the existing Django
-Turnstile-protected chat, not an unprotected REST substitute.
+quotas/budgets. Anonymous chat uses a separate CSRF-protected Django session
+endpoint with server-verified Cloudflare Turnstile, origin-based admission,
+usage limits and safe evidence revalidation. The original Django HTML chat
+remains available as a fallback; neither guest JWTs nor privileged API tokens
+are issued for guest requests.
+
+Guest access defaults to disabled in production. Enable `GUEST_CHAT_ENABLED`
+only after configuring the existing Turnstile keys, origin hash secret,
+trusted proxies and session cleanup schedule documented in the backend
+deployment runbook. Register the **React hostname** in the Turnstile widget's
+approved hostnames, and include the exact React origin in both
+`API_CORS_ALLOWED_ORIGINS` and `DJANGO_CSRF_TRUSTED_ORIGINS`.
+Siteverify validates the challenge action and the registered frontend
+hostname. Prefer HTTPS same-site subdomains: Django session and CSRF cookies
+must actually reach the API, with `credentials: include`. Cross-site
+installations require an explicit cookie/SameSite and browser privacy review;
+they are not assumed supported by default.
 
 Only public profile data is rendered to unauthenticated visitors. The UI treats
 all API text as plain text, without HTML injection. Public API errors,
@@ -52,6 +67,6 @@ duplicating API contracts.
 
 The public profile, discovery, JWT-authenticated chat, owner profile editor
 and fact review/visibility controls are API-backed.
-Full deployment
-acceptance, and the anonymous API guest migration remain follow-up work under
-issue #32. This is **not** a production launch.
+Full deployment acceptance and real Turnstile-hostname smoke tests remain
+follow-up work under issue #32. No external AI calls occur in CI. This is
+**not** a production launch.
