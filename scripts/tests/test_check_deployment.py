@@ -7,7 +7,6 @@ from urllib.request import Request
 
 import pytest
 import yaml
-
 from scripts.check_deployment import DeploymentCheckError, check_deployment
 
 
