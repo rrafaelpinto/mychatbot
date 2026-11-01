@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { AuthLogin } from "./AuthLogin";
+import { OwnerDashboard } from "./OwnerDashboard";
 import { ApiError, api } from "./api/client";
 import type { CandidateDetail, CandidateSummary, ChatMessage, PublicFact } from "./api/types";
 
 type Session = "checking" | "guest" | "authenticated";
-type Route = { page: "home" } | { page: "profile" | "agent"; slug: string };
+type Route = { page: "home" | "owner" } | { page: "profile" | "agent"; slug: string };
 
 function routeFromHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/");
@@ -11,6 +13,7 @@ function routeFromHash(hash: string): Route {
   if ((parts[0] === "profile" || parts[0] === "agent") && slug && /^[a-z0-9-]+$/.test(slug)) {
     return { page: parts[0], slug };
   }
+  if (parts[0] === "owner") return { page: "owner" };
   return { page: "home" };
 }
 
@@ -109,35 +112,6 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   </div></div>;
 }
 
-function LoginForm({ onLogin }: { onLogin: () => void }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await api.login(username, password);
-      onLogin();
-    } catch (err) {
-      setError(err instanceof ApiError && err.status === 401 ? "Invalid credentials." : "Sign-in unavailable.");
-    } finally {
-      setBusy(false);
-      setPassword("");
-    }
-  }
-  return <form onSubmit={submit} className="login-form">
-    <h3>Sign in to the Candidate Agent</h3>
-    <p>Authenticated chat uses the existing backend access rules and usage limits.</p>
-    <label htmlFor="login-username">Username</label><input required id="login-username" autoComplete="username" value={username} onChange={e => setUsername(e.target.value)} />
-    <label htmlFor="login-password">Password</label><input required type="password" id="login-password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
-    {error && <Notice kind="error">{error}</Notice>}
-    <button className="button button-primary" disabled={busy} type="submit">{busy ? "Signing in…" : "Sign in"}</button>
-  </form>;
-}
-
 function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Session; onLogin: () => void; onLogout: () => void }) {
   const [profile, setProfile] = useState<CandidateDetail | null>(null);
   const [history, setHistory] = useState<ChatMessage[]>([]);
@@ -194,7 +168,7 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
         <div className="suggested-questions">{["What is this candidate's experience?", "Which technical skills are verified?", "What projects are documented?"].map(question => <button key={question} disabled={busy} onClick={() => setInput(question)} type="button">{question}</button>)}</div>
         <form className="composer" onSubmit={submit}><label className="sr-only" htmlFor="chat-input">Ask a professional question</label><input id="chat-input" maxLength={1000} required disabled={busy} value={input} onChange={e => setInput(e.target.value)} placeholder="Ask about professional experience…" /><button type="submit" disabled={busy || !input.trim()} aria-label="Send question">↑</button></form>
         <div className="composer-foot"><span>No guarantee of availability; backend quotas and budget apply.</span><button className="text-action" type="button" onClick={onLogout}>Sign out</button></div>
-      </div> : session === "guest" ? <div className="composer-area"><LoginForm onLogin={onLogin} /></div> : null}
+      </div> : session === "guest" ? <div className="composer-area"><AuthLogin onLogin={onLogin} /></div> : null}
     </section>
       <aside className="agent-sidebar" aria-label="Conversation evidence"><div className="sidebar-card"><div className="sidebar-card-title"><strong>Evidence you can inspect</strong></div><p>Supported answers may disclose the approved professional facts behind them.</p><div className="sidebar-divider" /><div className="sidebar-fact">Candidate-approved facts only</div><div className="sidebar-fact">No private source documents</div><div className="sidebar-fact">Server-enforced cost and access limits</div></div><a className="sidebar-profile-link" href={profileLink(slug)}>View published profile</a></aside>
     </div>
@@ -221,11 +195,12 @@ export function App() {
     <div className="preview-ribbon">ResumeBot · Verified professional information</div>
     <div className="site-shell"><header className="site-header"><a className="brand" href="#/" aria-label="ResumeBot homepage"><span className="brand-mark">✓</span>resumebot<span className="brand-period">.</span></a>
       <nav className="main-nav" aria-label="Main navigation"><a href="#/" aria-current={active === "home" ? "page" : undefined}>Overview</a><a href={candidates[0] ? profileLink(candidates[0].slug) : "#profiles"} aria-current={active === "profile" ? "page" : undefined}>Public profile</a><a href={candidates[0] ? agentLink(candidates[0].slug) : "#profiles"} aria-current={active === "agent" ? "page" : undefined}>Candidate Agent</a></nav>
-      <div className="header-actions"><button type="button" id="theme-toggle" className="icon-button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} onClick={() => setDark(!dark)}>{dark ? "☀" : "☾"}</button></div>
+      {session === "authenticated" && <a className="header-cta" href="#/owner">My workspace</a>}<div className="header-actions"><button type="button" id="theme-toggle" className="icon-button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} onClick={() => setDark(!dark)}>{dark ? "☀" : "☾"}</button></div>
     </header><main id="main">
       {listError && active === "home" && <Notice kind="error">{listError}</Notice>}
       {route.page === "home" && <Home candidates={candidates} />}
       {route.page === "profile" && <PublicProfile slug={route.slug} />}
+      {route.page === "owner" && <OwnerDashboard session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
       {route.page === "agent" && <Agent slug={route.slug} session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
     </main><footer className="site-footer"><div className="footer-logo">resumebot<span>.</span></div><p>Professional stories, grounded in approved information.</p><span>Independent React frontend</span></footer></div>
   </>;

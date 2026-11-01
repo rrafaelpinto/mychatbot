@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "api:types": "openapi-typescript http://localhost:8000/api/schema/?format=json -o src/api/schema.generated.d.ts"
+    "api:types": "openapi-typescript ../.local/openapi.json -o src/api/schema.generated.d.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

@@ -192,4 +192,8 @@ def test_openapi_schema_and_swagger_are_exposed_without_private_fields(client):
     assert "phone" not in body
     assert "source_reference" not in body
     assert "source_document" not in body
+    fact_shape = schema["components"]["schemas"]["PublicCandidateDetail"]["properties"][
+        "facts"
+    ]
+    assert fact_shape["items"]["$ref"] == "#/components/schemas/PublicFact"
     assert client.get(reverse("api-docs")).status_code == 200

@@ -129,9 +129,10 @@ portfolio demo with uploads and registration disabled.
 
 ## Phase 4 — API and Frontend Modernization
 
-**Status:** In progress. API, JWT and the approved visual prototypes are merged.
-The independently deployed React frontend is being implemented incrementally
-under issue #32; production integration remains pending.
+**Status:** In progress. API, JWT, visual prototypes and the standalone React
+frontend foundation are merged. The owner-review workspace and schema-driven
+TypeScript client are the next increment under issue #32. Independent production
+deployment and browser verification with real infrastructure remain pending.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.
@@ -139,7 +140,7 @@ a distinctive, responsive React frontend with independent deployment.
 ### Architecture decision
 
 - Keep one Git repository but **two independently deployable applications**:
-  existing root Django backend and future `frontend/` React/TypeScript/Vite
+  existing root Django backend and `frontend/` React/TypeScript/Vite
   application. Do not relocate the mature Django project in the first PR.
 - Serve React separately as a static build from an independent host or reverse
   proxy. Django/WhiteNoise continues serving only its own admin/static assets.
@@ -171,8 +172,11 @@ a distinctive, responsive React frontend with independent deployment.
    with review before implementation.
 4. **Independent frontend**
    ([#32](https://github.com/rrafaelpinto/mychatbot/issues/32)):
-   React/TypeScript/Vite, approved design system, typed API client, tests
-   and standalone build/deployment (not embedded in Django's static assets).
+   React/TypeScript/Vite, approved design system, typed OpenAPI contract,
+   public profile/chat, private owner editing and fact decisions, tests and
+   standalone build/deployment (not embedded in Django's static assets).
+   Turnstile-backed anonymous chat continues through Django until secure
+   independent API parity has been verified.
 
 **Scope controls:** no third backend service, no new paid vendor, no database
 duplication, no framework replatforming, no production JWT rollout before

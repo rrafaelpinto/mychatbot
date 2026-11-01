@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from chatbot.models import CandidateFact, CandidateProfile
@@ -49,8 +50,8 @@ class PublicCandidateDetailSerializer(PublicCandidateSerializer):
     class Meta(PublicCandidateSerializer.Meta):
         fields = (*PublicCandidateSerializer.Meta.fields, "facts")
 
-    @staticmethod
-    def get_facts(obj) -> list[dict]:
+    @extend_schema_field(PublicFactSerializer(many=True))
+    def get_facts(self, obj) -> list[dict]:
         facts = CandidateFact.objects.filter(
             candidate=obj,
             verification_status=CandidateFact.VerificationStatus.VERIFIED,
