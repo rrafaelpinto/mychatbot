@@ -142,6 +142,9 @@ test("owner edits approved fields and publishes verified facts", async ({ page }
   expect(submittedProfile).not.toHaveProperty("publication_status");
   await page.getByRole("button", { name: "Publish", exact: true }).click();
   await expect(page.getByText("verified · public")).toBeVisible();
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("heading", { name: "Manage your professional profile" })).toBeVisible();
+  await expect(page.getByText("Approved Python experience")).toHaveCount(0);
 });
 
 test("stale fact reviews reload the current version instead of silently overwriting", async ({ page }) => {
