@@ -129,11 +129,11 @@ portfolio demo with uploads and registration disabled.
 
 ## Phase 4 — API and Frontend Modernization
 
-**Status:** In progress. API, JWT, visual prototypes and the standalone React
-frontend foundation are merged. Owner review and schema-driven
-TypeScript are implemented. Guest chat API/React parity is being completed under
-issue #32; independent production deployment and real Turnstile verification
-remain pending.
+**Status:** In progress. API, JWT, visual prototypes, owner review,
+typed React client and protected guest chat are merged. Optional independent
+Render service configuration, production build guards and read-only deployment
+smoke checks are being added. No DNS, TLS, persistent database, Turnstile
+widget, or real-browser production flow has been provisioned or verified.
 
 **Objective:** Demonstrate professional backend/API contracts, JWT security and
 a distinctive, responsive React frontend with independent deployment.
@@ -189,3 +189,15 @@ deferred. Production deployment/guest access retain their existing safeguards.
 existing Python CI remains green; frontend builds/tests independently and
 uses the versioned contract; visual prototypes approved; backend and frontend
 can deploy independently. No cloud services are provisioned automatically.
+
+### Deployment acceptance remaining
+
+- Provision and verify shared-site HTTPS frontend/API subdomains and a
+  persistent, backed-up PostgreSQL database with pgvector.
+- Manually connect the two independent Render services and perform a
+  read-only smoke check against their real domains.
+- Confirm secure cross-origin JWT refresh and Django guest session cookies
+  in a real browser, then test Turnstile hostname/action and guest cleanup
+  only after a real scheduler and a deliberately budgeted AI demo exist.
+- Keep AI, guest access, uploads and public registration disabled until
+  their operational prerequisites have been reviewed.

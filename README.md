@@ -15,7 +15,8 @@ remain benchmarked alternatives; paid live-model comparison is deferred.
 No candidate document or AI-generated fact is published automatically.
 
 For production prerequisites and operations, see the
-[deployment runbook](docs/engineering/DEPLOYMENT.md) and
+[deployment runbook](docs/engineering/DEPLOYMENT.md) for the optional
+manual two-service Render rollout and read-only smoke verification, and
 [architecture overview](docs/engineering/ARCHITECTURE.md).
 
 ## Architecture

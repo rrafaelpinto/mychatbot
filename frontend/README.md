@@ -17,6 +17,14 @@ npm test
 npm run test:e2e
 ```
 
+The production build runs `scripts/check-build-env.mjs` when
+`RESUMEBOT_BUILD_TARGET=production` and requires an HTTPS
+`VITE_API_BASE_URL` without an embedded path or secrets. The optional
+[Render Blueprint](../render.yaml) configures two separately deployed
+services with manual release and no automatic database creation. See the
+[production runbook](../docs/engineering/DEPLOYMENT.md#independent-react-and-django-deployment-on-render)
+and run `npm run test:deploy` for offline build checks.
+
 The frontend is served on port 4173. No compiled assets are copied into Django
 or served by WhiteNoise. Deploy `dist/` to a static host with HTTPS. Set
 `VITE_API_BASE_URL` to the Django API origin at **build time** and configure

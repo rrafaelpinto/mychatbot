@@ -162,6 +162,107 @@ migrations**: forward-compatible schema changes and database backups are
 required for safe recovery. Restoring from backup may be necessary for
 incompatible migrations.
 
+## Independent React and Django deployment on Render
+
+The optional [Render Blueprint](../../render.yaml) defines a Django web service
+and a React static site, each with its own build and release. **It does not
+define a database, DNS records, Turnstile widget, account, or scheduler.**
+Blueprint synchronization is an explicit action in the Render Dashboard and
+can create a **paid** service. Both services have
+`autoDeployTrigger: off`; merging a PR does not trigger a live deployment.
+
+The backend uses the smallest paid web compute plan (512 MB). This is
+intentional: Render's free web plan does not support a pre-deploy migration
+command or shell access, and spins down while idle. Check current Render
+prices and service limits before activating the Blueprint:
+https://render.com/docs/free and https://render.com/docs/compute-plans.
+The frontend is a free static site, subject to Render's included usage.
+A managed, **persistent and backed-up** PostgreSQL instance with pgvector is
+a separate billed decision. Never attach a 30-day expiring free database to
+real profile or conversation data.
+
+### Release procedure
+
+1. Choose a domain you control. Use **two HTTPS subdomains on the same site**,
+   for example `app.example.com` for React and `api.example.com` for
+   Django. Reserve both and point them at the corresponding Render services
+   using Render's verified DNS/CNAME instructions. Do not commit provisional
+   domains or pretend to have validated DNS or TLS.
+2. Create a persistent PostgreSQL database with pgvector enabled, backups
+   configured, and a documented restore procedure. Record its **internal**
+   connection URL in Render secrets, not Git or a Vite variable.
+3. Review [render.yaml](../../render.yaml) and the costs, then activate the
+   Blueprint **manually**. Enter the `sync: false` values in Render:
+   `DATABASE_URL` (private), `DJANGO_ALLOWED_HOSTS` (API hostname without
+   scheme), `DJANGO_CSRF_TRUSTED_ORIGINS` (both actual HTTPS origins),
+   `API_CORS_ALLOWED_ORIGINS` (React HTTPS origin only), and
+   `VITE_API_BASE_URL` (Django HTTPS origin). These values are not inferred
+   from the Render service name. Render creates independent app/JWT secrets
+   but does not expose their plaintext to the frontend.
+4. Confirm Render terminates TLS and sets trustworthy
+   `X-Forwarded-Proto` before keeping
+   `DJANGO_TRUST_X_FORWARDED_PROTO=true`. The Blueprint starts with
+   a short HSTS lifetime and does not include subdomains. Review broader HSTS
+   settings only after DNS/TLS is stable.
+5. Verify the database backup, then **manually deploy the backend first**.
+   Its paid-service `preDeployCommand` applies migrations after the build,
+   never during the static frontend build. Verify `/healthz/` and
+   `/api/v1/candidates/`; create the owner through the trusted management
+   console, approve a public profile and verify that private data is not
+   exposed. Keep `AI_ENABLED=false` and `GUEST_CHAT_ENABLED=false`.
+6. **Manually deploy the frontend.** The production Vite build refuses to
+   run unless `VITE_API_BASE_URL` is an explicit HTTPS API origin. Confirm
+   it points to the deployed backend, not localhost or an old environment.
+   Static files are published from `frontend/dist` independently of
+   Django's WhiteNoise.
+7. Run the read-only smoke command from a trusted machine:
+
+   ```sh
+   python scripts/check_deployment.py \
+     --frontend-origin https://app.example.com \
+     --api-origin https://api.example.com \
+     --candidate published-candidate-slug
+   ```
+
+   This checks HTML, database readiness, CSRF bootstrap/cookie flags,
+   credentialed CORS, `Idempotency-Key` preflight, public API JSON, and
+   optionally a **fresh anonymous** guest session status. It makes no
+   state-changing or paid AI requests. The command does not prove that the
+   browser will persist cookies or solve Turnstile.
+8. Manually verify in a real browser: React profile, CSRF cookie, owner
+   login, refresh after an access-token expiry, logout and revoked refresh,
+   and no access to private facts across accounts. Inspect browser network
+   requests and cookie attributes. Guest chat remains disabled until a
+   separate controlled enablement check.
+
+### Guest access activation gate
+
+The default `SameSite=Lax` session/CSRF and HttpOnly refresh cookies work
+for **same-site HTTPS subdomains**. Separate `*.onrender.com` hosts must not
+be assumed same-site for cross-origin cookies; use your own shared parent
+domain before enabling login/guest access in the React app. Keep cookies
+host-only and credentialed CORS restricted to the known frontend origin.
+
+Only after validating TLS, the registered Turnstile **frontend hostname**,
+trusted proxy IP handling, and a real scheduled guest cleanup job should you
+supply `GUEST_TURNSTILE_SITE_KEY`, `GUEST_TURNSTILE_SECRET_KEY`,
+`GUEST_IP_HASH_SECRET`, a verified small positive AI budget,
+`OPENAI_API_KEY`, and finally enable the AI and guest feature flags.
+The `GUEST_CLEANUP_SCHEDULED` flag must reflect a real operating scheduler;
+the Blueprint deliberately does **not** create a cron job or set it true.
+
+Perform one explicitly budgeted real Turnstile challenge from the frontend
+and confirm subsequent guest requests use the same session, idempotency
+prevents repeat charges, withdrawn evidence is not disclosed, and limits
+return HTTP 429. Test the negative cases without a provider call where
+possible. Check the logs and budget counters after the controlled test,
+then decide whether to keep paid AI enabled. Browser-based verification
+cannot be completed by CI without real configured domains and credentials.
+
+Avoid any irreversible migration before a database backup. If an actual
+release fails, disable paid features, roll back the web/static releases,
+and restore or forward-fix the database separately if necessary.
+
 ## Deliberately deferred
 
 The paid 30-question real-model evaluation, semantic retrieval rollout,
