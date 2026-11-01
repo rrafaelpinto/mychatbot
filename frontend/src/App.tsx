@@ -46,7 +46,7 @@ function Home({ candidates }: { candidates: CandidateSummary[] }) {
       </div>
       {featured && <aside className="featured-profile" aria-label="Featured professional profile">
         <div className="featured-topline"><span className="section-kicker">FEATURED PROFILE</span><span className="featured-availability">Published experience</span></div>
-        <div className="featured-person"><Initials name={featured.name} /><div><span>Senior Software Engineer</span><h2>{featured.name}</h2></div></div>
+        <div className="featured-person"><Initials name={featured.name} /><div><span>Professional profile</span><h2>{featured.name}</h2></div></div>
         <p className="featured-summary">{featured.professional_summary}</p>
         <div className="featured-bottom"><span>Explore verified skills and experience</span><a href={profileLink(featured.slug)} aria-label={`View ${featured.name}'s professional profile`}>View profile <span aria-hidden="true">↗</span></a></div>
       </aside>}
@@ -58,7 +58,7 @@ function Home({ candidates }: { candidates: CandidateSummary[] }) {
         <a href={featured ? profileLink(featured.slug) : "#profiles"} className="path-card"><span className="path-icon" aria-hidden="true">02</span><strong>Review professional experience</strong><span>Explore the experience and skills approved for publication.</span><span className="path-link">Explore the profile ↗</span></a>
       </div>
     </div>
-    <section id="profiles" aria-labelledby="profiles-title" className="section-block portfolio-directory">
+    {candidates.length !== 1 && <section id="profiles" aria-labelledby="profiles-title" className="section-block portfolio-directory">
       <div className="section-heading"><div><div className="eyebrow">PUBLIC PROFILE DIRECTORY</div><h2 id="profiles-title">Published profiles</h2></div></div>
       {candidates.length ? <div className="feature-grid">{candidates.map(candidate =>
         <article className="feature-card" key={candidate.slug}>
@@ -66,7 +66,7 @@ function Home({ candidates }: { candidates: CandidateSummary[] }) {
           <p>{candidate.professional_summary}</p>
           <a className="button button-secondary" href={profileLink(candidate.slug)}>Read profile</a>
         </article>)}</div> : <Notice kind="warning">No professional profiles are currently published.</Notice>}
-    </section>
+    </section>}
   </section>;
 }
 
@@ -90,7 +90,7 @@ function PublicProfile({ slug }: { slug: string }) {
     <div className="profile-layout"><div className="profile-content">
       <section className="profile-section"><div className="section-kicker">01 / ABOUT</div><h2>Professional overview</h2><p>{profile.professional_summary}</p></section>
       <section className="profile-section evidence-section"><div className="section-kicker">02 / VERIFIED EXPERIENCE</div><h2>Published facts</h2>
-        {profile.facts.length ? profile.facts.map((fact, i) => <article key={fact.id} className="experience-item"><div className="experience-index">{String(i + 1).padStart(2, "0")}</div><div><h3>{fact.fact_type.replace(/_/g, " ")}</h3><p>{fact.content}</p><div className="fact-meta">Approved for publication</div></div></article>) : <p>No verified facts are currently published.</p>}
+        {profile.facts.length ? profile.facts.map((fact, i) => <article key={fact.id} className="experience-item"><div className="experience-index">{String(i + 1).padStart(2, "0")}</div><div><h3>{fact.fact_type.replace(/_/g, " ")}</h3><p>{fact.content}</p></div></article>) : <p>No verified facts are currently published.</p>}
       </section>
     </div><aside className="profile-aside" aria-label="Contact and privacy">
       <div className="aside-card"><div className="aside-title">At a glance</div><div className="aside-stat"><span>Published facts</span><strong>{profile.facts.length}</strong></div>
