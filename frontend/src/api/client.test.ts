@@ -96,3 +96,33 @@ it("does not retry stale review actions and sends the server-supplied version", 
   });
   expect(fetcher.mock.calls[2]![0].pathname).toBe("/api/v1/me/facts/3/review/");
 });
+
+
+it("keeps anonymous guest traffic outside the JWT authorization flow", async () => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(json({
+      enabled: true, guest_verified: false, turnstile_site_key: "site",
+      remaining: null, history: [],
+    }))
+    .mockResolvedValueOnce(json({ csrf_token: "guest-csrf" }))
+    .mockResolvedValueOnce(json({
+      response: "Approved answer", evidence: [], guest_verified: true, remaining: 9,
+    }));
+  const client = new ApiClient("https://api.example.test", fetcher);
+  const status = await client.guestStatus("alex");
+  expect(status.guest_verified).toBe(false);
+  const answer = await client.guestAsk("alex", "Experience?", "turnstile-token", "request-key");
+  expect(answer.remaining).toBe(9);
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  const request = fetcher.mock.calls[2]![1] as RequestInit;
+  const headers = request.headers as Record<string, string>;
+  expect(headers.Authorization).toBeUndefined();
+  expect(headers["X-CSRFToken"]).toBe("guest-csrf");
+  expect(headers["Idempotency-Key"]).toBe("request-key");
+  expect(request.credentials).toBe("include");
+  expect(request.cache).toBe("no-store");
+  expect(JSON.parse(request.body as string)).toEqual({
+    question: "Experience?", turnstile_token: "turnstile-token",
+  });
+  expect(fetcher.mock.calls[2]![0].pathname).toBe("/api/v1/candidates/alex/guest-chat/");
+});

@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from .auth import CSRFTokenView, TokenLoginView, TokenLogoutView, TokenRefreshView
+from .guest import GuestCandidateChatView
 
 urlpatterns = [
     path("auth/csrf/", CSRFTokenView.as_view(), name="api-auth-csrf"),
@@ -17,6 +18,11 @@ urlpatterns = [
         "candidates/<slug:slug>/chat/",
         views.AuthenticatedCandidateChatView.as_view(),
         name="api-candidate-chat",
+    ),
+    path(
+        "candidates/<slug:slug>/guest-chat/",
+        GuestCandidateChatView.as_view(),
+        name="api-candidate-guest-chat",
     ),
     path("candidates/", views.PublicCandidateListView.as_view(), name="api-candidates"),
     path(
