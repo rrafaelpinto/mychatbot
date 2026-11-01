@@ -123,7 +123,7 @@ export function GuestChatPanel({ slug, onLogin }: { slug: string; onLogin: () =>
       <div className="guest-footer">
         <p>Do not share sensitive personal information. Guest conversations and usage are limited by the backend.</p>
         <button type="button" onClick={() => void reload()} disabled={busy}>Reload conversation</button>
-        <a href={api.getBackendUrl("/chat/" + encodeURIComponent(slug) + "/")}>Django guest demo</a>
+
       </div>
       <details className="guest-signin"><summary>Sign in to use your account</summary>
         <AuthLogin onLogin={onLogin} />
