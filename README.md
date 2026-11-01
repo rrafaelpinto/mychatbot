@@ -20,7 +20,13 @@ For production prerequisites and operations, see the
 
 ## Architecture
 
-The project is a modular Django monolith backed by PostgreSQL:
+The backend is a modular Django monolith backed by PostgreSQL. A separately
+built React/TypeScript application lives in [`frontend/`](frontend/) and uses
+versioned DRF/OpenAPI endpoints. It is deployed independently; Django and
+WhiteNoise do not serve the React bundle. The frontend includes public
+profiles, authenticated candidate chat and an owner-only review workspace.
+
+The backend domain includes:
 
 - `CandidateProfile` owns candidate lifecycle, publication, and privacy-controlled profile data.
 - `CandidateDocument` stores private raw source documents and unverified extracted text.
