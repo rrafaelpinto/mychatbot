@@ -103,22 +103,27 @@ class OwnerFactSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
+
 class OwnerProfileUpdateSerializer(serializers.ModelSerializer):
     """Allow only owner-editable profile text and contact visibility."""
 
     class Meta:
         model = CandidateProfile
         fields = (
-            "name", "professional_summary", "linkedin",
-            "show_linkedin", "contact_email", "show_contact_email",
+            "name",
+            "professional_summary",
+            "linkedin",
+            "show_linkedin",
+            "contact_email",
+            "show_contact_email",
         )
 
     def to_internal_value(self, data):
         unknown = set(data) - set(self.fields)
         if unknown:
-            raise serializers.ValidationError({
-                key: ["This field is not editable."] for key in sorted(unknown)
-            })
+            raise serializers.ValidationError(
+                {key: ["This field is not editable."] for key in sorted(unknown)}
+            )
         return super().to_internal_value(data)
 
 
@@ -136,3 +141,4 @@ class CandidateChatInputSerializer(serializers.Serializer):
 class CandidateChatOutputSerializer(serializers.Serializer):
     response = serializers.CharField(read_only=True)
     evidence = PublicFactSerializer(many=True, read_only=True)
+2026-11-01T00:06:43.0603066

@@ -84,9 +84,19 @@ class CSRFTokenView(views.APIView):
         return _no_store(Response({"csrf_token": get_token(request._request)}))
 
 
+class PublicTokenView(views.APIView):
+    """Report an authentication challenge without requiring a bearer header."""
+
+    authentication_classes = []
+
+    def get_authenticate_header(self, request):
+        """Preserve HTTP 401 semantics for rejected cookie/credential requests."""
+        return "Bearer"
+
+
 @method_decorator(csrf_protect, name="dispatch")
 @extend_schema(tags=["Authentication"])
-class TokenLoginView(views.APIView):
+class TokenLoginView(PublicTokenView):
     """Exchange credentials for an in-memory access token and protected cookie."""
 
     authentication_classes = []
@@ -94,14 +104,16 @@ class TokenLoginView(views.APIView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "auth_login"
 
-    @extend_schema(request=CredentialsSerializer, responses={200: AccessTokenSerializer})
+    @extend_schema(
+        request=CredentialsSerializer, responses={200: AccessTokenSerializer}
+    )
     def post(self, request):
         serializer = CredentialsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = authenticate(
             request=request._request,
             username=serializer.validated_data["username"],
-            password=serializer.validated_data["password"],
+            ***"password"],
         )
         if user is None or not user.is_active:
             raise AuthenticationFailed("Invalid credentials.")
@@ -114,7 +126,7 @@ class TokenLoginView(views.APIView):
 
 @method_decorator(csrf_protect, name="dispatch")
 @extend_schema(tags=["Authentication"])
-class TokenRefreshView(views.APIView):
+class TokenRefreshView(PublicTokenView):
     """Rotate a cookie-held refresh token with row-locked replay prevention."""
 
     authentication_classes = []
@@ -130,9 +142,11 @@ class TokenRefreshView(views.APIView):
         try:
             with transaction.atomic():
                 old = RefreshToken(raw)
-                outstanding = OutstandingToken.objects.select_for_update().filter(
-                    jti=old["jti"]
-                ).first()
+                outstanding = (
+                    OutstandingToken.objects.select_for_update()
+                    .filter(jti=old["jti"])
+                    .first()
+                )
                 if outstanding is None:
                     raise AuthenticationFailed("Refresh token is invalid.")
                 serializer = TokenRefreshSerializer(data={"refresh": raw})
@@ -149,7 +163,7 @@ class TokenRefreshView(views.APIView):
 
 @method_decorator(csrf_protect, name="dispatch")
 @extend_schema(tags=["Authentication"])
-class TokenLogoutView(views.APIView):
+class TokenLogoutView(PublicTokenView):
     """Revoke only the presented refresh credential; leave Django admin alone."""
 
     authentication_classes = []
@@ -167,3 +181,4 @@ class TokenLogoutView(views.APIView):
             except TokenError:
                 pass
         return _clear_refresh_cookie(Response(status=status.HTTP_204_NO_CONTENT))
+2026-11-01T00:06:43.0546511

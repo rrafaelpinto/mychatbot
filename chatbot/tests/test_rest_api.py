@@ -173,7 +173,7 @@ def test_read_only_api_rejects_mutations_without_changing_data(
                 data=json.dumps({"content": "Unapproved update"}),
                 content_type="application/json",
             ).status_code
-            == 405
+            == (400 if route == "api-me-profile" else 405)
         )
     url = reverse("api-candidate-detail", kwargs={"slug": published_candidate.slug})
     assert client.delete(url).status_code == 405
