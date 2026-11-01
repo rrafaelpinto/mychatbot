@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  page.on("pageerror", error => console.log("BROWSER_ERROR", error.message));
+  page.on("requestfailed", request => console.log("REQUEST_FAILED", request.url(), request.failure()?.errorText));
+  page.on("request", request => {
+    if (request.url().includes("/api/v1/")) console.log("API_REQUEST", request.method(), request.url());
+  });
   await page.route("http://127.0.0.1:8000/api/v1/**", async route => {
     const path = new URL(route.request().url()).pathname;
     const headers = {
@@ -27,6 +32,7 @@ test.beforeEach(async ({ page }) => {
 
 test("lists only API-provided profiles and displays public evidence", async ({ page }) => {
   await page.goto("/");
+  console.log("INITIAL_BODY", (await page.locator("body").innerText()).slice(0, 1400));
   await expect(page.getByRole("heading", { name: "Meet the candidates." })).toBeVisible();
   await page.getByRole("link", { name: "View profile" }).click();
   await expect(page.getByRole("heading", { name: "Alex Example." })).toBeVisible();
