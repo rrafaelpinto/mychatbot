@@ -160,3 +160,51 @@ def test_production_guest_chat_requires_a_scheduled_retention_cleanup():
     )
     assert result.returncode != 0
     assert "active guest session cleanup schedule" in result.stderr
+
+
+def test_cross_origin_guest_preflight_includes_idempotency_header(client, settings):
+    settings.CORS_ALLOWED_ORIGINS = ["https://app.example.test"]
+    allowed = client.options(
+        "/api/v1/candidates/portfolio/guest-chat/",
+        HTTP_ORIGIN="https://app.example.test",
+        HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+        HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type,x-csrftoken,idempotency-key",
+    )
+    assert allowed.status_code == 200
+    assert allowed["Access-Control-Allow-Origin"] == "https://app.example.test"
+    assert allowed["Access-Control-Allow-Credentials"] == "true"
+    headers = {
+        header.strip().lower()
+        for header in allowed["Access-Control-Allow-Headers"].split(",")
+    }
+    assert {"content-type", "x-csrftoken", "idempotency-key"} <= headers
+
+    forbidden = client.options(
+        "/api/v1/candidates/portfolio/guest-chat/",
+        HTTP_ORIGIN="https://untrusted.example.test",
+        HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+    )
+    assert "Access-Control-Allow-Origin" not in forbidden
+
+
+def test_production_cookies_are_secure_and_host_scoped():
+    result = production_settings_subprocess(
+        {
+            "API_CORS_ALLOWED_ORIGINS": "https://app.example.test",
+            "DJANGO_CSRF_TRUSTED_ORIGINS": "https://app.example.test",
+        },
+        (
+            "from django.conf import settings; "
+            "assert settings.CORS_ALLOW_CREDENTIALS; "
+            "assert settings.SESSION_COOKIE_SECURE; "
+            "assert settings.CSRF_COOKIE_SECURE; "
+            "assert settings.CSRF_COOKIE_SAMESITE == 'Lax'; "
+            "assert settings.SESSION_COOKIE_SAMESITE == 'Lax'; "
+            "assert settings.SESSION_COOKIE_DOMAIN is None; "
+            "assert settings.CSRF_COOKIE_DOMAIN is None; "
+            "assert settings.JWT_REFRESH_COOKIE_SECURE; "
+            "assert settings.JWT_REFRESH_COOKIE_SAMESITE == 'Lax'; "
+            "assert settings.JWT_REFRESH_COOKIE_PATH == '/api/v1/auth/'"
+        ),
+    )
+    assert result.returncode == 0, result.stderr
