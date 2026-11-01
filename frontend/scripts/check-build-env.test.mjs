@@ -19,7 +19,7 @@ test("production build requires an explicit HTTPS API origin", () => {
     "https://api.example.test/path",
     "https://api.example.test/?secret=x",
     "https://user:password@api.example.test",
-    "https://api.example.test:443",
+    "https://api.example.test:8443",
     "not-a-url",
   ]) {
     assert.throws(

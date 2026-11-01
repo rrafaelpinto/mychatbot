@@ -54,6 +54,9 @@ jobs:
       - name: Check deploy script syntax
         run: bash -n scripts/build.sh scripts/start.sh
 
+      - name: Validate deployment smoke checks and Blueprint
+        run: uv run pytest scripts/tests
+
       - name: Ruff lint
         run: uv run ruff check .
 
