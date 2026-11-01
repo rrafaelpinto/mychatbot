@@ -14,17 +14,25 @@ The application combines a **Python/Django REST Framework backend**, **PostgreSQ
 
 ## Product walkthrough
 
+### Recruiter-first overview
+
+The landing page introduces the featured professional and provides a direct route to ask about technical experience.
+
+![ResumeBot home showing the featured engineer and direct profile/chat navigation](docs/assets/resumebot-home.jpg)
+
 ### Published professional profile
 
-A candidate's public profile exposes approved experience without revealing source documents or unpublished information.
+The public profile shows approved engineering experience and professional facts. Unpublished documents remain private.
 
 ![ResumeBot public profile](docs/assets/resumebot-public-profile.jpg)
 
 ### Candidate Agent
 
-Recruiters can ask about backend engineering, Django REST Framework, PostgreSQL, and applied AI. Answers use the candidate's voice and display the professional facts behind them.
+Recruiters can ask about Django, Django REST Framework, PostgreSQL, and AI-assisted engineering. The Agent responds in the candidate's first person and offers supporting professional facts.
 
-![ResumeBot Candidate Agent answering professional questions](docs/assets/resumebot-candidate-agent.jpg)
+![ResumeBot Candidate Agent answering technical questions](docs/assets/resumebot-candidate-agent.jpg)
+
+A responsive mobile capture is also available: [Candidate Agent on mobile](docs/assets/resumebot-candidate-agent-mobile.jpg).
 
 ## Architecture
 
@@ -119,7 +127,7 @@ AI, guest chat, public registration, and file uploads are disabled by default in
 
 - [System architecture and trust boundaries](docs/engineering/ARCHITECTURE.md)
 - [Versioned REST API](docs/engineering/REST_API.md) and [JWT API security](docs/engineering/JWT_API_SECURITY.md)
-- [Frontend development](frontend/README.md) and [UI design system](docs/design/DESIGN_SYSTEM.md)
+- [Frontend development](frontend/README.md), [UI design system](docs/design/DESIGN_SYSTEM.md), and [UI/UX review workflow](docs/engineering/UI_UX_WORKFLOW.md)
 - [Candidate knowledge import](docs/engineering/FACT_IMPORT.md) and [anonymous chat policy](docs/engineering/GUEST_CHAT.md)
 - [Offline evaluation](docs/engineering/AI_EVALUATION.md) and [retrieval experiments](docs/engineering/PAID_AI_EVALUATION.md)
 - [Deployment and rollback](docs/engineering/DEPLOYMENT.md)
