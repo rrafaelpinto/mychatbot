@@ -3,17 +3,24 @@ import { expect, test } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   await page.route("http://127.0.0.1:8000/api/v1/**", async route => {
     const path = new URL(route.request().url()).pathname;
+    const headers = {
+      "Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "Content-Type, X-CSRFToken, Authorization, Idempotency-Key",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    };
+    if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
     if (path === "/api/v1/candidates/") {
-      return route.fulfill({ json: { count: 1, next: null, previous: null, results: [
+      return route.fulfill({ headers, json: { count: 1, next: null, previous: null, results: [
         { slug: "alex", name: "Alex Example", professional_summary: "Backend engineer", image_url: "", linkedin: null, contact_email: null },
       ] } });
     }
-    if (path === "/api/v1/candidates/alex/") return route.fulfill({ json: {
+    if (path === "/api/v1/candidates/alex/") return route.fulfill({ headers, json: {
       slug: "alex", name: "Alex Example", professional_summary: "Backend engineer", image_url: "", linkedin: null, contact_email: null,
       facts: [{ id: 3, fact_type: "skill", content: "Approved Python experience" }],
     } });
     if (path === "/api/v1/auth/csrf/") return route.fulfill({ json: { csrf_token: "test" } });
-    if (path === "/api/v1/auth/refresh/") return route.fulfill({ status: 401, json: { detail: "Authentication required." } });
+    if (path === "/api/v1/auth/refresh/") return route.fulfill({ headers, status: 401, json: { detail: "Authentication required." } });
     return route.abort("failed");
   });
 });
