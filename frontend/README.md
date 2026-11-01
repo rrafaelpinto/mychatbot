@@ -1,7 +1,9 @@
 # ResumeBot standalone frontend
 
 React, TypeScript and Vite application served independently from Django. The
-design inherits the approved Phase 4 visual prototype and its semantic tokens.
+public experience follows the recruiter-first UI layout and semantic tokens
+in `src/styles.css`. Use the repository's `ui-ux-review` skill and
+[`UI_UX_WORKFLOW.md`](../docs/engineering/UI_UX_WORKFLOW.md) for interface changes.
 
 ## Local development
 
