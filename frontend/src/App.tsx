@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { ApiError, api } from "./api/client";
 import type { CandidateDetail, CandidateSummary, ChatMessage, PublicFact } from "./api/types";
 
@@ -22,7 +22,7 @@ function Initials({ name, large = false }: { name: string; large?: boolean }) {
   return <span className={"portrait " + (large ? "portrait-large" : "portrait-mini")} aria-hidden="true">{text}</span>;
 }
 
-function Notice({ kind, children }: { kind: "error" | "warning"; children: React.ReactNode }) {
+function Notice({ kind, children }: { kind: "error" | "warning"; children: ReactNode }) {
   return <div role="status" className={"state-feedback state-" + kind}>{children}</div>;
 }
 
