@@ -31,46 +31,42 @@ function Notice({ kind, children }: { kind: "error" | "warning"; children: React
 }
 
 function Home({ candidates }: { candidates: CandidateSummary[] }) {
-  const first = candidates[0];
-  return <section className="view" aria-labelledby="home-title">
-    <div className="hero-grid">
-      <div className="hero-copy">
-        <div className="eyebrow"><span className="eyebrow-line" aria-hidden="true" /> Evidence-led professional profiles</div>
-        <h1 id="home-title">Your experience.<br /><em>Nothing invented.</em></h1>
-        <p className="hero-description">Explore published professional experience and ask a Candidate Agent questions grounded in facts the candidate chose to share.</p>
+  const featured = candidates[0];
+  return <section className="view portfolio-home" aria-labelledby="home-title">
+    <div className="portfolio-hero">
+      <div className="portfolio-intro">
+        <div className="eyebrow"><span className="eyebrow-line" aria-hidden="true" /> An interactive engineering portfolio</div>
+        <h1 id="home-title">Get to know the <em>engineer behind the code.</em></h1>
+        <p className="hero-description">Explore practical software engineering experience, or ask a Candidate Agent directly about the work, technical decisions, and projects.</p>
         <div className="hero-actions">
-          <a className="button button-primary" href={first ? profileLink(first.slug) : "#profiles"}>Explore profiles</a>
-          {first && <a className="button button-secondary" href={agentLink(first.slug)}>Meet the Candidate Agent</a>}
+          {featured && <a className="button button-primary" href={agentLink(featured.slug)}>Ask about my experience <span aria-hidden="true">↗</span></a>}
+          <a className="button button-secondary" href={featured ? profileLink(featured.slug) : "#profiles"}>View professional profile</a>
         </div>
-        <div className="hero-caption">Candidate-approved facts only · Visible supporting evidence</div>
+        <p className="hero-caption">Answers are grounded in published professional information.</p>
       </div>
-      <div className="hero-art" aria-label="Illustration showing a verified professional profile">
-        <div className="art-pattern" aria-hidden="true" />
-        <div className="art-profile">
-          <div className="art-profile-top"><span className="tiny-label">PROFILE / OVERVIEW</span><span className="mini-status">Published</span></div>
-          <div className="art-person"><span className="portrait portrait-mini" aria-hidden="true">RB</span><div><strong>Professional profile</strong><span>Approved candidate information</span></div></div>
-          <div className="art-divider" />
-          <div className="art-tags"><span>Experience</span><span>Skills</span><span>Projects</span></div>
-          <div className="art-profile-bottom"><span>Professional evidence</span><strong>Verified before sharing</strong></div>
-        </div>
-        <div className="art-answer"><div className="art-answer-title"><span className="answer-glyph" aria-hidden="true">✓</span><strong>Candidate Agent</strong></div><p>Answers are supported by facts the candidate has explicitly approved for publication.</p><div className="art-evidence">Inspect the evidence behind each answer</div></div>
+      {featured && <aside className="featured-profile" aria-label="Featured professional profile">
+        <div className="featured-topline"><span className="section-kicker">FEATURED PROFILE</span><span className="featured-availability">Published experience</span></div>
+        <div className="featured-person"><Initials name={featured.name} /><div><span>Senior Software Engineer</span><h2>{featured.name}</h2></div></div>
+        <p className="featured-summary">{featured.professional_summary}</p>
+        <div className="featured-bottom"><span>Explore verified skills and experience</span><a href={profileLink(featured.slug)} aria-label={`View ${featured.name}'s professional profile`}>View profile <span aria-hidden="true">↗</span></a></div>
+      </aside>}
+    </div>
+    <div className="portfolio-paths" aria-label="Ways to explore">
+      <div className="path-heading"><span className="section-kicker">EXPLORE THE WORK</span><h2>Start with what matters to you.</h2></div>
+      <div className="path-grid">
+        <a href={featured ? agentLink(featured.slug) : "#profiles"} className="path-card"><span className="path-icon" aria-hidden="true">01</span><strong>Ask the Candidate Agent</strong><span>Ask about backend architecture, APIs, data modeling, and applied AI.</span><span className="path-link">Start a conversation ↗</span></a>
+        <a href={featured ? profileLink(featured.slug) : "#profiles"} className="path-card"><span className="path-icon" aria-hidden="true">02</span><strong>Review professional experience</strong><span>Explore the experience and skills approved for publication.</span><span className="path-link">Explore the profile ↗</span></a>
       </div>
     </div>
-    <div className="trust-strip" aria-label="Product principles">
-      <div><span className="trust-number">01</span><strong>Candidate owned</strong><span>Control what is published</span></div>
-      <div><span className="trust-number">02</span><strong>Evidence grounded</strong><span>Answers refer to approved facts</span></div>
-      <div><span className="trust-number">03</span><strong>Privacy by default</strong><span>Private documents stay private</span></div>
-    </div>
-    <section id="profiles" aria-labelledby="profiles-title" className="section-block">
-      <div className="section-heading"><div><div className="eyebrow">PUBLIC PROFILES</div><h2 id="profiles-title">Meet the candidates.</h2></div><p>Only published, approved profiles appear here.</p></div>
+    <section id="profiles" aria-labelledby="profiles-title" className="section-block portfolio-directory">
+      <div className="section-heading"><div><div className="eyebrow">PUBLIC PROFILE DIRECTORY</div><h2 id="profiles-title">Published profiles</h2></div></div>
       {candidates.length ? <div className="feature-grid">{candidates.map(candidate =>
         <article className="feature-card" key={candidate.slug}>
-          <div className="art-person"><Initials name={candidate.name} /><div><h3>{candidate.name}</h3><span>Public candidate</span></div></div>
+          <div className="art-person"><Initials name={candidate.name} /><div><h3>{candidate.name}</h3><span>Professional profile</span></div></div>
           <p>{candidate.professional_summary}</p>
-          <a className="button button-secondary" href={profileLink(candidate.slug)}>View profile</a>
-        </article>)}</div> : <Notice kind="warning">No profiles are published yet. Private or pending profiles are never shown here.</Notice>}
+          <a className="button button-secondary" href={profileLink(candidate.slug)}>Read profile</a>
+        </article>)}</div> : <Notice kind="warning">No professional profiles are currently published.</Notice>}
     </section>
-    <section className="bottom-banner"><div><span className="banner-label">A DIFFERENT KIND OF AI PROFILE</span><h2>Less hype. More signal.</h2><p>Understand the work and the evidence behind it.</p></div></section>
   </section>;
 }
 
@@ -148,10 +144,10 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
   if (error === "The candidate is not available.") return <Notice kind="warning">{error}</Notice>;
   if (!profile) return <p role="status">Loading candidate…</p>;
   return <section className="view" aria-labelledby="agent-title">
-    <div className="page-topline"><div className="breadcrumbs"><a href="#/">Overview</a><span>/</span><a href={profileLink(slug)}>{profile.name}</a><span>/</span> Agent</div><span className="sample-label">LIVE API</span></div>
-    <div className="agent-page-title"><div><div className="eyebrow">EVIDENCE-LED CONVERSATIONS</div><h1 id="agent-title">Ask better questions.<br /><em>Get grounded answers.</em></h1><p>Answers use only currently published, verified facts, subject to backend policies.</p></div><div className="agent-intro-person"><Initials name={profile.name} /><div><strong>{profile.name}</strong><span>Published profile</span></div></div></div>
+    <div className="page-topline"><div className="breadcrumbs"><a href="#/">Overview</a><span>/</span><a href={profileLink(slug)}>{profile.name}</a><span>/</span> Agent</div><span className="sample-label">PUBLIC CONVERSATION</span></div>
+    <div className="agent-page-title"><div><div className="eyebrow">CANDIDATE AGENT</div><h1 id="agent-title">Ask about <em>{profile.name}.</em></h1><p>Ask about engineering decisions, backend development, and applied AI. Responses are written from the candidate’s perspective using published experience.</p></div><div className="agent-intro-person"><Initials name={profile.name} /><div><strong>{profile.name}</strong><span>Published profile</span></div></div></div>
     <div className="agent-layout"><section className="conversation" aria-label="Candidate conversation">
-      <div className="conversation-top"><div className="conversation-icon">✓</div><div><strong>Candidate Agent</strong><span>{profile.name}'s approved facts</span></div><span className="demo-badge">LIMITED ACCESS</span></div>
+      <div className="conversation-top"><div className="conversation-icon">✓</div><div><strong>Candidate Agent</strong><span>{profile.name}'s approved facts</span></div><span className="demo-badge">FACT-BASED ANSWERS</span></div>
       {session === "guest" ? <GuestChatPanel slug={slug} onLogin={onLogin} /> : <>
       <div className="conversation-scroll" aria-live="polite" aria-relevant="additions text">
         {session === "checking" && <p>Checking your session…</p>}
@@ -188,9 +184,9 @@ export function App() {
   const active = route.page;
   return <>
     <a className="skip-link" href="#main">Skip to content</a>
-    <div className="preview-ribbon">ResumeBot · Verified professional information</div>
+    
     <div className="site-shell"><header className="site-header"><a className="brand" href="#/" aria-label="ResumeBot homepage"><span className="brand-mark">✓</span>resumebot<span className="brand-period">.</span></a>
-      <nav className="main-nav" aria-label="Main navigation"><a href="#/" aria-current={active === "home" ? "page" : undefined}>Overview</a><a href={candidates[0] ? profileLink(candidates[0].slug) : "#profiles"} aria-current={active === "profile" ? "page" : undefined}>Public profile</a><a href={candidates[0] ? agentLink(candidates[0].slug) : "#profiles"} aria-current={active === "agent" ? "page" : undefined}>Candidate Agent</a></nav>
+      <nav className="main-nav" aria-label="Main navigation"><a href="#/" aria-current={active === "home" ? "page" : undefined}>Home</a><a href={candidates[0] ? profileLink(candidates[0].slug) : "#profiles"} aria-current={active === "profile" ? "page" : undefined}>Public profile</a><a href={candidates[0] ? agentLink(candidates[0].slug) : "#profiles"} aria-current={active === "agent" ? "page" : undefined}>Candidate Agent</a></nav>
       {session === "authenticated" && <a className="header-cta" href="#/owner">My workspace</a>}<div className="header-actions"><button type="button" id="theme-toggle" className="icon-button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} onClick={() => setDark(!dark)}>{dark ? "☀" : "☾"}</button></div>
     </header><main id="main">
       {listError && active === "home" && <Notice kind="error">{listError}</Notice>}
@@ -198,6 +194,6 @@ export function App() {
       {route.page === "profile" && <PublicProfile slug={route.slug} />}
       {route.page === "owner" && <OwnerDashboard session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
       {route.page === "agent" && <Agent slug={route.slug} session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
-    </main><footer className="site-footer"><div className="footer-logo">resumebot<span>.</span></div><p>Professional stories, grounded in approved information.</p><span>Independent React frontend</span></footer></div>
+    </main><footer className="site-footer"><div className="footer-logo">resumebot<span>.</span></div><p>Professional stories, grounded in approved information.</p><span>Built with Django and React</span></footer></div>
   </>;
 }
