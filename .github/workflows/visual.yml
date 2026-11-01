@@ -22,14 +22,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Resolve prototype dependencies
-        run: |
-          npm install --prefix prototypes/visual --package-lock-only --no-fund --no-audit
-          echo "VISUAL_LOCK_BEGIN"
-          cat prototypes/visual/package-lock.json
-          echo "VISUAL_LOCK_END"
       - name: Install prototype test dependencies
-        run: npm install --prefix prototypes/visual --no-fund --no-audit
+        run: npm ci --prefix prototypes/visual --no-fund --no-audit
       - name: Install Chromium
         run: cd prototypes/visual && npx playwright install --with-deps chromium
       - name: Responsive and accessibility review
