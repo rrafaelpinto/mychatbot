@@ -41,4 +41,7 @@ jobs:
           mkdir -p .local
           uv run python manage.py spectacular --format openapi-json --file .local/openapi.json --settings=mychatbot.test_settings
           npm --prefix frontend run api:types
+          echo TYPES_BEGIN
+          base64 -w 120 frontend/src/api/schema.generated.d.ts
+          echo TYPES_END
           git diff --exit-code -- frontend/src/api/schema.generated.d.ts

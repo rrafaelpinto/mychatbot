@@ -1,8 +1,8 @@
 from django.urls import path
 
 from . import views
-from .guest import GuestCandidateChatView
 from .auth import CSRFTokenView, TokenLoginView, TokenLogoutView, TokenRefreshView
+from .guest import GuestCandidateChatView
 
 urlpatterns = [
     path("auth/csrf/", CSRFTokenView.as_view(), name="api-auth-csrf"),
