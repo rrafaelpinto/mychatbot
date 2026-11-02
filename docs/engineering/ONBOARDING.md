@@ -51,3 +51,5 @@ The account-access backfill preserves existing candidate approval/publication st
 Password authentication through the legacy token endpoint is restricted to active superusers. Legacy public password and registration pages redirect to React and reject mutations. The former Django profile creation/upload endpoint rejects POST requests.
 
 Production activation requires SMTP delivery verification, persistent private storage, explicit feature flags and the existing AI budget configuration. No new free allowance, background queue, or exemption from cost controls is introduced.
+
+Before activation, run `uv run python manage.py check_onboarding` against the target environment. Add `--uploads` to inspect media-root configuration before enabling uploads. This read-only command sends no email and does not prove SMTP delivery or storage durability. Follow the staged activation procedure in [DEPLOYMENT.md](DEPLOYMENT.md).

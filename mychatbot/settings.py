@@ -271,6 +271,7 @@ default_email_backend = (
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", default_email_backend)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_TIMEOUT = float(os.environ.get("EMAIL_TIMEOUT", "10"))
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", default=True)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
