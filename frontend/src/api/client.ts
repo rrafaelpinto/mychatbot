@@ -1,4 +1,4 @@
-import type { CandidateDetail, ChatAnswer, ChatMessage, GuestReply, GuestStatus, OwnerFact, OwnerFactList, OwnerProfile, OwnerProfileUpdate, CandidateList, ReviewAction, TokenResponse } from "./types";
+import type { Account, DocumentList, OwnerDocument, CandidateDetail, ChatAnswer, ChatMessage, GuestReply, GuestStatus, OwnerFact, OwnerFactList, OwnerProfile, OwnerProfileUpdate, CandidateList, ReviewAction, TokenResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -26,7 +26,7 @@ export class ApiClient {
     retry = true,
   ): Promise<T> {
     const headers: Record<string, string> = { Accept: "application/json" };
-    if (options.body !== undefined) headers["Content-Type"] = "application/json";
+    if (options.body !== undefined && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
     if (options.auth && this.access) headers.Authorization = "Bearer " + this.access;
     if (options.csrf && this.csrf) headers["X-CSRFToken"] = this.csrf;
     if (options.key) headers["Idempotency-Key"] = options.key;
@@ -36,7 +36,7 @@ export class ApiClient {
       headers,
       credentials: "include",
       cache: "no-store",
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.body instanceof FormData ? options.body : options.body === undefined ? undefined : JSON.stringify(options.body),
     });
 
     if (response.status === 401 && options.auth && retry && (await this.refresh())) {
@@ -58,13 +58,43 @@ export class ApiClient {
     this.csrf = result.csrf_token;
   }
 
-  async login(username: string, password: string): Promise<void> {
+  async requestCode(email: string, registration?: { name: string; role: "candidate" | "recruiter" }): Promise<void> {
     await this.csrfToken();
-    const token = await this.send<TokenResponse>("/api/v1/auth/token/", {
-      method: "POST", csrf: true, body: { username, password },
-    });
+    await this.send("/api/v1/auth/code/request/", { method: "POST", csrf: true, body: { email, ...registration } });
+  }
+
+  async verifyCode(email: string, code: string): Promise<void> {
+    if (!this.csrf) await this.csrfToken();
+    const token = await this.send<TokenResponse>("/api/v1/auth/code/verify/", { method: "POST", csrf: true, body: { email, code } });
     this.generation++;
     this.access = token.access;
+  }
+
+  account(): Promise<Account> { return this.send("/api/v1/me/", { auth: true }); }
+
+  createOwnerProfile(changes: OwnerProfileUpdate): Promise<OwnerProfile> {
+    return this.send("/api/v1/me/profile/", { method: "POST", auth: true, body: changes });
+  }
+
+  documents(page = 1): Promise<DocumentList> {
+    return this.send("/api/v1/me/documents/?page=" + page, { auth: true });
+  }
+
+  uploadDocument(document: File): Promise<OwnerDocument> {
+    const body = new FormData(); body.append("document", document);
+    return this.send("/api/v1/me/documents/", { method: "POST", auth: true, body });
+  }
+
+  extractDocument(id: number): Promise<{ proposed_count: number }> {
+    return this.send("/api/v1/me/documents/" + id + "/extract/", { method: "POST", auth: true });
+  }
+
+  publishProfile(published: boolean): Promise<OwnerProfile> {
+    return this.send("/api/v1/me/profile/publication/", { method: "POST", auth: true, body: { published } });
+  }
+
+  editFact(id: number, content: string, version: string): Promise<OwnerFact> {
+    return this.send("/api/v1/me/facts/" + id + "/", { method: "PATCH", auth: true, body: { content, version } });
   }
 
   async restore(): Promise<boolean> {

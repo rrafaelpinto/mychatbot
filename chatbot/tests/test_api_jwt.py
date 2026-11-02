@@ -25,9 +25,26 @@ def browser():
 
 
 def login(client, csrf, username="candidate-owner", password="password"):
+    import re
+
+    from django.contrib.auth import get_user_model
+    from django.core import mail
+
+    from chatbot.models import EmailChallenge
+    from chatbot.services.accounts import request_code
+
+    account_user = get_user_model().objects.get(username=username)
+    EmailChallenge.objects.filter(email=account_user.email).delete()
+    request_code(email=account_user.email)
+    code = re.search(r"\b\d{6}\b", mail.outbox[-1].body).group()
     return client.post(
-        reverse("api-auth-token"),
-        data=json.dumps({"username": username, "password": password}),
+        reverse("api-code-verify"),
+        data=json.dumps(
+            {
+                "email": account_user.email,
+                "code": code if password == "password" else "000000",
+            }
+        ),
         content_type="application/json",
         **csrf,
     )
@@ -114,7 +131,10 @@ def test_login_rejects_invalid_and_disabled_users(user):
 
 
 @pytest.mark.django_db
-def test_login_throttle_limits_password_guessing(user):
+def test_login_throttle_limits_code_guessing(user, monkeypatch):
+    from rest_framework.throttling import SimpleRateThrottle
+
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "auth_verify", "5/min")
     client, csrf = browser()
     for _ in range(5):
         assert login(client, csrf, password="wrong").status_code == 401
@@ -227,7 +247,7 @@ def test_review_rejects_stale_version_and_other_account(
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {other_access}",
         ).status_code
-        == 404
+        == 403
     )
 
 

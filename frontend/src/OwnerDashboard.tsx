@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { DocumentsPanel } from "./DocumentsPanel";
 import { AuthLogin } from "./AuthLogin";
 import { ApiError, api } from "./api/client";
-import type { OwnerFact, OwnerProfile, OwnerProfileUpdate, ReviewAction } from "./api/types";
+import type { Account, OwnerFact, OwnerProfile, OwnerProfileUpdate, ReviewAction } from "./api/types";
 
 type Session = "checking" | "guest" | "authenticated";
-type EditableField = "name" | "professional_summary" | "linkedin" | "contact_email";
-const editableFields: EditableField[] = ["name", "professional_summary", "linkedin", "contact_email"];
+type EditableField = "name" | "professional_summary" | "linkedin" | "contact_email" | "phone";
+const editableFields: EditableField[] = ["name", "professional_summary", "linkedin", "contact_email", "phone"];
 
 function FactActions({ fact, busy, onReview }: {
   fact: OwnerFact;
@@ -23,7 +24,8 @@ function FactActions({ fact, busy, onReview }: {
     <button key={action} type="button" disabled={busy} onClick={() => onReview(fact, action)}>{label}</button>)}</div>;
 }
 
-function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
+function OwnerWorkspace({ onLogout, account }: { onLogout: () => void; account: Account }) {
+  const [refresh, setRefresh] = useState(0);
   const [profile, setProfile] = useState<OwnerProfile | null>(null);
   const [draft, setDraft] = useState<OwnerProfileUpdate | null>(null);
   const [facts, setFacts] = useState<OwnerFact[]>([]);
@@ -51,17 +53,21 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
       setDraft({
         name: owned.name, professional_summary: owned.professional_summary,
         linkedin: owned.linkedin, contact_email: owned.contact_email,
-        show_linkedin: owned.show_linkedin, show_contact_email: owned.show_contact_email,
+        show_linkedin: owned.show_linkedin, show_contact_email: owned.show_contact_email, phone: owned.phone,
       });
       setFacts(results.results);
       setTotal(results.count);
       setHasNext(Boolean(results.next));
     }).catch(err => {
+      if (active && err instanceof ApiError && err.status === 404 && account.is_superuser) {
+        setDraft({ name: "", professional_summary: "", linkedin: "", contact_email: "", show_linkedin: false, show_contact_email: false, phone: "" });
+        return;
+      }
       if (active) setError(err instanceof ApiError && err.status === 404
         ? "No candidate profile belongs to this account." : "Unable to load your private profile.");
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [refresh, account.is_superuser]);
 
   useEffect(() => {
     if (page === 1) return;
@@ -85,7 +91,7 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
     setError("");
     setMessage("");
     try {
-      const updated = await api.updateOwnerProfile(draft);
+      const updated = await (profile ? api.updateOwnerProfile(draft) : api.createOwnerProfile(draft));
       setProfile(updated);
       setMessage("Profile changes saved. Publication status is unchanged.");
     } catch (err) {
@@ -123,18 +129,24 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
     <div className="owner-heading">
       <div><div className="eyebrow">PRIVATE WORKSPACE</div><h1 id="owner-title">Your profile.<br /><em>Your decisions.</em></h1>
         <p>Review professional information before it is available to recruiters.</p></div>
-      <button className="button button-secondary" type="button" onClick={onLogout}>Sign out</button>
+
     </div>
     {loading && <p role="status">Loading your information…</p>}
     {error && <p role="alert" className="owner-error">{error}</p>}
     {message && <p role="status" className="owner-success">{message}</p>}
-    {profile && draft && <div className="owner-grid">
+    {draft && <div className="owner-grid">
       <section className="owner-card" aria-labelledby="edit-title">
         <div className="section-kicker">01 / PROFILE</div>
         <h2 id="edit-title">Public profile details</h2>
         <p className="owner-note">Changes do not change account approval or publication status.</p>
-        <div className="owner-states"><span>Account: {profile.status.replace(/_/g, " ")}</span>
-          <span>Publication: {profile.publication_status}</span></div>
+        {profile && <button className="button button-secondary" type="button" disabled={saving} onClick={async () => {
+          setSaving(true); setError("");
+          try { setProfile(await api.publishProfile(profile.publication_status !== "published")); setMessage("Profile publication updated."); }
+          catch { setError("Unable to change publication."); }
+          finally { setSaving(false); }
+        }}>{profile.publication_status === "published" ? "Withdraw profile" : "Publish profile"}</button>}
+        <div className="owner-states"><span>Account: {profile?.status.replace(/_/g, " ") || "active"}</span>
+          <span>Publication: {profile?.publication_status || "draft"}</span></div>
         <form className="owner-form" onSubmit={save}>
           {editableFields.map(field => <label key={field} htmlFor={"owner-" + field}>
             {field.replace(/_/g, " ")}
@@ -142,7 +154,7 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
               ? <textarea id={"owner-" + field} rows={5} maxLength={10000}
                   value={draft[field]} onChange={event => setDraft(current => current ? { ...current, [field]: event.target.value } : current)} />
               : <input id={"owner-" + field} value={draft[field]}
-                  type={field === "contact_email" ? "email" : field === "linkedin" ? "url" : "text"}
+                  type={field === "phone" ? "tel" : field === "contact_email" ? "email" : field === "linkedin" ? "url" : "text"}
                   maxLength={field === "name" ? 255 : 255}
                   onChange={event => setDraft(current => current ? { ...current, [field]: event.target.value } : current)} />}
           </label>)}
@@ -155,8 +167,9 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
           <button className="button button-primary" type="submit" disabled={saving}>{saving ? "Saving…" : "Save profile"}</button>
         </form>
       </section>
+      {profile && <DocumentsPanel uploadsEnabled={account.uploads_enabled} onExtracted={() => setRefresh(v => v + 1)} />}
       <section className="owner-card" aria-labelledby="facts-title">
-        <div className="section-kicker">02 / KNOWLEDGE REVIEW</div>
+        <div className="section-kicker">03 / KNOWLEDGE REVIEW</div>
         <h2 id="facts-title">Professional facts</h2>
         <p className="owner-note">Approval and publication are separate. Review decisions are audited by the backend.</p>
         <p className="owner-count">{total} facts</p>
@@ -165,6 +178,14 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
           <div className="owner-fact-head"><strong>{fact.fact_type.replace(/_/g, " ")}</strong>
             <span>{fact.verification_status} · {fact.is_public ? "public" : "private"}</span></div>
           <p>{fact.content}</p>
+          <details><summary>Edit fact</summary><form className="owner-form" onSubmit={async e => {
+            e.preventDefault(); if (reviewing !== null) return;
+            const content = new FormData(e.currentTarget).get("content") as string;
+            setReviewing(fact.id); setError("");
+            try { const changed = await api.editFact(fact.id, content, fact.updated_at); setFacts(items => items.map(item => item.id === changed.id ? changed : item)); setMessage("Fact updated. Review and approve it again before publishing."); }
+            catch { setError("Unable to edit this fact. Reload before retrying."); }
+            finally { setReviewing(null); }
+          }}><label htmlFor={"fact-edit-" + fact.id}>Fact content<textarea id={"fact-edit-" + fact.id} name="content" required maxLength={4000} defaultValue={fact.content} /></label><button disabled={reviewing !== null}>Save fact</button></form></details>
           <FactActions fact={fact} busy={reviewing !== null || loading} onReview={review} />
         </article>)}</div>
         <nav className="owner-pagination" aria-label="Fact pages">
@@ -177,7 +198,8 @@ function OwnerWorkspace({ onLogout }: { onLogout: () => void }) {
   </section>;
 }
 
-export function OwnerDashboard({ session, onLogin, onLogout }: {
+export function OwnerDashboard({ session, onLogin, onLogout, account }: {
+  account: Account | null;
   session: Session;
   onLogin: () => void;
   onLogout: () => void;
@@ -189,5 +211,7 @@ export function OwnerDashboard({ session, onLogin, onLogout }: {
     <p>Only the profile owner can view or change unpublished facts.</p>
   </section>;
 
-  return <OwnerWorkspace onLogout={onLogout} />;
+  if (!account) return <p role="status">Loading account…</p>;
+  if (!account.can_manage_candidate) return <section className="owner-page"><h1>Recruiter workspace</h1><p>Your account can explore published profiles and ask the Candidate Agents questions.</p><a className="button button-primary" href="#/">Explore profiles</a></section>;
+  return <OwnerWorkspace onLogout={onLogout} account={account} />;
 }

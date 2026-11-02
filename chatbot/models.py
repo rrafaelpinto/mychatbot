@@ -489,3 +489,29 @@ class CandidateFactEmbedding(models.Model):
     content_sha256 = models.CharField(max_length=64)
     vector = VectorField(dimensions=256)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class AccountAccess(models.Model):
+    class Role(models.TextChoices):
+        CANDIDATE = "candidate", "Candidate"
+        RECRUITER = "recruiter", "Recruiter"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="account_access",
+    )
+    email = models.EmailField(unique=True, null=True, blank=True)
+    role = models.CharField(max_length=16, choices=Role.choices)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
+
+
+class EmailChallenge(models.Model):
+    email = models.EmailField(unique=True)
+    code_digest = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    sent_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    consumed_at = models.DateTimeField(null=True, blank=True)
+    registration_name = models.CharField(max_length=255, blank=True)
+    registration_role = models.CharField(max_length=16, blank=True)

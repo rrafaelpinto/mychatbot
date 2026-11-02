@@ -8,6 +8,7 @@ The application combines a **Python/Django REST Framework backend**, **PostgreSQ
 
 - **Public professional profiles:** published summaries and individually approved experience, skills, and project facts.
 - **Candidate Agent:** contextual recruiter Q&A, with first-person answers and inspectable supporting evidence.
+- **Public onboarding:** email-code registration and sign-in, candidate approval by a superuser, and immediate verified recruiter access.
 - **Owner workspace:** profile editing, fact verification, publication, withdrawal, and private provenance.
 - **Controlled AI access:** authenticated and optional Turnstile-protected guest conversations, server-side quotas, idempotency, and daily/monthly cost limits.
 - **Evidence-based retrieval:** a full-context production path with independent PostgreSQL full-text and pgvector/LangChain comparison tooling.
@@ -44,7 +45,7 @@ React + TypeScript + Vite (independent static frontend)
 Django + Django REST Framework
   |-- Candidate profiles, publication and authorization
   |-- Owner-only fact review and audit
-  |-- JWT login / refresh and CSRF-protected guest sessions
+  |-- Email-code sign-in / JWT refresh and CSRF-protected guest sessions
   |-- Candidate Agent and AI usage policies
   |      |-- Fact retrieval: verified + published only
   |      |-- Structured LLM response and evidence validation
@@ -96,7 +97,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Django runs at `http://localhost:8000`; the standalone frontend runs at `http://localhost:4173`. Django does not automatically read `.env`, so load those variables into the backend process before migrating or starting the server. Public registration is not required to create the initial owner account.
+Django runs at `http://localhost:8000`; the standalone frontend runs at `http://localhost:4173`. Django does not automatically read `.env`, so load those variables into the backend process before migrating or starting the server. Create the initial superuser with the command above. In React, use its email to request a sign-in code; development codes appear in the backend console. Public candidates verify their email and then wait for superuser approval. Recruiters can register and access public profiles after email verification.
 
 Live AI interactions require an explicit provider key, approved public facts, enabled operation policy, and sufficient configured budgets. Public pages and the test suite work without paid API calls.
 
@@ -126,6 +127,7 @@ AI, guest chat, public registration, and file uploads are disabled by default in
 ## Technical documentation
 
 - [System architecture and trust boundaries](docs/engineering/ARCHITECTURE.md)
+- [Public onboarding and approval](docs/engineering/ONBOARDING.md)
 - [Versioned REST API](docs/engineering/REST_API.md) and [JWT API security](docs/engineering/JWT_API_SECURITY.md)
 - [Frontend development](frontend/README.md), [UI design system](docs/design/DESIGN_SYSTEM.md), and [UI/UX review workflow](docs/engineering/UI_UX_WORKFLOW.md)
 - [Candidate knowledge import](docs/engineering/FACT_IMPORT.md) and [anonymous chat policy](docs/engineering/GUEST_CHAT.md)

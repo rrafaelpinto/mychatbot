@@ -1,6 +1,12 @@
 import pytest
+from django.utils import timezone
 
-from chatbot.models import CandidateDocument, CandidateFact, CandidateProfile
+from chatbot.models import (
+    AccountAccess,
+    CandidateDocument,
+    CandidateFact,
+    CandidateProfile,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -18,29 +24,50 @@ def private_document_storage(tmp_path):
 
 @pytest.fixture
 def user(django_user_model):
-    return django_user_model.objects.create_user(
+    account_user = django_user_model.objects.create_user(
         username="candidate-owner",
         email="private-account@example.com",
         password="password",
     )
+    AccountAccess.objects.create(
+        user=account_user,
+        email=account_user.email,
+        role="candidate",
+        email_verified_at=timezone.now(),
+    )
+    return account_user
 
 
 @pytest.fixture
 def recruiter(django_user_model):
-    return django_user_model.objects.create_user(
+    account_user = django_user_model.objects.create_user(
         username="recruiter",
         email="recruiter@example.com",
         password="password",
     )
+    AccountAccess.objects.create(
+        user=account_user,
+        email=account_user.email,
+        role="recruiter",
+        email_verified_at=timezone.now(),
+    )
+    return account_user
 
 
 @pytest.fixture
 def other_user(django_user_model):
-    return django_user_model.objects.create_user(
+    account_user = django_user_model.objects.create_user(
         username="other-user",
         email="other@example.com",
         password="password",
     )
+    AccountAccess.objects.create(
+        user=account_user,
+        email=account_user.email,
+        role="candidate",
+        email_verified_at=timezone.now(),
+    )
+    return account_user
 
 
 @pytest.fixture

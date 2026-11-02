@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/v1/auth/code/request/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Preserve HTTP 401 for auth requests with no bearer header. */
+        post: operations["v1_auth_code_request_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/code/verify/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Preserve HTTP 401 for auth requests with no bearer header. */
+        post: operations["v1_auth_code_verify_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/csrf/": {
         parameters: {
             query?: never;
@@ -159,6 +193,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/documents/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_me_documents_list"];
+        put?: never;
+        post: operations["v1_me_documents_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/documents/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_me_documents_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/documents/{id}/extract/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_me_documents_extract_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/facts/": {
         parameters: {
             query?: never;
@@ -174,6 +256,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/facts/{fact_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["v1_me_facts_partial_update"];
         trace?: never;
     };
     "/api/v1/me/facts/{fact_id}/review/": {
@@ -203,12 +301,29 @@ export interface paths {
         /** @description Return only the authenticated account's candidate profile. */
         get: operations["v1_me_profile_retrieve"];
         put?: never;
-        post?: never;
+        /** @description Return only the authenticated account's candidate profile. */
+        post: operations["v1_me_profile_create"];
         delete?: never;
         options?: never;
         head?: never;
         /** @description Update only safe owner-controlled profile fields. */
         patch: operations["v1_me_profile_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/me/profile/publication/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_me_profile_publication_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -230,6 +345,11 @@ export interface components {
              * Format: email
              */
             readonly email: string;
+            readonly role: string;
+            readonly account_status: string;
+            readonly can_manage_candidate: boolean;
+            readonly is_superuser: boolean;
+            readonly uploads_enabled: boolean;
         };
         /**
          * @description * `approve` - approve
@@ -255,9 +375,33 @@ export interface components {
             readonly response: string;
             readonly evidence: components["schemas"]["PublicFact"][];
         };
+        CodeRequested: {
+            readonly detail: string;
+        };
         CredentialsRequest: {
             username: string;
             password: string;
+        };
+        DocumentUploadRequest: {
+            /** Format: binary */
+            document: string;
+        };
+        EmailCodeRequestRequest: {
+            /** Format: email */
+            email: string;
+            /** @default  */
+            name: string;
+            /** @default  */
+            role: components["schemas"]["RoleEnum"];
+        };
+        EmailCodeVerifyRequest: {
+            /** Format: email */
+            email: string;
+            code: string;
+        };
+        ExtractionResult: {
+            readonly proposed_count: number;
+            readonly already_completed: boolean;
         };
         FactReviewInputRequest: {
             action: components["schemas"]["ActionEnum"];
@@ -308,8 +452,18 @@ export interface components {
             /** Format: email */
             readonly contact_email: string;
             readonly show_contact_email: boolean;
+            readonly phone: string;
             readonly status: components["schemas"]["StatusEnum"];
             readonly publication_status: components["schemas"]["PublicationStatusEnum"];
+        };
+        OwnerDocument: {
+            readonly id: number;
+            readonly original_filename: string;
+            readonly size_bytes: number;
+            readonly processing_status: components["schemas"]["ProcessingStatusEnum"];
+            /** Format: date-time */
+            readonly uploaded_at: string;
+            readonly extraction_status: string;
         };
         /** @description Expose owner-review status but never document provenance or raw uploads. */
         OwnerFact: {
@@ -320,6 +474,31 @@ export interface components {
             readonly is_public: boolean;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Allow only owner-editable profile text and contact visibility. */
+        OwnerProfileUpdateRequest: {
+            name: string;
+            professional_summary?: string;
+            linkedin?: string;
+            show_linkedin?: boolean;
+            contact_email?: string;
+            show_contact_email?: boolean;
+            phone?: string;
+        };
+        PaginatedOwnerDocumentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["OwnerDocument"][];
         };
         PaginatedOwnerFactList: {
             /** @example 123 */
@@ -351,6 +530,11 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["PublicCandidate"][];
         };
+        PatchedFactEditRequest: {
+            content?: string;
+            /** Format: date-time */
+            version?: string;
+        };
         /** @description Allow only owner-editable profile text and contact visibility. */
         PatchedOwnerProfileUpdateRequest: {
             name?: string;
@@ -359,6 +543,17 @@ export interface components {
             show_linkedin?: boolean;
             contact_email?: string;
             show_contact_email?: boolean;
+            phone?: string;
+        };
+        /**
+         * @description * `uploaded` - Uploaded
+         *     * `processed` - Processed
+         *     * `failed` - Failed
+         * @enum {string}
+         */
+        ProcessingStatusEnum: "uploaded" | "processed" | "failed";
+        ProfilePublicationRequest: {
+            published: boolean;
         };
         /** @description Expose only public candidate profile fields and consented contact data. */
         PublicCandidate: {
@@ -392,6 +587,12 @@ export interface components {
          */
         PublicationStatusEnum: "draft" | "published";
         /**
+         * @description * `candidate` - candidate
+         *     * `recruiter` - recruiter
+         * @enum {string}
+         */
+        RoleEnum: "candidate" | "recruiter";
+        /**
          * @description * `pending_approval` - Pending approval
          *     * `active` - Active
          *     * `suspended` - Suspended
@@ -414,6 +615,56 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    v1_auth_code_request_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmailCodeRequestRequest"];
+                "multipart/form-data": components["schemas"]["EmailCodeRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeRequested"];
+                };
+            };
+        };
+    };
+    v1_auth_code_verify_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailCodeVerifyRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmailCodeVerifyRequest"];
+                "multipart/form-data": components["schemas"]["EmailCodeVerifyRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessToken"];
+                };
+            };
+        };
+    };
     v1_auth_csrf_retrieve: {
         parameters: {
             query?: never;
@@ -653,6 +904,94 @@ export interface operations {
             };
         };
     };
+    v1_me_documents_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedOwnerDocumentList"];
+                };
+            };
+        };
+    };
+    v1_me_documents_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["DocumentUploadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DocumentUploadRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerDocument"];
+                };
+            };
+        };
+    };
+    v1_me_documents_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerDocument"];
+                };
+            };
+        };
+    };
+    v1_me_documents_extract_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionResult"];
+                };
+            };
+        };
+    };
     v1_me_facts_list: {
         parameters: {
             query?: {
@@ -671,6 +1010,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedOwnerFactList"];
+                };
+            };
+        };
+    };
+    v1_me_facts_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fact_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedFactEditRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedFactEditRequest"];
+                "multipart/form-data": components["schemas"]["PatchedFactEditRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerFact"];
                 };
             };
         };
@@ -721,6 +1087,31 @@ export interface operations {
             };
         };
     };
+    v1_me_profile_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnerProfileUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OwnerProfileUpdateRequest"];
+                "multipart/form-data": components["schemas"]["OwnerProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerCandidate"];
+                };
+            };
+        };
+    };
     v1_me_profile_partial_update: {
         parameters: {
             query?: never;
@@ -733,6 +1124,31 @@ export interface operations {
                 "application/json": components["schemas"]["PatchedOwnerProfileUpdateRequest"];
                 "application/x-www-form-urlencoded": components["schemas"]["PatchedOwnerProfileUpdateRequest"];
                 "multipart/form-data": components["schemas"]["PatchedOwnerProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerCandidate"];
+                };
+            };
+        };
+    };
+    v1_me_profile_publication_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfilePublicationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProfilePublicationRequest"];
+                "multipart/form-data": components["schemas"]["ProfilePublicationRequest"];
             };
         };
         responses: {

@@ -67,4 +67,4 @@ def test_obsolete_state_changing_format_get_is_removed(client, user):
 
     response = client.get("/format_resume/")
 
-    assert response.status_code == 404
+    assert response.status_code == 403

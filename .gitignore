@@ -21,3 +21,6 @@ prototypes/visual/node_modules/
 prototypes/visual/screenshots/
 prototypes/visual/report/
 prototypes/visual/test-results/
+
+# Browser verification artifacts
+/test-results/

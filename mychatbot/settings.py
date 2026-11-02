@@ -91,7 +91,7 @@ SIMPLE_JWT = {
 }
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "chatbot.admin_apps.SuperuserAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -114,6 +114,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "chatbot.access.AccountAccessMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -136,6 +137,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_RATES": {
         "auth_login": "5/min",
+        "auth_verify": "10/min",
         "auth_refresh": "20/min",
         "auth_csrf": "60/min",
     },
@@ -379,3 +381,9 @@ if IS_PRODUCTION:
     SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", default=False)
     if env_bool("DJANGO_TRUST_X_FORWARDED_PROTO", default=False):
         SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+EMAIL_CODE_TTL_SECONDS = 600
+EMAIL_CODE_RESEND_SECONDS = 60
+EMAIL_CODE_MAX_ATTEMPTS = 5
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:4173").rstrip("/")

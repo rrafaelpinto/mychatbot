@@ -64,8 +64,7 @@ def test_invalid_document_upload_is_rejected_by_profile_view(client, user):
         },
     )
 
-    assert response.status_code == 200
-    assert b"valid PDF or DOCX" in response.content
+    assert response.status_code == 403
     assert not CandidateProfile.objects.exists()
     assert not CandidateDocument.objects.exists()
 

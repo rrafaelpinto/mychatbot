@@ -69,3 +69,7 @@ Run `npm --prefix frontend run api:types` after generating
 `.local/openapi.json` according to [frontend instructions](../../frontend/README.md).
 The OpenAPI contract CI workflow checks generated types without a live API
 or paid AI calls.
+
+## Public onboarding and source uploads
+
+Email-code registration/sign-in, candidate approval, document upload/extraction and owner publication endpoints are documented in [ONBOARDING.md](ONBOARDING.md). The generated OpenAPI contract includes their exact request and response schemas.

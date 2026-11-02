@@ -29,10 +29,10 @@ def test_candidate_cannot_edit_another_candidate(
         },
     )
 
-    assert response.status_code == 302
+    assert response.status_code == 410
     own_profile.refresh_from_db()
     published_candidate.refresh_from_db()
-    assert own_profile.name == "Updated Own Profile"
+    assert own_profile.name == "Recruiter Profile"
     assert own_profile.status == CandidateProfile.Status.PENDING_APPROVAL
     assert own_profile.publication_status == CandidateProfile.PublicationStatus.DRAFT
     assert published_candidate.name == "Published Candidate"
@@ -118,7 +118,7 @@ def test_unauthorized_user_cannot_read_conversation(
 
     response = client.get(reverse("conversation_detail", args=[conversation.id]))
 
-    assert response.status_code == 404
+    assert response.status_code == 403
     assert b"Private recruiter question" not in response.content
 
 

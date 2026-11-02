@@ -19,6 +19,9 @@ test.beforeEach(async ({ page }) => {
       slug: "alex", name: "Alex Example", professional_summary: "Backend engineer", image_url: "", linkedin: null, contact_email: null,
       facts: [{ id: 3, fact_type: "skill", content: "Approved Python experience" }],
     } });
+    if (path === "/api/v1/auth/code/request/") return route.fulfill({ headers, json: { detail: "Code sent." } });
+    if (path === "/api/v1/me/") return route.fulfill({ headers, json: { id: 1, username: "owner", email: "owner@example.test", role: "candidate", account_status: "active", can_manage_candidate: true, is_superuser: false, uploads_enabled: true } });
+    if (path === "/api/v1/me/documents/") return route.fulfill({ headers, json: { count: 0, next: null, previous: null, results: [] } });
     if (path === "/api/v1/auth/csrf/") return route.fulfill({ headers, json: { csrf_token: "test" } });
     if (path === "/api/v1/auth/refresh/") return route.fulfill({ headers, status: 401, json: { detail: "Authentication required." } });
     return route.abort("failed");
@@ -105,7 +108,7 @@ test("authenticates with JWT and displays evidence-backed API chat", async ({ pa
     "Access-Control-Allow-Headers": "Content-Type, X-CSRFToken, Authorization, Idempotency-Key",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   };
-  await page.route("http://127.0.0.1:8000/api/v1/auth/token/", route =>
+  await page.route("http://127.0.0.1:8000/api/v1/auth/code/verify/", route =>
     route.request().method() === "OPTIONS"
       ? route.fulfill({ status: 204, headers })
       : route.fulfill({ headers, json: { access: "test-access", token_type: "Bearer", expires_in: 300 } }),
@@ -122,9 +125,10 @@ test("authenticates with JWT and displays evidence-backed API chat", async ({ pa
   });
   await page.goto("/#/agent/alex");
   await page.getByText("Sign in to use your account").click();
-  await page.getByLabel("Username").fill("recruiter");
-  await page.getByLabel("Password").fill("sample-password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel("Email", { exact: true }).fill("owner@example.test");
+  await page.getByRole("button", { name: "Send sign-in code", exact: true }).click();
+  await page.getByLabel("Verification code").fill("123456");
+  await page.getByRole("button", { name: "Verify and continue", exact: true }).click();
   await page.getByLabel("Ask a professional question").fill("What is Alex's experience?");
   await page.getByRole("button", { name: "Send question" }).click();
   await expect(page.getByText("Verified backend experience.")).toBeVisible();
@@ -150,7 +154,7 @@ test("owner edits approved fields and publishes verified facts", async ({ page }
     "Access-Control-Allow-Headers": "Content-Type, X-CSRFToken, Authorization",
     "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
   };
-  await page.route("http://127.0.0.1:8000/api/v1/auth/token/", route =>
+  await page.route("http://127.0.0.1:8000/api/v1/auth/code/verify/", route =>
     route.request().method() === "OPTIONS"
       ? route.fulfill({ status: 204, headers })
       : route.fulfill({ headers, json: { access: "owner-jwt", token_type: "Bearer", expires_in: 300 } }),
@@ -158,7 +162,7 @@ test("owner edits approved fields and publishes verified facts", async ({ page }
   const profile = {
     slug: "alex", name: "Alex Example", professional_summary: "Backend engineer",
     image_url: "", linkedin: "", contact_email: "", show_linkedin: false,
-    show_contact_email: false, status: "active", publication_status: "published",
+    show_contact_email: false, phone: "", status: "active", publication_status: "published",
   };
   let submittedProfile: Record<string, unknown> | undefined;
   await page.route("http://127.0.0.1:8000/api/v1/me/profile/", route => {
@@ -183,9 +187,10 @@ test("owner edits approved fields and publishes verified facts", async ({ page }
     return route.fulfill({ headers, json: listed });
   });
   await page.goto("/#/owner");
-  await page.getByLabel("Username").fill("owner");
-  await page.getByLabel("Password").fill("password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel("Email", { exact: true }).fill("owner@example.test");
+  await page.getByRole("button", { name: "Send sign-in code", exact: true }).click();
+  await page.getByLabel("Verification code").fill("123456");
+  await page.getByRole("button", { name: "Verify and continue", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Professional facts" })).toBeVisible();
   await page.getByLabel("professional summary").fill("Updated profile");
   await page.getByRole("button", { name: "Save profile" }).click();
@@ -207,13 +212,13 @@ test("stale fact reviews reload the current version instead of silently overwrit
     "Access-Control-Allow-Headers": "Content-Type, X-CSRFToken, Authorization",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   };
-  await page.route("http://127.0.0.1:8000/api/v1/auth/token/", route => route.fulfill({
+  await page.route("http://127.0.0.1:8000/api/v1/auth/code/verify/", route => route.fulfill({
     headers, json: { access: "owner-jwt", token_type: "Bearer", expires_in: 300 },
   }));
   await page.route("http://127.0.0.1:8000/api/v1/me/profile/", route => route.fulfill({ headers, json: {
     slug: "alex", name: "Alex Example", professional_summary: "Backend engineer",
     image_url: "", linkedin: "", contact_email: "", show_linkedin: false,
-    show_contact_email: false, status: "active", publication_status: "published",
+    show_contact_email: false, phone: "", status: "active", publication_status: "published",
   } }));
   let reads = 0;
   await page.route("http://127.0.0.1:8000/api/v1/me/facts/?*", route => {
@@ -227,9 +232,10 @@ test("stale fact reviews reload the current version instead of silently overwrit
   await page.route("http://127.0.0.1:8000/api/v1/me/facts/3/review/", route =>
     route.fulfill({ headers, status: 409, json: { detail: "Fact changed. Reload before reviewing." } }));
   await page.goto("/#/owner");
-  await page.getByLabel("Username").fill("owner");
-  await page.getByLabel("Password").fill("password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel("Email", { exact: true }).fill("owner@example.test");
+  await page.getByRole("button", { name: "Send sign-in code", exact: true }).click();
+  await page.getByLabel("Verification code").fill("123456");
+  await page.getByRole("button", { name: "Verify and continue", exact: true }).click();
   await page.getByRole("button", { name: "Publish", exact: true }).click();
   await expect(page.getByText("Latest facts were reloaded.", { exact: false })).toBeVisible();
   await expect(page.getByText("verified · public")).toBeVisible();

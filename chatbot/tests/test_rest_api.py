@@ -124,14 +124,14 @@ def test_owner_reads_only_their_account_candidate_and_facts(
     account = client.get(reverse("api-me"))
     assert account.status_code == 200
     assert account.json()["username"] == other_user.username
-    assert client.get(reverse("api-me-profile")).status_code == 404
-    assert client.get(reverse("api-me-facts")).json()["results"] == []
+    assert client.get(reverse("api-me-profile")).status_code == 403
+    assert client.get(reverse("api-me-facts")).status_code == 403
 
     client.force_login(published_candidate.user)
     profile = client.get(reverse("api-me-profile"))
     assert profile.status_code == 200
     assert profile.json()["slug"] == published_candidate.slug
-    assert "phone" not in profile.json()
+    assert profile.json()["phone"] == published_candidate.phone
     assert "user" not in profile.json()
     facts = client.get(reverse("api-me-facts")).json()["results"]
     assert len(facts) == 1

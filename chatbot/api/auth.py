@@ -15,6 +15,28 @@ from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+class EmailCodeRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    name = serializers.CharField(max_length=255, required=False, default="")
+    role = serializers.ChoiceField(
+        choices=("candidate", "recruiter"), required=False, default=""
+    )
+
+    def validate(self, attrs):
+        if bool(attrs["name"]) != bool(attrs["role"]):
+            raise serializers.ValidationError("Provide both name and role to register.")
+        return attrs
+
+
+class EmailCodeVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.RegexField(r"^[0-9]{6}$")
+
+
+class CodeRequestedSerializer(serializers.Serializer):
+    detail = serializers.CharField(read_only=True)
+
+
 class CredentialsSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True, trim_whitespace=False)
@@ -115,7 +137,7 @@ class TokenLoginView(PublicTokenView):
             username=serializer.validated_data["username"],
             password=serializer.validated_data["password"],
         )
-        if user is None or not user.is_active:
+        if user is None or not user.is_active or not user.is_superuser:
             raise AuthenticationFailed("Invalid credentials.")
         refresh = RefreshToken.for_user(user)
         return _set_refresh_cookie(
@@ -181,3 +203,55 @@ class TokenLogoutView(PublicTokenView):
             except TokenError:
                 pass
         return _clear_refresh_cookie(Response(status=status.HTTP_204_NO_CONTENT))
+
+
+@method_decorator(csrf_protect, name="dispatch")
+@extend_schema(tags=["Authentication"])
+class EmailCodeRequestView(PublicTokenView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
+
+    @extend_schema(
+        request=EmailCodeRequestSerializer, responses=CodeRequestedSerializer
+    )
+    def post(self, request):
+        from chatbot.services.accounts import CodeUnavailable, request_code
+
+        serializer = EmailCodeRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            request_code(**serializer.validated_data)
+        except CodeUnavailable:
+            return _no_store(
+                Response(
+                    {"detail": "Email delivery is temporarily unavailable."}, status=503
+                )
+            )
+        return _no_store(
+            Response(
+                {"detail": "If this email is eligible, a sign-in code has been sent."}
+            )
+        )
+
+
+@method_decorator(csrf_protect, name="dispatch")
+@extend_schema(tags=["Authentication"])
+class EmailCodeVerifyView(PublicTokenView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_verify"
+
+    @extend_schema(request=EmailCodeVerifySerializer, responses=AccessTokenSerializer)
+    def post(self, request):
+        from chatbot.services.accounts import verify_code
+
+        serializer = EmailCodeVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = verify_code(**serializer.validated_data)
+        if user is None:
+            raise AuthenticationFailed("Invalid or expired code.")
+        refresh = RefreshToken.for_user(user)
+        return _set_refresh_cookie(
+            _response_for_access(refresh.access_token), str(refresh)
+        )
