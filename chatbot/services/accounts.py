@@ -40,6 +40,9 @@ def resolve_account(email):
             else "recruiter",
         },
     )
+    if access.email is None:
+        access.email = email
+        access.save(update_fields=["email"])
     return access if access.email == email else None
 
 
@@ -62,6 +65,8 @@ def request_code(*, email, name="", role=""):
         ).total_seconds() < settings.EMAIL_CODE_RESEND_SECONDS:
             return
         known = resolve_account(email) is not None
+        if not known and get_user_model().objects.filter(email__iexact=email).exists():
+            return
         if not known and not (name and role and settings.PUBLIC_REGISTRATION_ENABLED):
             return
         challenge.code_digest = digest_code(email, code)

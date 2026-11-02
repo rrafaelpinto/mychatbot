@@ -292,3 +292,16 @@ def test_only_one_concurrent_code_verification_succeeds(settings):
         outcomes = list(executor.map(lambda _: verify(), range(2)))
     assert sorted(outcomes) == [False, True]
     assert AccountAccess.objects.filter(email="concurrent@example.test").count() == 1
+
+
+def test_legacy_account_without_email_can_be_completed_by_admin(django_user_model):
+    user = django_user_model.objects.create_user(username="legacy")
+    access = AccountAccess.objects.create(user=user, email=None, role="recruiter")
+    user.email = "legacy@example.test"
+    user.save(update_fields=["email"])
+    request_code(email=user.email)
+    code = re.search(r"\b\d{6}\b", mail.outbox[-1].body).group()
+    assert verify_code(email=user.email, code=code).pk == user.pk
+    access.refresh_from_db()
+    assert access.email == user.email
+    assert access.email_verified_at
