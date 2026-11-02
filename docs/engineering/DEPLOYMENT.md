@@ -51,7 +51,7 @@ the host's secret manager (never in Git):
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | HTTPS origin for form POST requests |
 | `DATABASE_URL` | Managed PostgreSQL internal connection URL |
 | `DJANGO_TRUST_X_FORWARDED_PROTO` | `true` only if the host overwrites incoming proxy headers |
-| `PUBLIC_REGISTRATION_ENABLED` | `false` for the portfolio |
+| `PUBLIC_REGISTRATION_ENABLED` | `false` until email-code onboarding is verified |
 | `CANDIDATE_UPLOADS_ENABLED` | `false` without persistent media storage |
 | `GUEST_CHAT_ENABLED` | `false` until protection and retention are configured |
 | `AI_ENABLED` | `false` until the provider and budgets are set |
@@ -96,21 +96,54 @@ https://render.com/docs/deploys.
 
 ## Email and account administration
 
-Public signups and password reset requests are closed by default in production.
-Provision the initial owner account through a trusted management console:
+Public signups are disabled by default in production. Candidates and recruiters
+use email codes, with no public password or password-reset flow. Provision the
+initial superuser through a trusted management console:
 
 ```sh
 uv run python manage.py createsuperuser
 ```
 
-Before enabling public self-registration or password reset, configure a
-verified SMTP sender, outbound email credentials and an abuse policy.
-Test an activation/password-reset email using non-sensitive test accounts.
-Never use console email backend with real external user accounts.
+Configure a verified SMTP sender and credentials before using email-code
+sign-in. `EMAIL_TIMEOUT` defaults to ten seconds so an unavailable mail server
+does not hold an authentication request indefinitely. No SMTP message or real
+LLM request is sent by the preflight command below.
 
-Candidate profile approval and publication are separate admin decisions.
-Import or create only facts deliberately reviewed for public display.
-Source documents and extracted text remain private.
+1. Configure `FRONTEND_URL`, `API_CORS_ALLOWED_ORIGINS` and
+   `DJANGO_CSRF_TRUSTED_ORIGINS` with the actual frontend HTTPS origin.
+2. Configure `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`,
+   `EMAIL_HOST_PASSWORD` and `DEFAULT_FROM_EMAIL` using the host's secret manager.
+   The Blueprint exposes these inputs without enabling signups.
+3. Run the preflight against the existing database before applying the account
+   migration. It reports duplicate normalized email groups without printing
+   addresses or credentials. Resolve duplicates before migration. A new empty
+   database first needs the standard auth schema installed.
+
+   ```sh
+   uv run python manage.py check_onboarding
+   uv run python manage.py migrate --noinput
+   uv run python manage.py check --deploy
+   ```
+
+4. Mount persistent storage, create separate public/private directories outside
+   the checkout, configure both media roots, and run
+   `uv run python manage.py check_onboarding --uploads`. This checks paths only;
+   confirm write permissions and durability across redeploys on the host. Private
+   documents must never be exposed by public media routing.
+5. With registration still disabled, request a code for the existing superuser
+   in React and confirm real email delivery, code verification, refresh and logout.
+   The Admin password login remains separate.
+6. Enable `PUBLIC_REGISTRATION_ENABLED=true` and verify one synthetic recruiter
+   and one synthetic candidate. The recruiter enters immediately after email
+   verification; the candidate sees only pending status until approved in Admin.
+7. Enable `CANDIDATE_UPLOADS_ENABLED=true` after storage verification. Check
+   private upload and processing as the approved candidate. Enable extraction
+   separately only after provider configuration and budget checks.
+
+Email delivery, browser cookies and storage durability require controlled live
+checks. A successful configuration preflight is not evidence of a live deployment.
+Candidate approval, fact approval, profile publication and AI entitlement remain
+separate. Raw source documents and extracted text remain private.
 
 ## Enabling the public Candidate Agent
 
