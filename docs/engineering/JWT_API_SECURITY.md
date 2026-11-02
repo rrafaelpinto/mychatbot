@@ -11,7 +11,9 @@ and server-side quota; no JWT is issued to anonymous visitors.
 | Method | Endpoint | Credential |
 | --- | --- | --- |
 | GET | `/api/v1/auth/csrf/` | Public; establishes a CSRF cookie |
-| POST | `/api/v1/auth/token/` | Credentials + CSRF |
+| POST | `/api/v1/auth/code/request/` | Email and optional registration data + CSRF |
+| POST | `/api/v1/auth/code/verify/` | Email/code + CSRF |
+| POST | `/api/v1/auth/token/` | Superuser credentials + CSRF only |
 | POST | `/api/v1/auth/refresh/` | Refresh cookie + CSRF |
 | POST | `/api/v1/auth/logout/` | Refresh cookie + CSRF |
 | GET/PATCH | `/api/v1/me/profile/` | Authenticated owner |
@@ -26,7 +28,7 @@ retrieval with the same cost controls.
 
 1. The frontend requests `GET /api/v1/auth/csrf/` with
    `credentials: "include"`, and retains the returned `csrf_token` in memory.
-2. POST login credentials, send `X-CSRFToken` and
+2. Request an email code, then POST email/code to verify it. Send `X-CSRFToken` and
    `credentials: "include"`. Only an access token appears in the JSON
    response. The refresh JWT is a host-only `HttpOnly` cookie restricted to
    `/api/v1/auth/`, with `Secure` in production and `SameSite=Lax` by default.
@@ -104,3 +106,5 @@ independent signing-key rotation; otherwise JWT signing uses Django
 - SimpleJWT token issuance adds database-backed blacklist migrations;
   run migrations before traffic. No user-registration or public write API
   is enabled by this phase.
+
+Normal users have no password login or recovery flow. Candidate approval is checked independently of JWT validity on every application request. See [onboarding](ONBOARDING.md) for roles, lifecycle and migration requirements.

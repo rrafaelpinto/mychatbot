@@ -12,7 +12,7 @@ it("sends a CSRF header and keeps tokens in memory", async () => {
     .mockResolvedValueOnce(json({ csrf_token: "csrf-value" }))
     .mockResolvedValueOnce(json({ access: "access-value", token_type: "Bearer", expires_in: 300 }));
   const client = new ApiClient("https://api.example.test", fetcher);
-  await client.login("owner", "password");
+  await client.verifyCode("owner@example.test", "123456");
   expect(fetcher).toHaveBeenCalledTimes(2);
   const request = fetcher.mock.calls[1]![1] as RequestInit;
   expect((request.headers as Record<string, string>)["X-CSRFToken"]).toBe("csrf-value");
@@ -30,7 +30,7 @@ it("refreshes once after an expired bearer and retries only after successful rot
     .mockResolvedValueOnce(json({ access: "fresh", token_type: "Bearer", expires_in: 300 }))
     .mockResolvedValueOnce(json([]));
   const client = new ApiClient("https://api.example.test", fetcher);
-  await client.login("owner", "password");
+  await client.verifyCode("owner@example.test", "123456");
   expect(await client.chatHistory("alex")).toEqual([]);
   expect((fetcher.mock.calls[2]![1]!.headers as Record<string, string>).Authorization).toBe("Bearer old");
   expect((fetcher.mock.calls[4]![1]!.headers as Record<string, string>).Authorization).toBe("Bearer fresh");
@@ -42,7 +42,7 @@ it("does not retry denied or budget-exhausted paid requests", async () => {
     .mockResolvedValueOnce(json({ access: "token", token_type: "Bearer", expires_in: 300 }))
     .mockResolvedValueOnce(json({ detail: "Quota reached" }, 429));
   const client = new ApiClient("https://api.example.test", fetcher);
-  await client.login("owner", "password");
+  await client.verifyCode("owner@example.test", "123456");
   await expect(client.ask("alex", "Question?", "fixed-key")).rejects.toMatchObject({ status: 429 });
   expect(fetcher).toHaveBeenCalledTimes(3);
   expect((fetcher.mock.calls[2]![1]!.headers as Record<string, string>)["Idempotency-Key"]).toBe("fixed-key");
@@ -57,7 +57,7 @@ it("reports backend errors without exposing internal objects", async () => {
 it("uses the bearer token for owner reads and only sends safe profile fields", async () => {
   const profile = {
     slug: "alex", name: "Alex", professional_summary: "Backend developer",
-    linkedin: "", contact_email: "", show_linkedin: false, show_contact_email: false,
+    linkedin: "", contact_email: "", show_linkedin: false, show_contact_email: false, phone: "",
     image_url: "", status: "active", publication_status: "published",
   };
   const fetcher = vi.fn()
@@ -66,18 +66,18 @@ it("uses the bearer token for owner reads and only sends safe profile fields", a
     .mockResolvedValueOnce(json(profile))
     .mockResolvedValueOnce(json({ ...profile, professional_summary: "Updated" }));
   const client = new ApiClient("https://api.example.test", fetcher);
-  await client.login("owner", "password");
+  await client.verifyCode("owner@example.test", "123456");
   expect((await client.ownerProfile()).name).toBe("Alex");
   await client.updateOwnerProfile({
     name: "Alex", professional_summary: "Updated", linkedin: "", contact_email: "",
-    show_linkedin: false, show_contact_email: false,
+    show_linkedin: false, show_contact_email: false, phone: "",
   });
   const patch = fetcher.mock.calls[3]![1] as RequestInit;
   expect(patch.method).toBe("PATCH");
   expect((patch.headers as Record<string, string>).Authorization).toBe("Bearer jwt");
   expect(JSON.parse(patch.body as string)).toEqual({
     name: "Alex", professional_summary: "Updated", linkedin: "", contact_email: "",
-    show_linkedin: false, show_contact_email: false,
+    show_linkedin: false, show_contact_email: false, phone: "",
   });
 });
 
@@ -87,7 +87,7 @@ it("does not retry stale review actions and sends the server-supplied version", 
     .mockResolvedValueOnce(json({ access: "jwt", token_type: "Bearer", expires_in: 300 }))
     .mockResolvedValueOnce(json({ detail: "Fact changed. Reload before reviewing." }, 409));
   const client = new ApiClient("https://api.example.test", fetcher);
-  await client.login("owner", "password");
+  await client.verifyCode("owner@example.test", "123456");
   await expect(client.reviewFact(3, "publish", "2026-10-31T12:00:00Z")).rejects.toMatchObject({ status: 409 });
   expect(fetcher).toHaveBeenCalledTimes(3);
   const options = fetcher.mock.calls[2]![1] as RequestInit;
@@ -125,4 +125,21 @@ it("keeps anonymous guest traffic outside the JWT authorization flow", async () 
     question: "Experience?", turnstile_token: "turnstile-token",
   });
   expect(fetcher.mock.calls[2]![0].pathname).toBe("/api/v1/candidates/alex/guest-chat/");
+});
+
+it("requests registration codes without passwords and sends uploads as multipart", async () => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(json({ csrf_token: "csrf" }))
+    .mockResolvedValueOnce(json({ detail: "Code requested" }))
+    .mockResolvedValueOnce(json({ access: "jwt", token_type: "Bearer", expires_in: 300 }))
+    .mockResolvedValueOnce(json({ id: 1, processing_status: "processed" }, 201));
+  const client = new ApiClient("https://api.example.test", fetcher);
+  await client.requestCode("candidate@example.test", { name: "Example Person", role: "candidate" });
+  expect(JSON.parse(fetcher.mock.calls[1]![1]!.body as string)).toEqual({ email: "candidate@example.test", name: "Example Person", role: "candidate" });
+  await client.verifyCode("candidate@example.test", "123456");
+  await client.uploadDocument(new File(["synthetic"], "example.docx"));
+  const upload = fetcher.mock.calls[3]![1]!;
+  expect(upload.body).toBeInstanceOf(FormData);
+  expect((upload.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+  expect((upload.headers as Record<string, string>).Authorization).toBe("Bearer jwt");
 });

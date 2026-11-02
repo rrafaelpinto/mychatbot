@@ -114,7 +114,7 @@ def test_production_defaults_are_closed_and_registration_route_absent():
             "from django.urls import get_resolver, resolve; "
             "assert 'django_registration_register' not in get_resolver().reverse_dict; "
             "assert resolve('/accounts/password_reset/').func.__name__ "
-            "== 'disabled_password_reset'"
+            "== 'legacy_account'"
         ),
     )
     assert closed.returncode == 0, closed.stderr

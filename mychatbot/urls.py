@@ -1,18 +1,22 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import Http404
+from django.http import HttpResponseGone
+from django.shortcuts import redirect
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.permissions import AllowAny
 
 
-def disabled_password_reset(request):
-    """Reject unconfigured public password-reset requests."""
-    raise Http404("Password reset is not configured.")
+def legacy_account(request, remaining=""):
+    if request.method != "GET":
+        return HttpResponseGone("Use the React application.")
+    return redirect(settings.FRONTEND_URL + "/#/owner")
 
 
 urlpatterns = [
+    path("accounts/login/", legacy_account, name="login"),
+    path("accounts/logout/", legacy_account, name="logout"),
     path("api/v1/", include("chatbot.api.urls")),
     path(
         "api/schema/",
@@ -27,18 +31,10 @@ urlpatterns = [
         name="api-docs",
     ),
     path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/", legacy_account),
+    path("accounts/<path:remaining>", legacy_account),
     path("", include("chatbot.urls")),
 ]
-
-if not settings.PASSWORD_RESET_ENABLED:
-    urlpatterns.insert(1, path("accounts/password_reset/", disabled_password_reset))
-
-if settings.PUBLIC_REGISTRATION_ENABLED:
-    urlpatterns.insert(
-        1,
-        path("accounts/", include("django_registration.backends.activation.urls")),
-    )
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

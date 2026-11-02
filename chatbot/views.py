@@ -2,12 +2,11 @@ from django.conf import settings
 from django.contrib import messages as django_messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.db import DatabaseError, connection, transaction
 from django.http import Http404, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CandidateFactReviewForm, CandidateProfileForm, ChatQuestionForm
+from .forms import CandidateFactReviewForm, ChatQuestionForm
 from .models import (
     AIUsageEvent,
     CandidateFact,
@@ -16,7 +15,7 @@ from .models import (
     Conversation,
     Message,
 )
-from .policies import can_read_conversation
+from .policies import can_edit_candidate, can_read_conversation
 from .services.ai import (
     AILimitExceeded,
     AIRequestAlreadySubmitted,
@@ -24,11 +23,6 @@ from .services.ai import (
     AIUnavailable,
     ask_candidate,
     public_evidence,
-)
-from .services.documents import (
-    DocumentProcessingError,
-    create_candidate_document,
-    process_candidate_document,
 )
 from .services.fact_review import fact_review_action_error
 from .services.guest_chat import (
@@ -60,6 +54,8 @@ def healthz(request):
 @login_required
 def candidate_fact_review_list(request):
     candidate = get_object_or_404(CandidateProfile, user=request.user)
+    if not can_edit_candidate(request.user, candidate):
+        raise Http404("Not found.")
     statuses = {
         "pending": CandidateFact.VerificationStatus.PENDING,
         "verified": CandidateFact.VerificationStatus.VERIFIED,
@@ -92,6 +88,8 @@ def candidate_fact_review_list(request):
 @login_required
 def candidate_fact_review_detail(request, fact_id):
     candidate = get_object_or_404(CandidateProfile, user=request.user)
+    if not can_edit_candidate(request.user, candidate):
+        raise Http404("Not found.")
     fact = get_object_or_404(
         CandidateFact.objects.select_related("source_document"),
         pk=fact_id,
@@ -235,6 +233,8 @@ def public_profile(request, slug):
 @login_required
 def profile(request):
     candidate = get_object_or_404(CandidateProfile, user=request.user)
+    if not can_edit_candidate(request.user, candidate):
+        raise Http404("Not found.")
     return render(
         request,
         "profile.html",
@@ -244,43 +244,9 @@ def profile(request):
 
 @login_required
 def manager_candidate(request):
-    candidate = CandidateProfile.objects.filter(user=request.user).first()
-    title = "Edit profile" if candidate else "Register as candidate"
-
-    if request.method == "POST":
-        form = CandidateProfileForm(request.POST, request.FILES, instance=candidate)
-        if form.is_valid():
-            saved_candidate = form.save(commit=False)
-            saved_candidate.user = request.user
-            saved_candidate.save()
-            document_upload = form.cleaned_data.get("document")
-            if document_upload:
-                try:
-                    document = create_candidate_document(
-                        saved_candidate, document_upload
-                    )
-                    process_candidate_document(document)
-                except (DocumentProcessingError, ValidationError):
-                    django_messages.warning(
-                        request,
-                        "Your profile was saved, but the document could not be processed.",
-                    )
-                else:
-                    django_messages.success(
-                        request, "Profile and source document saved successfully."
-                    )
-            else:
-                django_messages.success(request, "Profile saved successfully.")
-            return redirect("profile")
-        django_messages.error(request, "Please correct the errors below.")
-    else:
-        form = CandidateProfileForm(instance=candidate)
-
-    return render(
-        request,
-        "manager_candidate.html",
-        {"form": form, "title": title},
-    )
+    if request.method != "GET":
+        return HttpResponse("Use the React workspace.", status=410)
+    return redirect(settings.FRONTEND_URL + "/#/owner")
 
 
 def chat(request, slug):
@@ -458,6 +424,8 @@ def chat(request, slug):
 
 @staff_member_required
 def conversations(request):
+    if not request.user.is_superuser:
+        raise Http404("Not found.")
     records = Conversation.objects.select_related("candidate", "recruiter")
     return render(request, "interactions.html", {"conversations": records})
 

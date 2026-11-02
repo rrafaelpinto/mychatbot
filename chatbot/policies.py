@@ -21,7 +21,14 @@ def get_ai_operation_policy(operation: str) -> AIOperationPolicy:
 
 
 def can_edit_candidate(user, candidate: CandidateProfile) -> bool:
-    return bool(user.is_authenticated and candidate.user_id == user.id)
+    from chatbot.access import access_state, is_candidate
+
+    return bool(
+        user.is_authenticated
+        and candidate.user_id == user.id
+        and access_state(user) == "active"
+        and is_candidate(user)
+    )
 
 
 def can_view_public_candidate(candidate: CandidateProfile) -> bool:
@@ -32,14 +39,20 @@ def can_view_public_candidate(candidate: CandidateProfile) -> bool:
 
 
 def can_interact_with_candidate(user, candidate: CandidateProfile) -> bool:
-    return bool(user.is_authenticated and can_view_public_candidate(candidate))
+    from chatbot.access import access_state
+
+    return bool(
+        user.is_authenticated
+        and access_state(user) == "active"
+        and can_view_public_candidate(candidate)
+    )
 
 
 def can_read_conversation(user, conversation: Conversation) -> bool:
     return bool(
         user.is_authenticated
         and (
-            user.is_staff
+            user.is_superuser
             or conversation.recruiter_id == user.id
             or conversation.candidate.user_id == user.id
         )

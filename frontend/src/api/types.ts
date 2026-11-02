@@ -15,3 +15,7 @@ export type OwnerFact = components["schemas"]["OwnerFact"];
 export type ReviewAction = components["schemas"]["ActionEnum"];
 export type GuestStatus = components["schemas"]["GuestStatus"];
 export type GuestReply = components["schemas"]["GuestAnswer"];
+
+export type Account = components["schemas"]["Account"];
+export type OwnerDocument = components["schemas"]["OwnerDocument"];
+export type DocumentList = components["schemas"]["PaginatedOwnerDocumentList"];

@@ -269,3 +269,7 @@ The paid 30-question real-model evaluation, semantic retrieval rollout,
 dedicated object storage, automation of account provisioning, uptime alerts
 and production cost measurements are separate follow-up decisions. No claim
 of live deployment or production verification is made by CI alone.
+
+## Enable email-code onboarding
+
+Before enabling `PUBLIC_REGISTRATION_ENABLED`, verify SMTP delivery and configure `DEFAULT_FROM_EMAIL`, SMTP credentials and `FRONTEND_URL` for the React origin. Apply the account-access migrations after reconciling duplicate emails. Sign in to React with an email code; approve pending candidates in Django Admin. Enable uploads only after private storage is persistent. Existing AI flags and budgets still govern fact extraction and chat. See [ONBOARDING.md](ONBOARDING.md).

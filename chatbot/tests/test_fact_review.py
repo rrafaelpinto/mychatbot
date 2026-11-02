@@ -43,7 +43,9 @@ def test_only_candidate_owner_can_list_and_review(
         assert client.get(url).status_code == 302
         for outsider in (recruiter, other_user):
             client.force_login(outsider)
-            assert client.get(url).status_code == 404
+            assert client.get(url).status_code == (
+                403 if outsider == other_user else 404
+            )
         client.force_login(user)
         assert client.get(url).status_code == 200
 

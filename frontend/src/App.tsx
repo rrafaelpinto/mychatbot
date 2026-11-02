@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { AuthLogin } from "./AuthLogin";
 import { OwnerDashboard } from "./OwnerDashboard";
 import { GuestChatPanel } from "./GuestChatPanel";
 import { MessageBubble } from "./MessageBubble";
 import { ApiError, api } from "./api/client";
-import type { CandidateDetail, CandidateSummary, ChatMessage } from "./api/types";
+import type { Account, CandidateDetail, CandidateSummary, ChatMessage } from "./api/types";
 
 type Session = "checking" | "guest" | "authenticated";
-type Route = { page: "home" | "owner" } | { page: "profile" | "agent"; slug: string };
+type Route = { page: "home" | "owner" | "login" | "register" | "recruiter" } | { page: "profile" | "agent"; slug: string };
 
 function routeFromHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/");
@@ -14,7 +15,7 @@ function routeFromHash(hash: string): Route {
   if ((parts[0] === "profile" || parts[0] === "agent") && slug && /^[a-z0-9-]+$/.test(slug)) {
     return { page: parts[0], slug };
   }
-  if (parts[0] === "owner") return { page: "owner" };
+  if (parts[0] === "owner" || parts[0] === "login" || parts[0] === "register" || parts[0] === "recruiter") return { page: parts[0] };
   return { page: "home" };
 }
 
@@ -172,6 +173,9 @@ export function App() {
   const [candidates, setCandidates] = useState<CandidateSummary[]>([]);
   const [listError, setListError] = useState("");
   const [session, setSession] = useState<Session>("checking");
+  const [account, setAccount] = useState<Account | null>(null);
+  const [accountError, setAccountError] = useState("");
+  const [accountRefresh, setAccountRefresh] = useState(0);
   const [dark, setDark] = useState(false);
   useEffect(() => {
     const updateRoute = () => setRoute(routeFromHash(window.location.hash));
@@ -181,19 +185,35 @@ export function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
   useEffect(() => { document.documentElement.dataset.theme = dark ? "dark" : "light"; }, [dark]);
+  useEffect(() => {
+    let active = true;
+    setAccount(null); setAccountError("");
+    if (session === "authenticated") void api.account().then(data => { if (active) setAccount(data); }).catch(() => { if (active) setAccountError("Unable to check your account. Try again."); });
+    return () => { active = false; };
+  }, [session, accountRefresh]);
+  const login = () => { setSession("authenticated"); if (route.page === "login" || route.page === "register") window.location.hash = "/owner"; };
+  const logout = () => { setSession("guest"); setAccount(null); void api.logout().catch(() => undefined); };
+  const blocked = account && account.account_status !== "active";
+  const checkingAccount = session === "authenticated" && !account;
   const active = route.page;
   return <>
     <a className="skip-link" href="#main">Skip to content</a>
     
     <div className="site-shell"><header className="site-header"><a className="brand" href="#/" aria-label="ResumeBot homepage"><span className="brand-mark">✓</span>resumebot<span className="brand-period">.</span></a>
       <nav className="main-nav" aria-label="Main navigation"><a href="#/" aria-current={active === "home" ? "page" : undefined}>Home</a><a href={candidates[0] ? profileLink(candidates[0].slug) : "#profiles"} aria-current={active === "profile" ? "page" : undefined}>Public profile</a><a href={candidates[0] ? agentLink(candidates[0].slug) : "#profiles"} aria-current={active === "agent" ? "page" : undefined}>Candidate Agent</a></nav>
-      {session === "authenticated" && <a className="header-cta" href="#/owner">My workspace</a>}<div className="header-actions"><button type="button" id="theme-toggle" className="icon-button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} onClick={() => setDark(!dark)}>{dark ? "☀" : "☾"}</button></div>
+      {session === "guest" && <div className="account-nav"><a href="#/login">Sign in</a><a href="#/register">Create account</a></div>}
+      {session === "authenticated" && <div className="account-nav">{!blocked && account && <>{account.can_manage_candidate && <a href="#/owner">My workspace</a>}{(account.role === "recruiter" || account.is_superuser) && <a href="#/recruiter">Recruiter area</a>}{account.is_superuser && <a href={api.getBackendUrl("/admin/")}>Administration</a>}</>}<button type="button" onClick={logout}>Sign out</button></div>}<div className="header-actions"><button type="button" id="theme-toggle" className="icon-button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} onClick={() => setDark(!dark)}>{dark ? "☀" : "☾"}</button></div>
     </header><main id="main">
+      {blocked ? <section className="owner-page account-status"><div className="eyebrow">ACCOUNT STATUS</div><h1>{account.account_status === "pending_approval" ? "Awaiting approval" : "Account unavailable"}</h1><p role="status">{account.account_status === "pending_approval" ? "Your email has been verified. An administrator needs to approve your candidate account before you can continue." : "Your account does not currently have access. Contact the administrator for assistance."}</p><button className="button button-secondary" onClick={() => setAccountRefresh(v => v + 1)}>Check status</button></section>
+      : checkingAccount ? <section className="owner-page"><p role="status">{accountError || "Checking account access…"}</p>{accountError && <button onClick={() => setAccountRefresh(v => v + 1)}>Try again</button>}</section> : <>
+      {(route.page === "login" || route.page === "register") && <section className="owner-page"><AuthLogin key={route.page} registration={route.page === "register"} onLogin={login} /></section>}
+      {route.page === "recruiter" && <section className="owner-page"><h1>Recruiter area</h1><p>Explore published professional profiles and ask evidence-backed questions.</p><a className="button button-primary" href="#/">Explore profiles</a></section>}
       {listError && active === "home" && <Notice kind="error">{listError}</Notice>}
       {route.page === "home" && <Home candidates={candidates} />}
       {route.page === "profile" && <PublicProfile slug={route.slug} />}
-      {route.page === "owner" && <OwnerDashboard session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
-      {route.page === "agent" && <Agent slug={route.slug} session={session} onLogin={() => setSession("authenticated")} onLogout={() => { setSession("guest"); void api.logout().catch(() => undefined); }} />}
+      {route.page === "owner" && <OwnerDashboard account={account} session={session} onLogin={login} onLogout={logout} />}
+      {route.page === "agent" && <Agent slug={route.slug} session={session} onLogin={login} onLogout={logout} />}
+      </>}
     </main><footer className="site-footer"><div className="footer-logo">resumebot<span>.</span></div><p>Professional stories, grounded in approved information.</p><span>Built with Django and React</span></footer></div>
   </>;
 }

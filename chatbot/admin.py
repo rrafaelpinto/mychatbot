@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    AccountAccess,
     AIProjectBudget,
     AIUsageEvent,
     CandidateDocument,
@@ -218,6 +219,35 @@ class CandidateFactReviewEventAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.action(description="Approve selected candidate accounts")
+def approve_candidates(modeladmin, request, queryset):
+    for candidate in queryset.select_related("user"):
+        if (
+            candidate.user.is_active
+            and AccountAccess.objects.filter(
+                user=candidate.user, email_verified_at__isnull=False
+            ).exists()
+        ):
+            candidate.status = CandidateProfile.Status.ACTIVE
+            candidate.save(update_fields=["status", "updated_at"])
+
+
+CandidateProfileAdmin.actions = [approve_candidates]
+
+
+@admin.register(AccountAccess)
+class AccountAccessAdmin(admin.ModelAdmin):
+    list_display = ("user", "email", "role", "email_verified_at")
+    list_filter = ("role",)
+    readonly_fields = ("user", "email", "role", "email_verified_at")
+
+    def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):

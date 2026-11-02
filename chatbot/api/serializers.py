@@ -63,9 +63,55 @@ class PublicCandidateDetailSerializer(PublicCandidateSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     """Serialize only the authenticated account's basic identity."""
 
+    role = serializers.SerializerMethodField()
+    account_status = serializers.SerializerMethodField()
+    can_manage_candidate = serializers.SerializerMethodField()
+    is_superuser = serializers.BooleanField(read_only=True)
+    uploads_enabled = serializers.SerializerMethodField()
+
+    def get_role(self, obj) -> str:
+        from chatbot.models import AccountAccess
+
+        if obj.is_superuser:
+            return "superuser"
+        access = AccountAccess.objects.filter(user=obj).first()
+        return (
+            access.role
+            if access
+            else (
+                "candidate"
+                if CandidateProfile.objects.filter(user=obj).exists()
+                else "recruiter"
+            )
+        )
+
+    def get_account_status(self, obj) -> str:
+        from chatbot.access import access_state
+
+        return access_state(obj)
+
+    def get_can_manage_candidate(self, obj) -> bool:
+        from chatbot.access import access_state, is_candidate
+
+        return access_state(obj) == "active" and is_candidate(obj)
+
+    def get_uploads_enabled(self, obj) -> bool:
+        from django.conf import settings
+
+        return settings.CANDIDATE_UPLOADS_ENABLED
+
     class Meta:
         model = get_user_model()
-        fields = ("id", "username", "email")
+        fields = (
+            "id",
+            "username",
+            "email",
+            "role",
+            "account_status",
+            "can_manage_candidate",
+            "is_superuser",
+            "uploads_enabled",
+        )
         read_only_fields = fields
 
 
@@ -83,6 +129,7 @@ class OwnerCandidateSerializer(serializers.ModelSerializer):
             "show_linkedin",
             "contact_email",
             "show_contact_email",
+            "phone",
             "status",
             "publication_status",
         )
@@ -117,6 +164,7 @@ class OwnerProfileUpdateSerializer(serializers.ModelSerializer):
             "show_linkedin",
             "contact_email",
             "show_contact_email",
+            "phone",
         )
 
     def to_internal_value(self, data):
@@ -148,3 +196,51 @@ class CandidateChatHistorySerializer(serializers.Serializer):
     role = serializers.CharField(read_only=True)
     content = serializers.CharField(read_only=True)
     evidence = PublicFactSerializer(many=True, read_only=True)
+
+
+class OwnerDocumentSerializer(serializers.ModelSerializer):
+    extraction_status = serializers.SerializerMethodField()
+
+    class Meta:
+        from chatbot.models import CandidateDocument
+
+        model = CandidateDocument
+        fields = (
+            "id",
+            "original_filename",
+            "size_bytes",
+            "processing_status",
+            "uploaded_at",
+            "extraction_status",
+        )
+        read_only_fields = fields
+
+    def get_extraction_status(self, obj) -> str:
+        from chatbot.models import CandidateExtractionRun
+
+        run = CandidateExtractionRun.objects.filter(document=obj).first()
+        return run.status if run else "not_started"
+
+
+class DocumentUploadSerializer(serializers.Serializer):
+    document = serializers.FileField()
+
+    def validate_document(self, value):
+        from chatbot.validators import validate_candidate_document
+
+        validate_candidate_document(value)
+        return value
+
+
+class ProfilePublicationSerializer(serializers.Serializer):
+    published = serializers.BooleanField()
+
+
+class ExtractionResultSerializer(serializers.Serializer):
+    proposed_count = serializers.IntegerField(read_only=True)
+    already_completed = serializers.BooleanField(read_only=True)
+
+
+class FactEditSerializer(serializers.Serializer):
+    content = serializers.CharField(max_length=4000)
+    version = serializers.DateTimeField()

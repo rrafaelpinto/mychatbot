@@ -23,6 +23,12 @@ Candidate knowledge extraction, evaluation, recruiter access, APIs, and retrieva
 - Determine the appropriate treatment of representative candidate data, including privacy and verification requirements.
 - Identify the minimum useful technical documentation and automated checks for a publicly reviewed application.
 
+## Public onboarding delivery
+
+Candidate and recruiter registration/sign-in use email codes in React. Candidate accounts remain blocked until a superuser approves them. Approved candidates manage private resume uploads, explicitly extract and review facts, and publish through their workspace. Recruiters verify email without manual approval. Django Admin is exclusive to superusers; superusers can also use both application areas under existing quotas and budgets.
+
+Operational activation still requires SMTP delivery, persistent upload storage and explicit production feature flags. See [onboarding](../engineering/ONBOARDING.md) for the lifecycle and migration requirements.
+
 ## Engineering Principles
 
 - **The LLM is never the source of truth. Verified candidate data is the source of truth.**

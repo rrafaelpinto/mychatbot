@@ -1,25 +1,34 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, views
 from rest_framework.exceptions import ValidationError as APIValidationError
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from chatbot.access import CandidateAccess
 from chatbot.api.serializers import (
     AccountSerializer,
     CandidateChatHistorySerializer,
     CandidateChatInputSerializer,
     CandidateChatOutputSerializer,
+    DocumentUploadSerializer,
+    ExtractionResultSerializer,
+    FactEditSerializer,
     FactReviewInputSerializer,
     OwnerCandidateSerializer,
+    OwnerDocumentSerializer,
     OwnerFactSerializer,
     OwnerProfileUpdateSerializer,
+    ProfilePublicationSerializer,
     PublicCandidateDetailSerializer,
     PublicCandidateSerializer,
 )
 from chatbot.models import (
+    CandidateDocument,
     CandidateFact,
     CandidateFactReviewEvent,
     CandidateProfile,
@@ -35,7 +44,17 @@ from chatbot.services.ai import (
     ask_candidate,
     public_evidence,
 )
+from chatbot.services.documents import (
+    DocumentProcessingError,
+    create_candidate_document,
+    process_candidate_document,
+)
 from chatbot.services.fact_review import fact_review_action_error
+from chatbot.services.knowledge_extraction import (
+    ExtractionUnavailable,
+    KnowledgeExtractionError,
+    extract_candidate_facts,
+)
 
 
 @extend_schema(tags=["Public candidates"])
@@ -71,8 +90,25 @@ class AccountView(views.APIView):
 class OwnerProfileView(generics.RetrieveAPIView):
     """Return only the authenticated account's candidate profile."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
     serializer_class = OwnerCandidateSerializer
+
+    @extend_schema(
+        request=OwnerProfileUpdateSerializer, responses={201: OwnerCandidateSerializer}
+    )
+    def post(self, request):
+        from django.contrib.auth import get_user_model
+
+        with transaction.atomic():
+            get_user_model().objects.select_for_update().get(pk=request.user.pk)
+            if CandidateProfile.objects.filter(user=request.user).exists():
+                return Response({"detail": "A profile already exists."}, status=409)
+            serializer = OwnerProfileUpdateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            candidate = serializer.save(
+                user=request.user, status=CandidateProfile.Status.ACTIVE
+            )
+        return Response(OwnerCandidateSerializer(candidate).data, status=201)
 
     def get_object(self):
         obj = get_object_or_404(CandidateProfile, user=self.request.user)
@@ -97,7 +133,7 @@ class OwnerProfileView(generics.RetrieveAPIView):
 class OwnerFactListView(generics.ListAPIView):
     """List only the current user's facts, including their review state."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
     serializer_class = OwnerFactSerializer
 
     def get_queryset(self):
@@ -111,7 +147,7 @@ class OwnerFactReviewView(views.APIView):
     """Apply audited fact review decisions with version-based concurrency control."""
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
 
     @extend_schema(request=FactReviewInputSerializer, responses=OwnerFactSerializer)
     def post(self, request, fact_id):
@@ -266,3 +302,144 @@ class AuthenticatedCandidateChatView(views.APIView):
         )
         conversation.save(update_fields=["updated_at"])
         return Response({"response": answer.content, "evidence": answer.evidence})
+
+
+@extend_schema(tags=["Current account"])
+class OwnerDocumentListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
+    serializer_class = OwnerDocumentSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        return CandidateDocument.objects.filter(
+            candidate__user=self.request.user
+        ).order_by("-pk")
+
+    @extend_schema(
+        request=DocumentUploadSerializer, responses={201: OwnerDocumentSerializer}
+    )
+    def post(self, request):
+        if not settings.CANDIDATE_UPLOADS_ENABLED:
+            return Response(
+                {"detail": "Uploads are currently unavailable."}, status=503
+            )
+        candidate = get_object_or_404(CandidateProfile, user=request.user)
+        serializer = DocumentUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            document = create_candidate_document(
+                candidate, serializer.validated_data["document"]
+            )
+        except ValidationError as exc:
+            raise APIValidationError({"document": exc.messages}) from exc
+        try:
+            process_candidate_document(document)
+        except DocumentProcessingError:
+            pass
+        return Response(OwnerDocumentSerializer(document).data, status=201)
+
+
+@extend_schema(tags=["Current account"])
+class OwnerDocumentDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
+    serializer_class = OwnerDocumentSerializer
+
+    def get_queryset(self):
+        return CandidateDocument.objects.filter(candidate__user=self.request.user)
+
+
+@extend_schema(tags=["Current account"])
+class OwnerDocumentExtractView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
+
+    @extend_schema(request=None, responses=ExtractionResultSerializer)
+    def post(self, request, pk):
+        document = get_object_or_404(
+            CandidateDocument.objects.select_related("candidate"),
+            pk=pk,
+            candidate__user=request.user,
+        )
+        try:
+            result = extract_candidate_facts(
+                document=document,
+                candidate=document.candidate,
+                initiated_by=request.user,
+            )
+        except ExtractionUnavailable as exc:
+            return Response({"detail": str(exc)}, status=503)
+        except KnowledgeExtractionError as exc:
+            return Response({"detail": str(exc)}, status=409)
+        return Response(
+            {
+                "proposed_count": result.proposed_count,
+                "already_completed": result.already_completed,
+            }
+        )
+
+
+@extend_schema(tags=["Current account"])
+class OwnerPublicationView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
+
+    @extend_schema(
+        request=ProfilePublicationSerializer, responses=OwnerCandidateSerializer
+    )
+    def post(self, request):
+        serializer = ProfilePublicationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            candidate = get_object_or_404(
+                CandidateProfile.objects.select_for_update(), user=request.user
+            )
+            if serializer.validated_data["published"]:
+                try:
+                    candidate.publish()
+                except ValidationError as exc:
+                    raise APIValidationError(exc.messages) from exc
+            else:
+                candidate.publication_status = CandidateProfile.PublicationStatus.DRAFT
+            candidate.save(update_fields=["publication_status", "updated_at"])
+        return Response(OwnerCandidateSerializer(candidate).data)
+
+
+@extend_schema(tags=["Current account"])
+class OwnerFactEditView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, CandidateAccess]
+
+    @extend_schema(request=FactEditSerializer, responses=OwnerFactSerializer)
+    def patch(self, request, fact_id):
+        serializer = FactEditSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            fact = get_object_or_404(
+                CandidateFact.objects.select_for_update(),
+                pk=fact_id,
+                candidate__user=request.user,
+            )
+            if fact.updated_at != serializer.validated_data["version"]:
+                return Response(
+                    {"detail": "Fact changed. Reload before editing."}, status=409
+                )
+            if fact.content != serializer.validated_data["content"]:
+                old_status, old_public = fact.verification_status, fact.is_public
+                fact.content = serializer.validated_data["content"]
+                fact.verification_status = CandidateFact.VerificationStatus.PENDING
+                fact.is_public = False
+                fact.save(
+                    update_fields=[
+                        "content",
+                        "verification_status",
+                        "is_public",
+                        "updated_at",
+                    ]
+                )
+                CandidateFactReviewEvent.objects.create(
+                    fact=fact,
+                    reviewed_by=request.user,
+                    action=CandidateFactReviewEvent.Action.EDITED,
+                    previous_status=old_status,
+                    new_status=fact.verification_status,
+                    previous_public=old_public,
+                    new_public=False,
+                )
+        return Response(OwnerFactSerializer(fact).data)
