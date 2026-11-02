@@ -205,9 +205,19 @@ def test_document_isolation_and_disabled_extraction(
 def test_admin_denies_staff_and_superuser_has_all_areas(
     client, django_user_model, settings
 ):
-    staff = django_user_model.objects.create_user(username="staff", is_staff=True)
+    staff = django_user_model.objects.create_user(
+        username="staff", is_staff=True, password="staff-password"
+    )
     client.force_login(staff)
     assert client.get("/admin/").status_code == 302
+    client.logout()
+    assert (
+        client.post(
+            "/admin/login/", {"username": "staff", "password": "staff-password"}
+        ).status_code
+        == 200
+    )
+    assert "_auth_user_id" not in client.session
     root = django_user_model.objects.create_superuser(
         username="root", email="root@example.test", password="admin-only"
     )
