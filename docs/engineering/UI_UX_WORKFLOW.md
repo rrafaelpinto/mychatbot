@@ -8,7 +8,7 @@ The React frontend uses the backend's versioned DRF API. UI work must not change
 
 ## Skills
 
-Invoke `ui-ux-review` for every user-facing change. Use `ui-ux-pro-max` for a focused review of a layout, accessibility, navigation, or interaction decision. Use `ui-styling` for implementation details. The scoped adaptations are in `.agents/skills/`. They adapt the workflow used in Talent Pool without copying its entire third-party design catalog.
+Invoke `ui-ux-review` for every user-facing change. Use `ui-ux-pro-max` for a focused review of a layout, accessibility, navigation, or interaction decision. Use `ui-styling` for implementation details. The canonical `ui-ux-review` is a pinned copy from `rrafaelpinto/skills`, tracked in `.agents/skills.lock`. ResumeBot-specific guidance remains in this document and `AGENTS.md`. The `ui-ux-pro-max` and `ui-styling` skills remain local; do not copy their content into the shared catalog without checking upstream provenance.
 
 Read `AGENTS.md`, `docs/design/DESIGN_SYSTEM.md`, and the affected React components first.
 
@@ -19,6 +19,14 @@ Read `AGENTS.md`, `docs/design/DESIGN_SYSTEM.md`, and the affected React compone
 3. Implement without changing backend business rules.
 4. Run `npm --prefix frontend run build`, `npm --prefix frontend test`, and `npm --prefix frontend run test:e2e`. Inspect desktop and mobile screenshots, not just passing assertions.
 5. Fix the concrete visual defects and repeat, for a maximum of three screenshot review cycles.
+
+### ResumeBot-specific acceptance requirements
+
+- Recruiters must be able to find approved professional experience and reach the Candidate Agent without unnecessary navigation.
+- Profile details and verified evidence take precedence over product marketing. Candidate Agent answers remain first person and grounded in published, verified facts; no private or unpublished content may be exposed.
+- Verify disabled, loading, error, quota, guest verification, Turnstile, and authorized states where relevant.
+- Confirm both color themes, reduced-motion preferences, meaningful focus indicators and touch targets of at least 44px where practical.
+- Preserve the boundary between React presentation and Django/DRF authorization, publication, rate limits, conversation history and provider cost policies.
 
 ### Review surface
 
