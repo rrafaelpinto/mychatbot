@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "skills": {
+    "ui-ux-review": {
+      "sha256": "1cff5204a6e8908ff4d70f235a23ed52c87b86d283620e1e028fd92bf4472820",
+      "source": "https://github.com/rrafaelpinto/skills",
+      "revision": "5367a48c43531697729ef374bfa79990d1d89a86",
+      "path": "skills/ui-ux-review"
+    }
+  }
+}
