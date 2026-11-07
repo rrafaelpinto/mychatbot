@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AuthLogin } from "./AuthLogin";
 import { OwnerDashboard } from "./OwnerDashboard";
 import { GuestChatPanel } from "./GuestChatPanel";
@@ -109,6 +109,7 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const pending = useRef<{ question: string; key: string } | null>(null);
   useEffect(() => {
     let active = true;
     setProfile(null);
@@ -123,16 +124,22 @@ function Agent({ slug, session, onLogin, onLogout }: { slug: string; session: Se
       .catch(() => { if (active) setError("Conversation history is unavailable."); });
     return () => { active = false; };
   }, [slug, session]);
+  useEffect(() => {
+    pending.current = null;
+  }, [slug]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const question = input.trim();
     if (!question || busy || session !== "authenticated") return;
+    const key = pending.current?.question === question ? pending.current.key : crypto.randomUUID();
+    pending.current = { question, key };
     setBusy(true);
     setError("");
     try {
-      const answer = await api.ask(slug, question, crypto.randomUUID());
+      const answer = await api.ask(slug, question, key);
       setHistory(previous => [...previous, { role: "user", content: question, evidence: [] }, { role: "assistant", content: answer.response, evidence: answer.evidence }]);
       setInput("");
+      pending.current = null;
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) setError("Question limit or budget reached. Further requests are not available.");
       else if (err instanceof ApiError && (err.status === 401 || err.status === 403)) setError("Your session is no longer authorized.");

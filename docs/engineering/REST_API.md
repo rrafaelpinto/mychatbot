@@ -42,6 +42,21 @@ on the backend. Responses are instructed to speak in the candidate's
 first-person voice and to cite currently approved facts. Anonymous chat
 never receives a privileged user JWT.
 
+Every chat POST requires an `Idempotency-Key` header containing a unique,
+printable ASCII request key (1 to 128 characters). Reuse the same key when
+retrying the same submission. A key already admitted returns HTTP 409 and
+does not call the provider again. Provider SDK retries are disabled for chat;
+after a timeout with an unknown provider outcome, check conversation history
+before submitting a new request key because the provider may have completed
+the first call.
+
+Candidate chat also enforces a rolling 24-hour token ceiling per recruiter
+and candidate, or per anonymous guest session. In-flight requests reserve
+estimated input tokens plus the configured maximum output tokens before the
+provider call. Completed usage replaces that reservation when provider token
+usage is available; unresolved usage retains the reservation conservatively.
+Configure the limit with `AI_CHAT_SESSION_MAX_TOKENS` (default: `25000`).
+
 ## Cross-origin security
 
 React keeps a short-lived access token in memory; Django maintains a

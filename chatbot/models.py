@@ -372,6 +372,7 @@ class AIUsageEvent(models.Model):
     )
     input_tokens = models.PositiveIntegerField(null=True, blank=True)
     output_tokens = models.PositiveIntegerField(null=True, blank=True)
+    reserved_session_tokens = models.PositiveIntegerField(default=0)
     reserved_micro_usd = models.PositiveBigIntegerField(default=0)
     actual_micro_usd = models.PositiveBigIntegerField(null=True, blank=True)
     input_price_per_million = models.DecimalField(

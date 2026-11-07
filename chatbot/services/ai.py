@@ -155,6 +155,12 @@ def ask_candidate(
         0, settings.AI_MAX_INPUT_TOKENS - settings.AI_CHAT_INPUT_OVERHEAD_BYTES
     ):
         raise AIServiceError("Candidate context exceeds the configured token budget.")
+    payload_size = len(payload.encode("utf-8"))
+    estimated_input_tokens = min(
+        settings.AI_MAX_INPUT_TOKENS,
+        payload_size + settings.AI_CHAT_INPUT_OVERHEAD_BYTES,
+    )
+    session_token_reservation = estimated_input_tokens + settings.AI_MAX_OUTPUT_TOKENS
 
     try:
         usage = admit_ai_operation(
@@ -163,6 +169,7 @@ def ask_candidate(
             candidate_id=candidate.pk,
             operation=AIUsageEvent.Operation.CANDIDATE_CHAT,
             idempotency_key=idempotency_key,
+            session_token_reservation=session_token_reservation,
         )
     except AIDuplicateRequest as exc:
         raise AIRequestAlreadySubmitted(str(exc)) from exc
@@ -301,7 +308,7 @@ def invoke_candidate_chat(
     client = OpenAI(
         api_key=settings.OPENAI_API_KEY,
         timeout=settings.OPENAI_TIMEOUT_SECONDS,
-        max_retries=1,
+        max_retries=0,
     )
     try:
         completion = client.chat.completions.create(
