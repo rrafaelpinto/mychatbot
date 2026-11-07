@@ -49,7 +49,8 @@ Django retains its own administrative and fallback HTML pages, and WhiteNoise se
 - JWT access tokens remain in browser memory; refresh tokens are rotated in Secure HttpOnly cookies. CSRF protections apply to credential-bearing operations.
 - Optional anonymous chat uses verified Turnstile tokens, server-side Django sessions, origin-level limits and global AI budgets.
 - Separate React and API origins must be explicitly allowlisted for credentialed CORS; same-site HTTPS subdomains are required for the default cookie policy.
-- Requests are idempotency-aware where duplicate calls could spend AI budget. Usage reservations and provider reconciliation are persisted in PostgreSQL.
+- Chat POST requests require an idempotency key; SDK retries are disabled because a timeout may follow provider-side completion. Usage reservations and provider reconciliation are persisted in PostgreSQL.
+- Candidate chat reserves estimated input and maximum output tokens against a rolling 24-hour per-session ceiling. Unknown provider outcomes retain the reservation conservatively.
 - File uploads and self-registration remain disabled in production until their supporting storage and email services are configured.
 - No Redis, Celery workers, distributed queues, or paid embedding infrastructure are needed to operate this controlled portfolio deployment.
 

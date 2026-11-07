@@ -34,7 +34,14 @@ and will hit origin quotas together. The default ignores forwarded headers.
 - 20 admitted requests per origin per rolling 24 hours
 - 50 admitted guest requests globally per rolling 24 hours
 - At most one active provider request per session, with a bounded lease
+- A rolling 24-hour token ceiling per guest session, including in-flight reservations
 - Existing candidate-level quotas and monetary reservations remain mandatory
+
+Each guest chat POST requires an `Idempotency-Key` header. Keep the same key
+when retrying the same question. An admitted key cannot submit a second
+provider call. If the provider times out with an unknown outcome, reload the
+conversation before starting a new request; the first call may have completed.
+The shared `AI_CHAT_SESSION_MAX_TOKENS` setting also applies to guest sessions.
 
 Limits count *admitted attempts*, including provider failures. A new browser
 cookie does not reset origin/global limits. IP hashes are HMAC-derived, not raw

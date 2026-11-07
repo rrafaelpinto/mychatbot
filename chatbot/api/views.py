@@ -259,7 +259,7 @@ class AuthenticatedCandidateChatView(views.APIView):
         serializer = CandidateChatInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         key = request.headers.get("Idempotency-Key")
-        if key is not None and (
+        if key is None or (
             not 1 <= len(key) <= 128 or not key.isascii() or not key.isprintable()
         ):
             raise APIValidationError({"idempotency_key": "Invalid idempotency key."})

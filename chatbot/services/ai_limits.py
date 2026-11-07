@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import BigIntegerField, Case, F, Sum, Value, When
 from django.utils import timezone
 
 from chatbot.models import (
@@ -31,6 +32,7 @@ def admit_ai_operation(
     operation: str,
     idempotency_key: str | None = None,
     model: str | None = None,
+    session_token_reservation: int = 0,
 ) -> AIUsageEvent:
     """Atomically enforce limits and record an admitted paid operation."""
     limits = settings.AI_USAGE_LIMITS[operation]
@@ -65,6 +67,20 @@ def admit_ai_operation(
         events = AIUsageEvent.objects.filter(operation=operation)
 
         if guest is not None:
+            session_events = events.filter(guest_session=guest)
+            duplicate = session_events
+        else:
+            duplicate = events.filter(initiated_by_id=identity_id)
+
+        if (
+            idempotency_key is not None
+            and duplicate.filter(
+                candidate_id=candidate_id, idempotency_key=idempotency_key
+            ).exists()
+        ):
+            raise AIDuplicateRequest("This AI request has already been submitted.")
+
+        if guest is not None:
             from datetime import date
 
             budget, _ = AIProjectBudget.objects.get_or_create(
@@ -75,11 +91,16 @@ def admit_ai_operation(
                 },
             )
             AIProjectBudget.objects.select_for_update().get(pk=budget.pk)
-            session_events = events.filter(guest_session=guest)
             origin_events = events.filter(guest_origin=origin)
 
             if session_events.count() >= settings.GUEST_SESSION_QUESTION_LIMIT:
                 raise AIQuotaExceeded("Guest session question limit exceeded.")
+            if session_token_reservation and (
+                _session_tokens(session_events.filter(created_at__gte=day_start))
+                + session_token_reservation
+                > settings.AI_CHAT_SESSION_MAX_TOKENS
+            ):
+                raise AIQuotaExceeded("Chat session token limit exceeded.")
             if (
                 origin_events.filter(created_at__gte=minute_start).count()
                 >= settings.GUEST_ORIGIN_PER_MINUTE
@@ -97,7 +118,6 @@ def admit_ai_operation(
                 >= settings.GUEST_GLOBAL_PER_DAY
             ):
                 raise AIQuotaExceeded("Guest daily capacity exhausted.")
-            duplicate = session_events
         else:
             if (
                 events.filter(
@@ -113,15 +133,17 @@ def admit_ai_operation(
                 >= limits["identity_per_day"]
             ):
                 raise AIQuotaExceeded("AI identity quota exceeded.")
-            duplicate = events.filter(initiated_by_id=identity_id)
-
-        if (
-            idempotency_key is not None
-            and duplicate.filter(
-                candidate_id=candidate_id, idempotency_key=idempotency_key
-            ).exists()
-        ):
-            raise AIDuplicateRequest("This AI request has already been submitted.")
+            if session_token_reservation:
+                session_events = events.filter(
+                    initiated_by_id=identity_id,
+                    candidate_id=candidate_id,
+                    created_at__gte=day_start,
+                )
+                if (
+                    _session_tokens(session_events) + session_token_reservation
+                    > settings.AI_CHAT_SESSION_MAX_TOKENS
+                ):
+                    raise AIQuotaExceeded("Chat session token limit exceeded.")
 
         if (
             events.filter(candidate_id=candidate_id, created_at__gte=day_start).count()
@@ -137,6 +159,7 @@ def admit_ai_operation(
             operation=operation,
             model=model or settings.OPENAI_MODEL,
             idempotency_key=idempotency_key,
+            reserved_session_tokens=session_token_reservation,
         )
         reserve_project_budget(usage=usage, now=now)
         if guest is not None:
@@ -146,3 +169,32 @@ def admit_ai_operation(
             )
             guest.save(update_fields=["active_usage", "in_flight_until"])
         return usage
+
+
+def _session_tokens(events) -> int:
+    """Count known usage and conservatively retain unknown in-flight usage."""
+    total = events.aggregate(
+        total=Sum(
+            Case(
+                When(
+                    status=AIUsageEvent.Status.SUCCEEDED,
+                    input_tokens__isnull=False,
+                    output_tokens__isnull=False,
+                    then=F("input_tokens") + F("output_tokens"),
+                ),
+                default=Case(
+                    When(
+                        reserved_session_tokens__gt=0,
+                        then=F("reserved_session_tokens"),
+                    ),
+                    default=Value(
+                        settings.AI_MAX_INPUT_TOKENS
+                        + settings.AI_MAX_OUTPUT_TOKENS
+                    ),
+                    output_field=BigIntegerField(),
+                ),
+                output_field=BigIntegerField(),
+            )
+        )
+    )["total"]
+    return total or 0

@@ -56,6 +56,7 @@ the host's secret manager (never in Git):
 | `GUEST_CHAT_ENABLED` | `false` until protection and retention are configured |
 | `AI_ENABLED` | `false` until the provider and budgets are set |
 | `AI_DAILY_BUDGET_USD`, `AI_MONTHLY_BUDGET_USD` | Positive values required before AI is enabled |
+| `AI_CHAT_SESSION_MAX_TOKENS` | Rolling 24-hour chat ceiling per recruiter/candidate or guest session; defaults to `25000` |
 
 The `.env.example` is a **development example**, not a set of production
 defaults. Production mode rejects missing required secrets and hosts. It
