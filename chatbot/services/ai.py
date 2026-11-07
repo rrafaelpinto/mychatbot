@@ -160,9 +160,7 @@ def ask_candidate(
         settings.AI_MAX_INPUT_TOKENS,
         payload_size + settings.AI_CHAT_INPUT_OVERHEAD_BYTES,
     )
-    session_token_reservation = (
-        estimated_input_tokens + settings.AI_MAX_OUTPUT_TOKENS
-    )
+    session_token_reservation = estimated_input_tokens + settings.AI_MAX_OUTPUT_TOKENS
 
     try:
         usage = admit_ai_operation(

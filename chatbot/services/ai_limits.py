@@ -188,8 +188,7 @@ def _session_tokens(events) -> int:
                         then=F("reserved_session_tokens"),
                     ),
                     default=Value(
-                        settings.AI_MAX_INPUT_TOKENS
-                        + settings.AI_MAX_OUTPUT_TOKENS
+                        settings.AI_MAX_INPUT_TOKENS + settings.AI_MAX_OUTPUT_TOKENS
                     ),
                     output_field=BigIntegerField(),
                 ),
